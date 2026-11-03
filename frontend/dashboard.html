@@ -1,0 +1,2585 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-[#f6f7f6]">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EarthScape - Climate Agency Intelligence Dashboard</title>
+  
+  <!-- Webflow & Harvestra Shared CSS from website -->
+  <link href="css/harvestra.webflow.shared.css" rel="stylesheet" type="text/css" />
+
+  <!-- Preconnect and Google Fonts: Instrument Sans & Open Sans (matching index.html) -->
+  <link href="https://fonts.googleapis.com" rel="preconnect" />
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet" />
+  <script src="js/webfont.js" type="text/javascript"></script>
+  <script type="text/javascript">
+    if (typeof WebFont !== 'undefined') {
+      WebFont.load({ google: { families: ["Open Sans:300,400,600,700", "Instrument Sans:400,500,600,700"] } });
+    }
+  </script>
+
+  <!-- Tailwind CSS CDN for utility layout orchestration -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Instrument Sans"', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            heading: ['"Instrument Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              black: '#040404',
+              surface: '#0b120e',
+              deepGreen: '#0c1f15',
+              green: '#1a814a',
+              greenHover: '#14663b',
+              gold: '#f6d987',
+              goldHover: '#e6c770',
+              almond: '#c0a78c',
+              khaki: '#bfa78e',
+              stone: '#f6f7f6',
+              card: '#ffffff',
+              border: '#e7e8e7',
+            }
+          },
+          borderRadius: {
+            'pill': '99px',
+            'card': '20px',
+            'card-lg': '24px',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root {
+      --font-family--body: "Instrument Sans", sans-serif;
+      --font-family--heading: "Instrument Sans", sans-serif;
+      --color--primary: #040404;
+      --color--secondary: #efefef;
+      --color--sunny-gold: #f6d987;
+      --global-color--success: #1a814a;
+      --color--creamy-almond: #c0a78c;
+      --color--light-khaki: #bfa78e;
+    }
+
+    /* Unsuppress any Webflow hiding rules */
+    * {
+      visibility: visible !important;
+    }
+
+    body, html, input, button, select, textarea, table, td, th {
+      font-family: "Instrument Sans", -apple-system, BlinkMacSystemFont, sans-serif !important;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      font-family: "Instrument Sans", sans-serif !important;
+      letter-spacing: -0.025em;
+    }
+
+    /* Harvestra Pill Button Styles */
+    .harvestra-pill-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 99px;
+      font-family: "Instrument Sans", sans-serif;
+      font-weight: 600;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .harvestra-pill-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .harvestra-pill-btn-dark {
+      background-color: #040404;
+      color: #ffffff;
+      border: 1px solid #040404;
+    }
+    .harvestra-pill-btn-dark:hover {
+      background-color: #1c1c1c;
+      border-color: #1c1c1c;
+    }
+
+    .harvestra-pill-btn-green {
+      background-color: #1a814a;
+      color: #ffffff;
+      border: 1px solid #1a814a;
+    }
+    .harvestra-pill-btn-green:hover {
+      background-color: #14663b;
+      border-color: #14663b;
+    }
+
+    .harvestra-pill-btn-gold {
+      background-color: #f6d987;
+      color: #040404;
+      border: 1px solid #f6d987;
+    }
+    .harvestra-pill-btn-gold:hover {
+      background-color: #e9cb77;
+    }
+
+    .harvestra-pill-btn-light {
+      background-color: #ffffff;
+      color: #040404;
+      border: 1px solid #e2e4e2;
+    }
+    .harvestra-pill-btn-light:hover {
+      background-color: #f2f3f2;
+      border-color: #d1d5d1;
+    }
+
+    /* Harvestra Card Surface */
+    .harvestra-card {
+      background: #ffffff;
+      border: 1px solid #e7e8e7;
+      border-radius: 20px;
+      box-shadow: 0 4px 20px -2px rgba(4, 4, 4, 0.03);
+      transition: all 0.25s ease;
+    }
+    .harvestra-card:hover {
+      border-color: #d8dad8;
+      box-shadow: 0 8px 30px -4px rgba(4, 4, 4, 0.06);
+    }
+
+    /* Harvestra Capsule Tag */
+    .harvestra-pill-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #040404;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #2b2b2b;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #f6d987;
+    }
+  </style>
+</head>
+<body class="min-h-full bg-[#f6f7f6] text-[#040404] font-sans flex flex-col antialiased selection:bg-[#f6d987] selection:text-[#040404]">
+
+  <!-- Toast Notification Banner -->
+  <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <!-- --- TOP NAVIGATION HEADER (Harvestra Refined Floating Dark Pill Theme) --- -->
+  <header class="bg-[#040404] text-white border-b border-[#1c1c1c] sticky top-0 z-40 px-4 py-2.5 flex items-center justify-between shadow-xl">
+    <div class="flex items-center space-x-3">
+      <button 
+        id="btn-toggle-sidebar"
+        class="p-2 hover:bg-[#1a1a1a] rounded-full text-slate-300 hover:text-white transition-colors"
+        title="Toggle Navigation Sidebar"
+        aria-label="Toggle Navigation Sidebar"
+      >
+        <i data-lucide="menu" class="w-5 h-5"></i>
+      </button>
+      
+      <!-- Brand Logo & Original Name Preserved -->
+      <div 
+        id="brand-logo-trigger"
+        class="flex items-center space-x-2.5 cursor-pointer select-none group" 
+      >
+        <div class="w-8 h-8 rounded-full bg-[#1a814a] text-white flex items-center justify-center font-bold shadow-md group-hover:bg-[#14663b] transition-colors">
+          <i data-lucide="globe" class="w-4 h-4 text-white"></i>
+        </div>
+        <div>
+          <span class="font-extrabold tracking-tight text-lg text-white block leading-none">EARTHSCAPE</span>
+          <span class="text-[10px] text-[#f6d987] font-semibold tracking-widest uppercase block mt-0.5">Climate Intelligence</span>
+        </div>
+      </div>
+
+      <!-- Preserved Prototype Tag -->
+      <span class="hidden md:inline-block bg-[#1a814a]/20 text-[#86efac] text-[10px] px-3 py-1 rounded-full border border-[#1a814a]/40 font-mono font-semibold">
+        PROTOTYPE v2.6
+      </span>
+    </div>
+
+    <!-- Preserved Search Input in Harvestra Pill Style -->
+    <div class="hidden lg:flex items-center relative w-84">
+      <i data-lucide="search" class="w-4 h-4 absolute left-3.5 text-slate-400"></i>
+      <input 
+        id="global-search-input"
+        type="text" 
+        placeholder="Search datasets, stations, alert models..." 
+        class="w-full bg-[#141414] border border-[#2b2b2b] rounded-full pl-9 pr-4 py-1.5 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-[#f6d987] transition-all"
+      />
+
+      <!-- Search Results Dropdown -->
+      <div id="search-results-dropdown" class="hidden absolute top-full left-0 right-0 mt-2 bg-[#0c0c0c] border border-[#262626] rounded-2xl shadow-2xl p-3.5 z-50 text-xs text-slate-200 space-y-2 max-h-72 overflow-y-auto">
+      </div>
+    </div>
+
+    <!-- Right Toolbar Options -->
+    <div class="flex items-center space-x-3">
+      <!-- Preserved Live Kafka Sync Trigger -->
+      <button 
+        id="btn-sync"
+        class="hidden sm:flex items-center space-x-2 text-xs bg-[#141414] hover:bg-[#202020] text-slate-200 px-3.5 py-1.5 rounded-full border border-[#2b2b2b] transition-all"
+        title="Trigger manual Kafka / Spark ingestion refresh"
+      >
+        <i id="sync-icon" data-lucide="refresh-cw" class="w-3.5 h-3.5 text-[#1a814a]"></i>
+        <span>Sync: <strong id="sync-time" class="text-[#f6d987]">Just Now</strong></span>
+      </button>
+
+      <!-- Preserved Role Switcher Pill -->
+      <div class="flex items-center bg-[#141414] rounded-full p-0.5 border border-[#2b2b2b] text-xs">
+        <button 
+          id="role-btn-admin"
+          class="px-3 py-1 rounded-full transition-all bg-[#1a814a] font-bold text-white shadow-sm"
+        >
+          Admin
+        </button>
+        <button 
+          id="role-btn-analyst"
+          class="px-3 py-1 rounded-full transition-all text-slate-400 hover:text-white"
+        >
+          Analyst
+        </button>
+      </div>
+
+      <!-- Preserved Notifications Dropdown Trigger -->
+      <div class="relative">
+        <button 
+          id="btn-notif"
+          class="p-2 bg-[#141414] hover:bg-[#222222] rounded-full text-slate-300 relative transition-colors border border-[#262626]"
+          aria-label="View notifications"
+        >
+          <i data-lucide="bell" class="w-4 h-4"></i>
+          <span id="notif-badge" class="absolute -top-1 -right-1 bg-[#f6d987] text-[#040404] font-bold text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
+            2
+          </span>
+        </button>
+
+        <div id="notif-dropdown" class="hidden absolute right-0 mt-2 w-80 bg-[#0c0c0c] border border-[#262626] rounded-2xl shadow-2xl z-50 text-slate-200 text-xs overflow-hidden">
+          <div class="p-3.5 border-b border-[#1c1c1c] font-semibold flex justify-between items-center bg-[#040404]">
+            <span class="text-white">System Notifications</span>
+            <button id="btn-mark-all-read" class="text-[10px] text-[#f6d987] hover:underline font-bold">
+              Mark all read
+            </button>
+          </div>
+          <div id="notif-list" class="max-h-60 overflow-y-auto divide-y divide-[#1c1c1c]">
+          </div>
+        </div>
+      </div>
+
+      <!-- User Profile Avatar with Harvestra Accent Ring -->
+      <div class="relative">
+        <button 
+          id="btn-user-avatar"
+          class="flex items-center space-x-2 pl-1 focus:outline-none"
+          aria-label="User profile options"
+        >
+          <img id="header-avatar" src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&q=80" alt="User" class="w-8 h-8 rounded-full border-2 border-[#f6d987] object-cover shadow-sm" />
+        </button>
+
+        <div id="user-dropdown" class="hidden absolute right-0 mt-2 w-56 bg-[#0c0c0c] border border-[#262626] rounded-2xl shadow-2xl z-50 text-xs text-slate-200 divide-y divide-[#1c1c1c]">
+          <div class="p-3.5 bg-[#040404] rounded-t-2xl">
+            <p id="dropdown-username" class="font-bold text-white text-sm">Dr. Elena Rostova</p>
+            <p id="dropdown-title" class="text-[11px] text-[#f6d987]">Lead Climate Data Architect</p>
+            <span id="dropdown-email" class="inline-block mt-1 px-2 py-0.5 bg-[#1a1a1a] rounded-full text-[10px] text-slate-300 font-mono">elena.rostova@earthscape.gov</span>
+          </div>
+          <div class="py-1">
+            <button data-nav="settings" class="w-full text-left px-3.5 py-2 hover:bg-[#1a1a1a] flex items-center space-x-2.5 transition-colors">
+              <i data-lucide="settings" class="w-3.5 h-3.5 text-slate-400"></i>
+              <span>Account Settings</span>
+            </button>
+            <button data-nav="rbac" class="w-full text-left px-3.5 py-2 hover:bg-[#1a1a1a] flex items-center space-x-2.5 transition-colors">
+              <i data-lucide="shield-check" class="w-3.5 h-3.5 text-slate-400"></i>
+              <span>Role Authorization</span>
+            </button>
+          </div>
+          <div class="py-1">
+            <button id="btn-sign-out" class="w-full text-left px-3.5 py-2 text-rose-400 hover:bg-[#1a1a1a] flex items-center space-x-2.5 transition-colors">
+              <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+              <span>Sign Out</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- --- MAIN LAYOUT BODY --- -->
+  <div class="flex flex-1 relative overflow-hidden">
+    
+    <!-- COLLAPSIBLE SIDEBAR (Harvestra Dark Finish) -->
+    <aside 
+      id="main-sidebar"
+      class="w-64 bg-[#040404] border-r border-[#1a1a1a] text-slate-300 transition-all duration-300 flex flex-col shrink-0 z-30 select-none"
+    >
+      <div class="p-3.5 border-b border-[#1a1a1a] text-[10px] font-bold text-[#bfa78e] tracking-widest uppercase flex items-center justify-between">
+        <span id="sidebar-title">Core Navigation</span>
+      </div>
+
+      <nav class="flex-1 py-3 overflow-y-auto space-y-1 px-2.5 text-xs">
+        <!-- 100% Preserved Navigation Labels Exactly As Written -->
+        <a href="#" data-nav="landing" class="sidebar-nav-item flex items-center justify-between px-3.5 py-2.5 rounded-full font-medium transition-all text-slate-300 hover:bg-[#141414]">
+          <div class="flex items-center space-x-3 truncate">
+            <i data-lucide="globe" class="w-4 h-4 flex-shrink-0 text-slate-400"></i>
+            <span class="sidebar-label truncate">Agency Landing</span>
+          </div>
+        </a>
+
+        <a href="#" data-nav="dashboard" class="sidebar-nav-item flex items-center justify-between px-3.5 py-2.5 rounded-full font-medium transition-all text-slate-300 hover:bg-[#141414]">
+          <div class="flex items-center space-x-3 truncate">
+            <i data-lucide="bar-chart-2" class="w-4 h-4 flex-shrink-0 text-slate-400"></i>
+            <span class="sidebar-label truncate">Executive Dashboard</span>
+          </div>
+        </a>
+
+        <a href="#" data-nav="analytics" class="sidebar-nav-item flex items-center justify-between px-3.5 py-2.5 rounded-full font-medium transition-all text-slate-300 hover:bg-[#141414]">
+          <div class="flex items-center space-x-3 truncate">
+            <i data-lucide="activity" class="w-4 h-4 flex-shrink-0 text-slate-400"></i>
+            <span class="sidebar-label truncate">Climate Analytics</span>
+          </div>
+        </a>
+
+        <a href="#" data-nav="monitoring" class="sidebar-nav-item flex items-center justify-between px-3.5 py-2.5 rounded-full font-medium transition-all text-slate-300 hover:bg-[#141414]">
+          <div class="flex items-center space-x-3 truncate">
+            <i data-lucide="wifi" class="w-4 h-4 flex-shrink-0 text-slate-400"></i>
+            <span class="sidebar-label truncate">Live Stream Monitor</span>
+          </div>
+          <span class="sidebar-badge bg-[#1a814a] text-white font-bold px-2 py-0.5 rounded-full text-[9px] tracking-wide">LIVE</span>
+        </a>
+
+        <a href="#" data-nav="data" class="sidebar-nav-item flex items-center justify-between px-3.5 py-2.5 rounded-full font-medium transition-all text-slate-300 hover:bg-[#141414]">
+          <div class="flex items-center space-x-3 truncate">
+            <i data-lucide="database" class="w-4 h-4 flex-shrink-0 text-slate-400"></i>
+            <span class="sidebar-label truncate">Data Explorer & Upload</span>
+          </div>
+        </a>
+
+        <!-- Preserved Section: Big Data Infrastructure -->
+        <div class="pt-3 pb-1">
+          <div class="sidebar-section-header px-3.5 text-[9px] uppercase tracking-widest font-semibold text-[#bfa78e]">
+            Big Data Infrastructure
+          </div>
+        </div>
+
+        <a href="#" data-nav="hadoop" class="sidebar-nav-item flex items-center justify-between px-3.5 py-2.5 rounded-full font-medium transition-all text-slate-300 hover:bg-[#141414]">
+          <div class="flex items-center space-x-3 truncate">
+            <i data-lucide="server" class="w-4 h-4 flex-shrink-0 text-slate-400"></i>
+            <span class="sidebar-label truncate">Hadoop & HDFS Cluster</span>
+          </div>
+        </a>
+
+        <a href="#" data-nav="ml" class="sidebar-nav-item flex items-center justify-between px-3.5 py-2.5 rounded-full font-medium transition-all text-slate-300 hover:bg-[#141414]">
+          <div class="flex items-center space-x-3 truncate">
+            <i data-lucide="cpu" class="w-4 h-4 flex-shrink-0 text-slate-400"></i>
+            <span class="sidebar-label truncate">ML Models & Forecasts</span>
+          </div>
+        </a>
+
+        <a href="#" data-nav="alerts" class="sidebar-nav-item flex items-center justify-between px-3.5 py-2.5 rounded-full font-medium transition-all text-slate-300 hover:bg-[#141414]">
+          <div class="flex items-center space-x-3 truncate">
+            <i data-lucide="alert-triangle" class="w-4 h-4 flex-shrink-0 text-slate-400"></i>
+            <span class="sidebar-label truncate">Alert Management</span>
+          </div>
+          <span id="sidebar-alerts-badge" class="sidebar-badge bg-[#f6d987] text-[#040404] font-bold px-2 py-0.5 rounded-full text-[9px]">3</span>
+        </a>
+
+        <a href="#" data-nav="reports" class="sidebar-nav-item flex items-center justify-between px-3.5 py-2.5 rounded-full font-medium transition-all text-slate-300 hover:bg-[#141414]">
+          <div class="flex items-center space-x-3 truncate">
+            <i data-lucide="file-text" class="w-4 h-4 flex-shrink-0 text-slate-400"></i>
+            <span class="sidebar-label truncate">Custom Reports & Export</span>
+          </div>
+        </a>
+
+        <!-- Preserved Section: Administration -->
+        <div class="pt-3 pb-1">
+          <div class="sidebar-section-header px-3.5 text-[9px] uppercase tracking-widest font-semibold text-[#bfa78e]">
+            Administration
+          </div>
+        </div>
+
+        <a href="#" data-nav="rbac" class="sidebar-nav-item flex items-center justify-between px-3.5 py-2.5 rounded-full font-medium transition-all text-slate-300 hover:bg-[#141414]">
+          <div class="flex items-center space-x-3 truncate">
+            <i data-lucide="users" class="w-4 h-4 flex-shrink-0 text-slate-400"></i>
+            <span class="sidebar-label truncate">User Directory & RBAC</span>
+          </div>
+        </a>
+
+        <a href="#" data-nav="support" class="sidebar-nav-item flex items-center justify-between px-3.5 py-2.5 rounded-full font-medium transition-all text-slate-300 hover:bg-[#141414]">
+          <div class="flex items-center space-x-3 truncate">
+            <i data-lucide="help-circle" class="w-4 h-4 flex-shrink-0 text-slate-400"></i>
+            <span class="sidebar-label truncate">Feedback & Support</span>
+          </div>
+        </a>
+
+        <a href="#" data-nav="architecture" class="sidebar-nav-item flex items-center justify-between px-3.5 py-2.5 rounded-full font-medium transition-all text-slate-300 hover:bg-[#141414]">
+          <div class="flex items-center space-x-3 truncate">
+            <i data-lucide="code" class="w-4 h-4 flex-shrink-0 text-slate-400"></i>
+            <span class="sidebar-label truncate">System Architecture</span>
+          </div>
+        </a>
+
+        <a href="#" data-nav="settings" class="sidebar-nav-item flex items-center justify-between px-3.5 py-2.5 rounded-full font-medium transition-all text-slate-300 hover:bg-[#141414]">
+          <div class="flex items-center space-x-3 truncate">
+            <i data-lucide="settings" class="w-4 h-4 flex-shrink-0 text-slate-400"></i>
+            <span class="sidebar-label truncate">System Settings</span>
+          </div>
+        </a>
+      </nav>
+
+      <!-- Preserved Sidebar Footer Info -->
+      <div id="sidebar-footer" class="p-3.5 bg-[#0a0a0a] border-t border-[#1a1a1a] text-[11px] text-slate-400">
+        <div class="flex items-center justify-between mb-1.5">
+          <span class="text-xs font-medium text-slate-300">Hadoop Nodes:</span>
+          <span class="text-[#86efac] font-mono text-[10px] font-bold">32 / 32 Online</span>
+        </div>
+        <div class="w-full bg-[#202020] h-1.5 rounded-full overflow-hidden">
+          <div class="bg-[#1a814a] h-full w-[84%] rounded-full"></div>
+        </div>
+        <p class="mt-2 text-[10px] text-slate-400 text-center font-mono">HDFS Capacity: 842 TB / 1.2 PB</p>
+      </div>
+    </aside>
+
+    <!-- PAGE CONTENT ROUTER AREA -->
+    <main class="flex-1 overflow-y-auto bg-[#f6f7f6] p-5 lg:p-8">
+      
+      <!-- Preserved Prototype Watermark Disclaimer in Harvestra Style -->
+      <div class="mb-6 bg-white border border-[#e5e5e5] rounded-full px-4 py-2.5 shadow-sm flex items-center justify-between">
+        <div class="flex items-center space-x-2 text-xs text-[#040404]">
+          <div class="w-2 h-2 rounded-full bg-[#1a814a] flex-shrink-0"></div>
+          <span><strong>Prototype Note:</strong> All values displayed are <i>Demo Data for Architecture Prototype</i> simulating Hadoop MapReduce, Spark Streaming, and PyTorch ML endpoints.</span>
+        </div>
+        <span id="banner-role-tag" class="font-mono text-[10px] bg-[#040404] text-[#f6d987] px-3 py-1 rounded-full font-bold uppercase tracking-wider flex-shrink-0 ml-2">
+          ROLE: ADMIN
+        </span>
+      </div>
+
+      <!-- VIEW 1: LANDING PAGE -->
+      <section id="view-landing" class="page-view space-y-8 pb-12">
+        <!-- Hero Section with Lush Harvestra Forest Gradient & Exact Preserved Copy -->
+        <div class="relative bg-gradient-to-br from-[#0c1f15] via-[#040404] to-[#121c16] text-white rounded-[28px] p-8 lg:p-14 shadow-2xl overflow-hidden border border-[#1a3325]">
+          <div class="relative z-10 max-w-3xl space-y-6">
+            <div class="inline-flex items-center space-x-2 bg-white/10 border border-white/20 text-[#f6d987] text-xs px-3.5 py-1.5 rounded-full font-medium backdrop-blur-md">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5 text-[#f6d987]"></i>
+              <span>Next-Generation Environmental Big Data Intelligence</span>
+            </div>
+            
+            <h1 class="text-3xl lg:text-5xl font-extrabold tracking-tight leading-[1.1] text-white">
+              Understand Our Planet. <br /><span class="text-[#f6d987]">Predict Our Future.</span>
+            </h1>
+
+            <p class="text-slate-300 text-sm lg:text-base leading-relaxed max-w-2xl font-normal">
+              EarthScape Climate Agency processes petabytes of satellite imagery, sensor telemetry, and meteorological archives using Apache Hadoop, Kafka streaming, and PyTorch deep learning models to deliver actionable climate intelligence.
+            </p>
+
+            <div class="flex flex-wrap gap-4 pt-3">
+              <button 
+                data-nav="dashboard"
+                class="harvestra-pill-btn harvestra-pill-btn-gold px-6 py-3 text-sm font-bold shadow-lg flex items-center space-x-2"
+              >
+                <span>Explore Climate Dashboard</span>
+                <i data-lucide="chevron-right" class="w-4 h-4 ml-1"></i>
+              </button>
+              
+              <button 
+                data-nav="architecture"
+                class="harvestra-pill-btn harvestra-pill-btn-light px-6 py-3 text-sm font-semibold flex items-center space-x-2"
+              >
+                <i data-lucide="code" class="w-4 h-4 text-[#040404]"></i>
+                <span>System Architecture</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Background Graphic -->
+          <div class="absolute -top-12 -right-12 w-96 h-96 opacity-10 pointer-events-none hidden lg:block">
+            <i data-lucide="globe" class="w-full h-full text-[#f6d987]"></i>
+          </div>
+        </div>
+
+        <!-- Preserved Global Stat Cards in Harvestra Card Design -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="harvestra-card p-6 space-y-3 relative overflow-hidden">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Global Temp Anomaly</span>
+              <div class="w-8 h-8 rounded-full bg-[#f6d987]/20 text-[#040404] flex items-center justify-center font-bold">
+                <i data-lucide="sun" class="w-4 h-4 text-amber-700"></i>
+              </div>
+            </div>
+            <div>
+              <h3 class="text-3xl font-extrabold text-[#040404] tracking-tight">+1.24°C</h3>
+              <p class="text-xs font-semibold mt-1 flex items-center text-rose-600">
+                <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 mr-0.5"></i>+0.06°C vs 2024
+              </p>
+            </div>
+          </div>
+
+          <div class="harvestra-card p-6 space-y-3 relative overflow-hidden">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Atmospheric CO₂</span>
+              <div class="w-8 h-8 rounded-full bg-[#efefef] text-[#040404] flex items-center justify-center font-bold">
+                <i data-lucide="wind" class="w-4 h-4 text-slate-700"></i>
+              </div>
+            </div>
+            <div>
+              <h3 class="text-3xl font-extrabold text-[#040404] tracking-tight">426.1 ppm</h3>
+              <p class="text-xs font-semibold mt-1 flex items-center text-rose-600">
+                <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 mr-0.5"></i>+2.4 ppm/yr
+              </p>
+            </div>
+          </div>
+
+          <div class="harvestra-card p-6 space-y-3 relative overflow-hidden">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Sea Level Anomaly</span>
+              <div class="w-8 h-8 rounded-full bg-[#e8f5e9] text-[#1a814a] flex items-center justify-center font-bold">
+                <i data-lucide="droplets" class="w-4 h-4 text-[#1a814a]"></i>
+              </div>
+            </div>
+            <div>
+              <h3 class="text-3xl font-extrabold text-[#040404] tracking-tight">+144 mm</h3>
+              <p class="text-xs font-semibold mt-1 flex items-center text-rose-600">
+                <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 mr-0.5"></i>+3.4 mm/yr
+              </p>
+            </div>
+          </div>
+
+          <div class="harvestra-card p-6 space-y-3 relative overflow-hidden">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Global Forest Coverage</span>
+              <div class="w-8 h-8 rounded-full bg-[#f6d987]/20 text-[#040404] flex items-center justify-center font-bold">
+                <i data-lucide="globe" class="w-4 h-4 text-emerald-800"></i>
+              </div>
+            </div>
+            <div>
+              <h3 class="text-3xl font-extrabold text-[#040404] tracking-tight">31.2%</h3>
+              <p class="text-xs font-semibold mt-1 flex items-center text-[#1a814a]">
+                <i data-lucide="arrow-down-right" class="w-3.5 h-3.5 mr-0.5"></i>-0.12% loss
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Preserved Tech Stack Highlights -->
+        <div class="harvestra-card p-8 space-y-6">
+          <div class="text-center max-w-2xl mx-auto space-y-2">
+            <span class="harvestra-pill-tag bg-[#efefef] text-[#040404]">INFRASTRUCTURE SPECIFICATION</span>
+            <h2 class="text-2xl lg:text-3xl font-extrabold text-[#040404] tracking-tight">Powered by Enterprise Big Data Infrastructure</h2>
+            <p class="text-slate-500 text-xs">Architected for real-time sensor processing and distributed high-performance computing.</p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
+            <div class="p-5 bg-[#f9f9f9] rounded-2xl border border-[#ebebeb] hover:border-[#1a814a] transition-all space-y-2">
+              <div class="w-9 h-9 rounded-full bg-[#040404] text-white flex items-center justify-center font-bold">
+                <i data-lucide="server" class="w-4 h-4 text-[#f6d987]"></i>
+              </div>
+              <h4 class="font-bold text-[#040404] text-sm">Apache Hadoop & HDFS</h4>
+              <p class="text-slate-500 text-xs leading-normal">1.2 PB Distributed Petabyte-scale climate archive storage</p>
+            </div>
+
+            <div class="p-5 bg-[#f9f9f9] rounded-2xl border border-[#ebebeb] hover:border-[#1a814a] transition-all space-y-2">
+              <div class="w-9 h-9 rounded-full bg-[#040404] text-white flex items-center justify-center font-bold">
+                <i data-lucide="wifi" class="w-4 h-4 text-[#1a814a]"></i>
+              </div>
+              <h4 class="font-bold text-[#040404] text-sm">Apache Kafka Streaming</h4>
+              <p class="text-slate-500 text-xs leading-normal">Real-time telemetry ingestion from 10,000+ stations</p>
+            </div>
+
+            <div class="p-5 bg-[#f9f9f9] rounded-2xl border border-[#ebebeb] hover:border-[#1a814a] transition-all space-y-2">
+              <div class="w-9 h-9 rounded-full bg-[#040404] text-white flex items-center justify-center font-bold">
+                <i data-lucide="cpu" class="w-4 h-4 text-[#f6d987]"></i>
+              </div>
+              <h4 class="font-bold text-[#040404] text-sm">Spark ML & PyTorch</h4>
+              <p class="text-slate-500 text-xs leading-normal">Predictive forecasting models with GPU acceleration</p>
+            </div>
+
+            <div class="p-5 bg-[#f9f9f9] rounded-2xl border border-[#ebebeb] hover:border-[#1a814a] transition-all space-y-2">
+              <div class="w-9 h-9 rounded-full bg-[#040404] text-white flex items-center justify-center font-bold">
+                <i data-lucide="code" class="w-4 h-4 text-sky-400"></i>
+              </div>
+              <h4 class="font-bold text-[#040404] text-sm">REST & Fast APIs</h4>
+              <p class="text-slate-500 text-xs leading-normal">Low-latency gateway serving analytical insights</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 2: EXECUTIVE DASHBOARD -->
+      <section id="view-dashboard" class="page-view hidden space-y-6">
+        <!-- Preserved 6 MiniCards with Exact Labels -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+          <div class="harvestra-card p-4 space-y-2">
+            <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Avg Temp Anomaly</span>
+            <div class="flex items-baseline justify-between">
+              <span class="text-2xl font-extrabold text-[#040404]">+1.24°C</span>
+              <span class="text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-rose-100 text-rose-800">Critical</span>
+            </div>
+          </div>
+
+          <div class="harvestra-card p-4 space-y-2">
+            <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">CO₂ Concentration</span>
+            <div class="flex items-baseline justify-between">
+              <span class="text-2xl font-extrabold text-[#040404]">426.1 ppm</span>
+              <span class="text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-[#f6d987] text-[#040404]">Rising</span>
+            </div>
+          </div>
+
+          <div class="harvestra-card p-4 space-y-2">
+            <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Anomaly Index</span>
+            <div class="flex items-baseline justify-between">
+              <span class="text-2xl font-extrabold text-[#040404]">8.4 / 10</span>
+              <span class="text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-orange-100 text-orange-800">High</span>
+            </div>
+          </div>
+
+          <div class="harvestra-card p-4 space-y-2">
+            <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Active Alerts</span>
+            <div class="flex items-baseline justify-between">
+              <span id="mini-active-alerts" class="text-2xl font-extrabold text-[#040404]">3</span>
+              <span class="text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-rose-100 text-rose-800">Action Needed</span>
+            </div>
+          </div>
+
+          <div class="harvestra-card p-4 space-y-2">
+            <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">HDFS Datasets</span>
+            <div class="flex items-baseline justify-between">
+              <span id="mini-dataset-count" class="text-2xl font-extrabold text-[#040404]">1,420</span>
+              <span class="text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-emerald-100 text-[#1a814a]">Synced</span>
+            </div>
+          </div>
+
+          <div class="harvestra-card p-4 space-y-2">
+            <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Hadoop Health</span>
+            <div class="flex items-baseline justify-between">
+              <span class="text-2xl font-extrabold text-[#040404]">100% Online</span>
+              <span class="text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-sky-100 text-sky-800">32 Nodes</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Chart Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2 harvestra-card p-6 space-y-4">
+            <div class="flex justify-between items-center">
+              <div>
+                <h3 class="font-extrabold text-[#040404] text-lg tracking-tight">Global Temperature Anomaly (1980 - 2026)</h3>
+                <p class="text-slate-500 text-xs">Source: NASA GISS & Hadoop Aggregated Records</p>
+              </div>
+              <button data-nav="analytics" class="harvestra-pill-btn harvestra-pill-btn-light px-3.5 py-1.5 text-xs flex items-center space-x-1">
+                <span>Full Analytics</span>
+                <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+
+            <div class="h-64 w-full relative">
+              <canvas id="mainTempChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Quick Alert Feed Side Widget -->
+          <div class="harvestra-card p-6 flex flex-col justify-between space-y-4">
+            <div>
+              <div class="flex items-center justify-between border-b border-[#f0f0f0] pb-3">
+                <h3 class="font-bold text-[#040404] text-sm flex items-center space-x-2">
+                  <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-500"></i>
+                  <span>Recent Alert Feed</span>
+                </h3>
+                <span id="dashboard-alerts-count-badge" class="text-[10px] bg-rose-100 text-rose-800 px-2.5 py-0.5 rounded-full font-bold">
+                  3 Active
+                </span>
+              </div>
+
+              <div id="dashboard-alerts-feed" class="mt-3 space-y-2.5 max-h-56 overflow-y-auto">
+              </div>
+            </div>
+
+            <button 
+              data-nav="alerts"
+              class="harvestra-pill-btn harvestra-pill-btn-dark w-full py-2.5 text-xs text-center justify-center font-bold"
+            >
+              <span>Manage All Alerts</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Hadoop Jobs Quick Table -->
+        <div class="harvestra-card p-6 space-y-3">
+          <div class="flex justify-between items-center">
+            <h3 class="font-bold text-[#040404] text-base flex items-center space-x-2">
+              <i data-lucide="server" class="w-4 h-4 text-[#1a814a]"></i>
+              <span>Active MapReduce Execution Queue</span>
+            </h3>
+            <button data-nav="hadoop" class="text-xs text-[#1a814a] font-bold hover:underline">
+              View Cluster Status
+            </button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-slate-600">
+              <thead class="bg-[#f7f7f7] text-[#040404] font-semibold uppercase text-[10px] rounded-lg">
+                <tr>
+                  <th class="p-3 rounded-l-lg">Job ID</th>
+                  <th class="p-3">Dataset</th>
+                  <th class="p-3">Pipeline Type</th>
+                  <th class="p-3">Status</th>
+                  <th class="p-3 rounded-r-lg">Map Progress</th>
+                </tr>
+              </thead>
+              <tbody id="dashboard-jobs-tbody" class="divide-y divide-[#f2f2f2]">
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 3: CLIMATE ANALYTICS -->
+      <section id="view-analytics" class="page-view hidden space-y-6">
+        <div class="flex flex-wrap justify-between items-center gap-4 harvestra-card p-5">
+          <div>
+            <h2 class="text-xl font-extrabold text-[#040404]">Climate Analytics Studio</h2>
+            <p class="text-xs text-slate-500">Multi-variable historical trend examination across regional sensor arrays.</p>
+          </div>
+
+          <div class="flex items-center space-x-3">
+            <select 
+              id="analytics-region-select"
+              class="bg-[#f7f7f7] border border-[#d8d8d8] rounded-full px-4 py-2 text-xs font-semibold text-[#040404] focus:outline-none"
+            >
+              <option value="Global">Region: Global Overall</option>
+              <option value="North America">Region: North America</option>
+              <option value="Arctic Circle">Region: Arctic Circle</option>
+              <option value="Amazonia">Region: Amazon Basin</option>
+            </select>
+
+            <select 
+              id="analytics-metric-select"
+              class="bg-[#040404] text-white border border-[#040404] rounded-full px-4 py-2 text-xs font-semibold focus:outline-none"
+            >
+              <option value="tempAnomaly">Variable: Temperature Anomaly (°C)</option>
+              <option value="co2">Variable: Atmospheric CO₂ (ppm)</option>
+              <option value="seaLevel">Variable: Sea Level Rise (mm)</option>
+              <option value="rain">Variable: Annual Rainfall (mm)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="harvestra-card p-6 space-y-4">
+          <h3 id="analytics-chart-title" class="font-bold text-[#040404] text-base">Historical Multi-Decadal Analysis (Global)</h3>
+          <div class="h-80 w-full relative">
+            <canvas id="analyticsChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Regional Comparison Table -->
+        <div class="harvestra-card p-6 space-y-3">
+          <h3 class="font-bold text-[#040404] text-base">Regional Climate Breakdown Summary</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-slate-600">
+              <thead class="bg-[#f7f7f7] text-[#040404] uppercase text-[10px] font-bold rounded-lg">
+                <tr>
+                  <th class="p-3.5 rounded-l-lg">Geographic Sector</th>
+                  <th class="p-3.5">Avg Temp Shift</th>
+                  <th class="p-3.5">Deforestation Index</th>
+                  <th class="p-3.5">Precipitation Variance</th>
+                  <th class="p-3.5 rounded-r-lg">Risk Category</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-[#f2f2f2]">
+                <tr class="hover:bg-[#fafafa]">
+                  <td class="p-3.5 font-bold text-[#040404]">Arctic Circle Sector 1</td>
+                  <td class="p-3.5 text-rose-600 font-bold">+3.1°C</td>
+                  <td class="p-3.5 text-slate-500">N/A (Ice Shelf)</td>
+                  <td class="p-3.5 text-slate-800">+18% Snowmelt</td>
+                  <td class="p-3.5"><span class="bg-rose-100 text-rose-800 px-3 py-1 rounded-full font-bold text-[10px]">CRITICAL</span></td>
+                </tr>
+                <tr class="hover:bg-[#fafafa]">
+                  <td class="p-3.5 font-bold text-[#040404]">Amazon Basin Core</td>
+                  <td class="p-3.5 text-amber-700 font-bold">+1.8°C</td>
+                  <td class="p-3.5 text-rose-600 font-bold">-2.4% / yr</td>
+                  <td class="p-3.5 text-slate-800">-14% Drought</td>
+                  <td class="p-3.5"><span class="bg-[#f6d987] text-[#040404] px-3 py-1 rounded-full font-bold text-[10px]">HIGH RISK</span></td>
+                </tr>
+                <tr class="hover:bg-[#fafafa]">
+                  <td class="p-3.5 font-bold text-[#040404]">Indo-Gangetic Plain</td>
+                  <td class="p-3.5 text-amber-700 font-bold">+1.4°C</td>
+                  <td class="p-3.5 text-slate-600">-0.8% / yr</td>
+                  <td class="p-3.5 text-slate-800">+22% Monsoon Anomaly</td>
+                  <td class="p-3.5"><span class="bg-[#f6d987] text-[#040404] px-3 py-1 rounded-full font-bold text-[10px]">HIGH RISK</span></td>
+                </tr>
+                <tr class="hover:bg-[#fafafa]">
+                  <td class="p-3.5 font-bold text-[#040404]">Western Mediterranean</td>
+                  <td class="p-3.5 text-slate-800 font-bold">+1.1°C</td>
+                  <td class="p-3.5 text-slate-600">-0.2% / yr</td>
+                  <td class="p-3.5 text-slate-800">-8% Precipitation</td>
+                  <td class="p-3.5"><span class="bg-[#efefef] text-[#040404] px-3 py-1 rounded-full font-bold text-[10px]">MODERATE</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 4: LIVE MONITORING -->
+      <section id="view-monitoring" class="page-view hidden space-y-6">
+        <div class="flex flex-wrap justify-between items-center gap-4 harvestra-card p-5">
+          <div>
+            <div class="flex items-center space-x-2">
+              <span id="monitoring-status-indicator" class="w-3 h-3 rounded-full bg-[#1a814a] animate-pulse"></span>
+              <h2 class="text-xl font-extrabold text-[#040404]">Kafka Telemetry Streaming Feed</h2>
+            </div>
+            <p class="text-xs text-slate-500">Real-time ground station and oceanic buoy metrics streamed via Kafka cluster brokers.</p>
+          </div>
+
+          <div class="flex items-center space-x-3">
+            <div class="flex items-center bg-[#040404] rounded-full p-1 text-xs">
+              <span class="text-slate-400 px-3">Refresh Interval:</span>
+              <button data-interval="1" class="btn-interval px-2.5 py-1 rounded-full text-slate-300">1s</button>
+              <button data-interval="3" class="btn-interval px-2.5 py-1 rounded-full bg-[#1a814a] text-white font-bold">3s</button>
+              <button data-interval="5" class="btn-interval px-2.5 py-1 rounded-full text-slate-300">5s</button>
+            </div>
+
+            <button 
+              id="btn-toggle-stream"
+              class="harvestra-pill-btn px-4 py-2 text-xs font-bold transition-all bg-rose-600 text-white"
+            >
+              Pause Stream
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Station Map / Selector Grid -->
+          <div class="lg:col-span-2 harvestra-card p-6 space-y-4">
+            <h3 class="font-bold text-[#040404] text-base">Select Active Ground / Buoy Monitoring Station</h3>
+            
+            <div id="monitoring-stations-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            </div>
+          </div>
+
+          <!-- Live Station Telemetry Panel -->
+          <div class="harvestra-card p-6 space-y-4 flex flex-col justify-between">
+            <div>
+              <div class="border-b border-[#f0f0f0] pb-3">
+                <span class="text-[10px] font-bold text-[#1a814a] uppercase tracking-wider">Selected Sensor Payload</span>
+                <h3 id="mon-selected-station-name" class="font-black text-[#040404] text-xl">Mauna Loa Observatory</h3>
+                <p id="mon-selected-station-coords" class="text-xs text-slate-500 font-mono mt-0.5">Lat: 19.53 | Lng: -155.57</p>
+              </div>
+
+              <div class="mt-4 grid grid-cols-2 gap-3">
+                <div class="p-3.5 bg-[#f9f9f9] rounded-2xl border border-[#ebebeb] space-y-1">
+                  <div class="flex items-center space-x-1.5 text-slate-500 text-[10px] font-semibold">
+                    <i data-lucide="sun" class="w-3.5 h-3.5 text-rose-500"></i>
+                    <span>Temperature</span>
+                  </div>
+                  <p id="mon-sensor-temp" class="font-extrabold text-[#040404] text-base font-mono">14.2°C</p>
+                </div>
+
+                <div class="p-3.5 bg-[#f9f9f9] rounded-2xl border border-[#ebebeb] space-y-1">
+                  <div class="flex items-center space-x-1.5 text-slate-500 text-[10px] font-semibold">
+                    <i data-lucide="wind" class="w-3.5 h-3.5 text-[#1a814a]"></i>
+                    <span>CO₂ Concentration</span>
+                  </div>
+                  <p id="mon-sensor-co2" class="font-extrabold text-[#040404] text-base font-mono">426.8 ppm</p>
+                </div>
+
+                <div class="p-3.5 bg-[#f9f9f9] rounded-2xl border border-[#ebebeb] space-y-1">
+                  <div class="flex items-center space-x-1.5 text-slate-500 text-[10px] font-semibold">
+                    <i data-lucide="activity" class="w-3.5 h-3.5 text-sky-500"></i>
+                    <span>Air Quality Index</span>
+                  </div>
+                  <p id="mon-sensor-aqi" class="font-extrabold text-[#040404] text-base font-mono">12 AQI</p>
+                </div>
+
+                <div class="p-3.5 bg-[#f9f9f9] rounded-2xl border border-[#ebebeb] space-y-1">
+                  <div class="flex items-center space-x-1.5 text-slate-500 text-[10px] font-semibold">
+                    <i data-lucide="droplets" class="w-3.5 h-3.5 text-indigo-500"></i>
+                    <span>Relative Humidity</span>
+                  </div>
+                  <p id="mon-sensor-humidity" class="font-extrabold text-[#040404] text-base font-mono">45%</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-[#040404] text-[#86efac] p-3.5 rounded-2xl font-mono text-[10px] space-y-1 border border-[#1f1f1f]">
+              <span class="text-slate-400 block border-b border-[#222222] pb-1 font-semibold">Incoming Kafka Queue Log:</span>
+              <p id="mon-latest-log" class="truncate">[KAFKA-CONSUMER-0] Partition #4 offset 891024 consumed: station_id=st-1, temp=14.2°C</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 5: DATA EXPLORER & INGESTION -->
+      <section id="view-data" class="page-view hidden space-y-6">
+        <!-- Upload Drag & Drop Box -->
+        <div class="bg-white p-8 rounded-[24px] border-2 border-dashed border-[#1a814a]/40 hover:border-[#1a814a] transition-all text-center space-y-3.5 shadow-sm">
+          <div class="w-14 h-14 rounded-full bg-[#e8f5e9] text-[#1a814a] flex items-center justify-center mx-auto">
+            <i data-lucide="upload" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-[#040404] text-base">Ingest Climate Dataset to HDFS</h3>
+            <p class="text-xs text-slate-500">Supports NetCDF4, GeoTIFF, HDF5, Parquet, CSV, GRIB2 (Up to 500 GB)</p>
+          </div>
+
+          <div id="upload-progress-container" class="hidden max-w-xs mx-auto space-y-2">
+            <div class="w-full bg-[#f0f0f0] h-2.5 rounded-full overflow-hidden">
+              <div id="upload-progress-bar" class="bg-[#1a814a] h-full transition-all duration-300 w-0 rounded-full"></div>
+            </div>
+            <span id="upload-progress-label" class="text-xs font-mono font-bold text-[#1a814a]">Pipeline: Uploading → HDFS Storage (0%)</span>
+          </div>
+
+          <button 
+            id="btn-simulate-upload"
+            class="harvestra-pill-btn harvestra-pill-btn-green px-6 py-2.5 text-xs font-bold shadow-md"
+          >
+            Select & Upload File
+          </button>
+        </div>
+
+        <!-- Dataset Table -->
+        <div class="harvestra-card p-6 space-y-4">
+          <div class="flex justify-between items-center">
+            <h3 class="font-extrabold text-[#040404] text-base">HDFS Registered Datasets Catalogue</h3>
+            <span id="datasets-count-label" class="text-xs text-slate-500 font-medium">5 Total Registered Files</span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-slate-600">
+              <thead class="bg-[#f7f7f7] text-[#040404] font-bold uppercase text-[10px] rounded-lg">
+                <tr>
+                  <th class="p-3.5 rounded-l-lg">Dataset ID</th>
+                  <th class="p-3.5">Name</th>
+                  <th class="p-3.5">Format</th>
+                  <th class="p-3.5">Size</th>
+                  <th class="p-3.5">Source</th>
+                  <th class="p-3.5">Quality Index</th>
+                  <th class="p-3.5 rounded-r-lg">Ingested</th>
+                </tr>
+              </thead>
+              <tbody id="datasets-tbody" class="divide-y divide-[#f2f2f2]">
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 6: HADOOP & BIG DATA PROCESSING -->
+      <section id="view-hadoop" class="page-view hidden space-y-6">
+        <!-- Preserved Cluster Overview Header -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div class="harvestra-card p-5 space-y-1">
+            <span class="text-[11px] font-semibold text-slate-400 uppercase">HDFS Capacity</span>
+            <p class="font-black text-[#040404] text-2xl">842 TB / 1.2 PB</p>
+            <span class="text-[10px] text-[#1a814a] font-bold">70.1% Used</span>
+          </div>
+
+          <div class="harvestra-card p-5 space-y-1">
+            <span class="text-[11px] font-semibold text-slate-400 uppercase">Active DataNodes</span>
+            <p class="font-black text-[#040404] text-2xl">32 / 32</p>
+            <span class="text-[10px] text-[#1a814a] font-bold">0 Decommissioned</span>
+          </div>
+
+          <div class="harvestra-card p-5 space-y-1">
+            <span class="text-[11px] font-semibold text-slate-400 uppercase">YARN Container Slots</span>
+            <p class="font-black text-[#040404] text-2xl">128 Slots</p>
+            <span class="text-[10px] text-[#1a814a] font-bold">84 Active</span>
+          </div>
+
+          <div class="harvestra-card p-5 space-y-1">
+            <span class="text-[11px] font-semibold text-slate-400 uppercase">MapReduce Throughput</span>
+            <p class="font-black text-[#040404] text-2xl">14.2 GB/s</p>
+            <span class="text-[10px] text-[#1a814a] font-bold">Peak Performance</span>
+          </div>
+        </div>
+
+        <!-- Preserved MapReduce Visual Flowchart in Harvestra Dark Theme -->
+        <div class="bg-[#040404] text-white p-7 rounded-[24px] shadow-lg space-y-4 border border-[#1f1f1f]">
+          <h3 class="font-bold text-sm text-[#f6d987] uppercase tracking-wider">Visual MapReduce Data Processing Pipeline</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-5 gap-3 text-center text-xs">
+            <div class="p-3.5 rounded-2xl border border-[#262626] bg-[#121212] space-y-1">
+              <p class="font-bold text-white">1. Input Data</p>
+              <p class="text-[10px] text-slate-400">Raw NetCDF / GRIB</p>
+            </div>
+            <div class="p-3.5 rounded-2xl border border-[#1a3a25] bg-[#0c1f13] space-y-1">
+              <p class="font-bold text-[#f6d987]">2. HDFS Split</p>
+              <p class="text-[10px] text-slate-300">64MB Block Partition</p>
+            </div>
+            <div class="p-3.5 rounded-2xl border border-[#1a814a] bg-[#133c22] space-y-1">
+              <p class="font-bold text-white">3. Map Phase</p>
+              <p class="text-[10px] text-emerald-300">Key-Value Extraction</p>
+            </div>
+            <div class="p-3.5 rounded-2xl border border-[#2a3a4a] bg-[#121e2a] space-y-1">
+              <p class="font-bold text-white">4. Shuffle & Sort</p>
+              <p class="text-[10px] text-sky-300">Network Rebalancing</p>
+            </div>
+            <div class="p-3.5 rounded-2xl border border-[#3b2a4a] bg-[#22172f] space-y-1">
+              <p class="font-bold text-white">5. Reduce Phase</p>
+              <p class="text-[10px] text-purple-300">Aggregated Insight</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Jobs Queue Table -->
+        <div class="harvestra-card p-6 space-y-4">
+          <h3 class="font-extrabold text-[#040404] text-base">Hadoop YARN Job Execution Queue</h3>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-slate-600">
+              <thead class="bg-[#f7f7f7] text-[#040404] font-bold uppercase text-[10px] rounded-lg">
+                <tr>
+                  <th class="p-3.5 rounded-l-lg">Job ID</th>
+                  <th class="p-3.5">Job Name</th>
+                  <th class="p-3.5">Target Dataset</th>
+                  <th class="p-3.5">Status</th>
+                  <th class="p-3.5">Duration</th>
+                  <th class="p-3.5 rounded-r-lg">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="hadoop-jobs-tbody" class="divide-y divide-[#f2f2f2]">
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 7: ML MODELS & FORECASTS -->
+      <section id="view-ml" class="page-view hidden space-y-6">
+        <div class="harvestra-card p-6 space-y-4">
+          <div class="flex flex-wrap justify-between items-center gap-4">
+            <div>
+              <h3 id="ml-forecast-heading" class="font-extrabold text-[#040404] text-lg tracking-tight">PyTorch/LSTM Temperature Forecast Horizon (2024 - 2040)</h3>
+              <p class="text-xs text-slate-500">Includes 95% Confidence Interval Uncertainty Bounds</p>
+            </div>
+
+            <div class="flex items-center space-x-2 text-xs">
+              <span class="text-slate-500 font-medium">Horizon:</span>
+              <button data-horizon="2030" class="btn-horizon harvestra-pill-btn px-4 py-1.5 font-bold bg-[#f3f3f3] text-[#040404]">2030</button>
+              <button data-horizon="2040" class="btn-horizon harvestra-pill-btn px-4 py-1.5 font-bold bg-[#040404] text-white">2040</button>
+              <button data-horizon="2050" class="btn-horizon harvestra-pill-btn px-4 py-1.5 font-bold bg-[#f3f3f3] text-[#040404]">2050</button>
+            </div>
+          </div>
+
+          <div class="h-72 w-full relative">
+            <canvas id="mlForecastChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Model Registry Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="harvestra-card p-6 space-y-3">
+            <div class="flex justify-between items-start">
+              <div>
+                <span class="text-[10px] font-bold text-[#1a814a] uppercase font-mono tracking-wider">M-101 • v3.4.2</span>
+                <h4 class="font-extrabold text-[#040404] text-base">LSTM Global Temperature Forecaster</h4>
+              </div>
+              <span class="px-3 py-1 bg-emerald-100 text-[#1a814a] rounded-full font-bold text-[10px]">Ready</span>
+            </div>
+            <p class="text-xs text-slate-500">Time Series Deep Learning trained on PyTorch / Spark ML</p>
+            <div class="flex justify-between items-center text-xs pt-3 border-t border-[#f0f0f0] font-mono">
+              <span class="text-slate-500">Metric: <strong class="text-[#040404]">RMSE: 0.042°C</strong></span>
+              <button class="btn-retrain harvestra-pill-btn harvestra-pill-btn-light px-3.5 py-1 text-xs font-bold" data-model="LSTM Global Temperature Forecaster">
+                Trigger Retrain
+              </button>
+            </div>
+          </div>
+
+          <div class="harvestra-card p-6 space-y-3">
+            <div class="flex justify-between items-start">
+              <div>
+                <span class="text-[10px] font-bold text-[#1a814a] uppercase font-mono tracking-wider">M-102 • v1.8.0</span>
+                <h4 class="font-extrabold text-[#040404] text-base">Isolation Forest Anomaly Detector</h4>
+              </div>
+              <span class="px-3 py-1 bg-emerald-100 text-[#1a814a] rounded-full font-bold text-[10px]">Ready</span>
+            </div>
+            <p class="text-xs text-slate-500">Unsupervised Outlier trained on Scikit-Learn / Hadoop</p>
+            <div class="flex justify-between items-center text-xs pt-3 border-t border-[#f0f0f0] font-mono">
+              <span class="text-slate-500">Metric: <strong class="text-[#040404]">F1-Score: 0.941</strong></span>
+              <button class="btn-retrain harvestra-pill-btn harvestra-pill-btn-light px-3.5 py-1 text-xs font-bold" data-model="Isolation Forest Anomaly Detector">
+                Trigger Retrain
+              </button>
+            </div>
+          </div>
+
+          <div class="harvestra-card p-6 space-y-3">
+            <div class="flex justify-between items-start">
+              <div>
+                <span class="text-[10px] font-bold text-[#1a814a] uppercase font-mono tracking-wider">M-103 • v2.1.0</span>
+                <h4 class="font-extrabold text-[#040404] text-base">U-Net Deforestation Segmentation</h4>
+              </div>
+              <span class="px-3 py-1 bg-[#f6d987] text-[#040404] rounded-full font-bold text-[10px]">Retraining</span>
+            </div>
+            <p class="text-xs text-slate-500">Computer Vision trained on TensorFlow Distributed</p>
+            <div class="flex justify-between items-center text-xs pt-3 border-t border-[#f0f0f0] font-mono">
+              <span class="text-slate-500">Metric: <strong class="text-[#040404]">mIoU: 0.884</strong></span>
+              <button class="btn-retrain harvestra-pill-btn harvestra-pill-btn-light px-3.5 py-1 text-xs font-bold" data-model="U-Net Deforestation Segmentation">
+                Trigger Retrain
+              </button>
+            </div>
+          </div>
+
+          <div class="harvestra-card p-6 space-y-3">
+            <div class="flex justify-between items-start">
+              <div>
+                <span class="text-[10px] font-bold text-[#1a814a] uppercase font-mono tracking-wider">M-104 • v4.0.1</span>
+                <h4 class="font-extrabold text-[#040404] text-base">XGBoost Extreme Weather Risk Model</h4>
+              </div>
+              <span class="px-3 py-1 bg-emerald-100 text-[#1a814a] rounded-full font-bold text-[10px]">Ready</span>
+            </div>
+            <p class="text-xs text-slate-500">Gradient Boosted Trees trained on XGBoost / Spark</p>
+            <div class="flex justify-between items-center text-xs pt-3 border-t border-[#f0f0f0] font-mono">
+              <span class="text-slate-500">Metric: <strong class="text-[#040404]">ROC-AUC: 0.962</strong></span>
+              <button class="btn-retrain harvestra-pill-btn harvestra-pill-btn-light px-3.5 py-1 text-xs font-bold" data-model="XGBoost Extreme Weather Risk Model">
+                Trigger Retrain
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 8: ALERTS & NOTIFICATIONS -->
+      <section id="view-alerts" class="page-view hidden space-y-6">
+        <div class="harvestra-card p-5 flex justify-between items-center">
+          <div>
+            <h2 class="text-xl font-extrabold text-[#040404]">Climate Threat Alert Management</h2>
+            <p class="text-xs text-slate-500">Configured threshold breach events across sensor telemetry.</p>
+          </div>
+          <button 
+            id="btn-open-create-alert"
+            class="harvestra-pill-btn harvestra-pill-btn-dark px-4 py-2 text-xs font-bold shadow-md flex items-center space-x-1.5"
+          >
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+            <span>Create Alert Rule</span>
+          </button>
+        </div>
+
+        <div class="harvestra-card p-6 space-y-3">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-slate-600">
+              <thead class="bg-[#f7f7f7] text-[#040404] font-bold uppercase text-[10px] rounded-lg">
+                <tr>
+                  <th class="p-3.5 rounded-l-lg">Alert ID</th>
+                  <th class="p-3.5">Severity</th>
+                  <th class="p-3.5">Title / Event</th>
+                  <th class="p-3.5">Region</th>
+                  <th class="p-3.5">Measured vs Threshold</th>
+                  <th class="p-3.5">Status</th>
+                  <th class="p-3.5 rounded-r-lg">Action</th>
+                </tr>
+              </thead>
+              <tbody id="alerts-tbody" class="divide-y divide-[#f2f2f2]">
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 9: CUSTOM REPORTS & EXPORT -->
+      <section id="view-reports" class="page-view hidden space-y-6">
+        <div class="harvestra-card p-7 space-y-4">
+          <h2 class="text-xl font-extrabold text-[#040404]">Custom Executive Report Generator</h2>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+            <div>
+              <label class="text-xs font-semibold text-slate-600 block mb-1">Target Sector</label>
+              <select id="report-sector-select" class="w-full bg-[#f9f9f9] border border-[#d8d8d8] rounded-xl p-2.5 text-xs font-medium">
+                <option value="Global Temperature Anomaly">Global Temperature Anomaly</option>
+                <option value="Amazon Deforestation Summary">Amazon Deforestation Summary</option>
+                <option value="Sea-Level Rise & Coastal Impact">Sea-Level Rise & Coastal Impact</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-slate-600 block mb-1">Format</label>
+              <select id="report-format-select" class="w-full bg-[#f9f9f9] border border-[#d8d8d8] rounded-xl p-2.5 text-xs font-medium">
+                <option value="PDF Executive Briefing">PDF Executive Briefing</option>
+                <option value="CSV Raw Telemetry Export">CSV Raw Telemetry Export</option>
+                <option value="GeoJSON Spatial Polygon">GeoJSON Spatial Polygon</option>
+              </select>
+            </div>
+            <div class="flex items-end">
+              <button 
+                id="btn-generate-report"
+                class="harvestra-pill-btn harvestra-pill-btn-green w-full py-2.5 text-xs font-bold transition-all disabled:opacity-50"
+              >
+                Generate & Download
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 10: USER DIRECTORY & RBAC -->
+      <section id="view-rbac" class="page-view hidden space-y-6">
+        <div class="harvestra-card p-5 flex justify-between items-center">
+          <div>
+            <h2 class="text-xl font-extrabold text-[#040404]">User Directory & Role Authorization</h2>
+            <p class="text-xs text-slate-500">Current active authorization level: <strong id="rbac-role-indicator" class="text-[#1a814a]">Admin</strong></p>
+          </div>
+          <button 
+            id="btn-add-team-member"
+            class="harvestra-pill-btn harvestra-pill-btn-dark px-4 py-2 text-xs font-bold shadow-md transition-all"
+          >
+            + Add Team Member
+          </button>
+        </div>
+
+        <div class="harvestra-card p-6">
+          <table class="w-full text-left text-xs text-slate-600">
+            <thead class="bg-[#f7f7f7] text-[#040404] font-bold uppercase text-[10px] rounded-lg">
+              <tr>
+                <th class="p-3.5 rounded-l-lg">User</th>
+                <th class="p-3.5">Role</th>
+                <th class="p-3.5">Permissions</th>
+                <th class="p-3.5 rounded-r-lg">Status</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[#f2f2f2]">
+              <tr>
+                <td class="p-3.5 font-bold text-[#040404]">Dr. Elena Rostova</td>
+                <td class="p-3.5"><span class="bg-[#1a814a] text-white px-2.5 py-0.5 rounded-full font-bold text-[10px]">Admin</span></td>
+                <td class="p-3.5">Full HDFS Write, ML Retrain, User Manage</td>
+                <td class="p-3.5 text-[#1a814a] font-bold">Active</td>
+              </tr>
+              <tr>
+                <td class="p-3.5 font-bold text-[#040404]">Marcus Vance</td>
+                <td class="p-3.5"><span class="bg-sky-100 text-sky-800 px-2.5 py-0.5 rounded-full font-bold text-[10px]">Climate Analyst</span></td>
+                <td class="p-3.5">Read Analytics, Export CSV, Trigger Models</td>
+                <td class="p-3.5 text-[#1a814a] font-bold">Active</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- VIEW 11: FEEDBACK & SUPPORT -->
+      <section id="view-support" class="page-view hidden space-y-6">
+        <div class="max-w-xl mx-auto harvestra-card p-7 space-y-4">
+          <h2 class="text-xl font-extrabold text-[#040404]">Submit System Support Ticket</h2>
+          
+          <form id="support-ticket-form" class="space-y-3.5 text-xs">
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Issue Category</label>
+              <select id="support-category-select" class="w-full bg-[#f9f9f9] border border-[#d8d8d8] rounded-xl p-2.5 font-medium">
+                <option value="Hadoop Job Pipeline Failure">Hadoop Job Pipeline Failure</option>
+                <option value="Kafka Telemetry Data Discrepancy">Kafka Telemetry Data Discrepancy</option>
+                <option value="UI Bug Report">UI Bug Report</option>
+              </select>
+            </div>
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Description</label>
+              <textarea 
+                id="support-desc-input"
+                rows="4" 
+                required
+                class="w-full bg-[#f9f9f9] border border-[#d8d8d8] rounded-xl p-2.5 font-medium" 
+                placeholder="Describe the anomaly or issue in detail..."
+              ></textarea>
+            </div>
+            <button 
+              type="submit"
+              class="harvestra-pill-btn harvestra-pill-btn-dark w-full py-2.5 text-xs font-bold"
+            >
+              Submit Ticket
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <!-- VIEW 12: SYSTEM ARCHITECTURE -->
+      <section id="view-architecture" class="page-view hidden space-y-6">
+        <div class="bg-[#040404] text-white p-8 rounded-[24px] space-y-4 border border-[#1f1f1f]">
+          <h2 class="text-xl font-extrabold text-[#f6d987]">EarthScape Big Data Architecture Overview</h2>
+          <p class="text-xs text-slate-300 leading-relaxed max-w-2xl">
+            The EarthScape platform ingests heterogeneous streams from satellites and meteorological stations through Kafka brokers into HDFS. Batch aggregation runs via Hadoop MapReduce, while real-time anomaly detection is powered by PyTorch models served over FastAPI endpoints.
+          </p>
+
+          <div class="p-4 bg-[#121212] rounded-xl font-mono text-xs text-[#86efac] space-y-2 border border-[#222222]">
+            <p class="text-slate-500">// Example Production REST API Integration Target:</p>
+            <p>POST https://api.earthscape.gov/v1/hadoop/jobs/submit</p>
+            <p>GET  https://api.earthscape.gov/v1/telemetry/live?station_id=st-1</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 13: SETTINGS -->
+      <section id="view-settings" class="page-view hidden space-y-6">
+        <div class="max-w-2xl mx-auto harvestra-card p-8 space-y-6">
+          <h2 class="text-xl font-extrabold text-[#040404]">User Profile Settings</h2>
+          
+          <div class="space-y-4 text-xs">
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Display Name</label>
+              <input 
+                id="settings-name-input"
+                type="text" 
+                value="Dr. Elena Rostova"
+                class="w-full bg-[#f9f9f9] border border-[#d8d8d8] rounded-xl p-2.5 font-bold text-[#040404]" 
+              />
+            </div>
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Title</label>
+              <input 
+                id="settings-title-input"
+                type="text" 
+                value="Lead Climate Data Architect"
+                class="w-full bg-[#f9f9f9] border border-[#d8d8d8] rounded-xl p-2.5 font-bold text-[#040404]" 
+              />
+            </div>
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Email Address</label>
+              <input 
+                id="settings-email-input"
+                type="email" 
+                value="elena.rostova@earthscape.gov"
+                class="w-full bg-[#f9f9f9] border border-[#d8d8d8] rounded-xl p-2.5 font-bold text-[#040404]" 
+              />
+            </div>
+            <button 
+              id="btn-save-settings"
+              class="harvestra-pill-btn harvestra-pill-btn-green px-6 py-2.5 text-xs font-bold flex items-center space-x-2"
+            >
+              <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+              <span>Save Settings</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- --- MODAL: HADOOP LOG INSPECTOR --- -->
+  <div id="modal-logs" class="hidden fixed inset-0 bg-[#040404]/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-[#0a0a0a] border border-[#222222] w-full max-w-3xl rounded-[24px] shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
+      <div class="p-4 bg-[#040404] border-b border-[#1c1c1c] flex justify-between items-center text-white">
+        <div class="flex items-center space-x-2.5">
+          <i data-lucide="terminal" class="w-5 h-5 text-[#f6d987]"></i>
+          <span id="modal-logs-title" class="font-mono text-sm font-bold">Hadoop Yarn Logs: job_20261028_0012</span>
+        </div>
+        <button id="btn-close-logs-modal" class="text-slate-400 hover:text-white" aria-label="Close Logs Modal">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div id="modal-logs-body" class="p-4 font-mono text-xs text-[#86efac] bg-[#040404] overflow-y-auto flex-1 space-y-1.5 leading-relaxed">
+      </div>
+      <div class="p-3 bg-[#0a0a0a] border-t border-[#1c1c1c] flex justify-end">
+        <button id="btn-close-logs-modal-footer" class="harvestra-pill-btn harvestra-pill-btn-light px-4 py-1.5 text-xs font-semibold">
+          Close Inspector
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- --- MODAL: CREATE ALERT RULE --- -->
+  <div id="modal-create-alert" class="hidden fixed inset-0 bg-[#040404]/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white border border-[#e5e5e5] w-full max-w-md rounded-[24px] shadow-2xl p-6 space-y-4">
+      <div class="flex justify-between items-center border-b border-[#f0f0f0] pb-3">
+        <h3 class="font-extrabold text-base text-[#040404]">Define Environmental Alert Rule</h3>
+        <button id="btn-close-alert-modal" class="text-slate-400 hover:text-slate-600">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <form id="form-create-alert" class="space-y-3.5 text-xs">
+        <div>
+          <label class="font-semibold text-slate-700 block mb-1">Event Title</label>
+          <input 
+            id="new-alert-title"
+            type="text" 
+            required
+            placeholder="e.g. Methane Anomaly in Sub-Arctic" 
+            class="w-full bg-[#f9f9f9] border border-[#d8d8d8] rounded-xl p-2.5 font-medium"
+          />
+        </div>
+        <div>
+          <label class="font-semibold text-slate-700 block mb-1">Geographic Region</label>
+          <input 
+            id="new-alert-region"
+            type="text" 
+            required
+            value="Global Ocean Basin"
+            class="w-full bg-[#f9f9f9] border border-[#d8d8d8] rounded-xl p-2.5 font-medium"
+          />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="font-semibold text-slate-700 block mb-1">Severity</label>
+            <select id="new-alert-severity" class="w-full bg-[#f9f9f9] border border-[#d8d8d8] rounded-xl p-2.5">
+              <option value="Critical">Critical</option>
+              <option value="High" selected>High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
+          </div>
+          <div>
+            <label class="font-semibold text-slate-700 block mb-1">Threshold</label>
+            <input 
+              id="new-alert-threshold"
+              type="text" 
+              required
+              value="+2.0°C" 
+              class="w-full bg-[#f9f9f9] border border-[#d8d8d8] rounded-xl p-2.5 font-mono"
+            />
+          </div>
+        </div>
+        <div class="flex justify-end space-x-2 pt-2">
+          <button type="button" id="btn-cancel-alert-modal" class="harvestra-pill-btn harvestra-pill-btn-light px-4 py-2 font-medium">
+            Cancel
+          </button>
+          <button type="submit" class="harvestra-pill-btn harvestra-pill-btn-green px-5 py-2 font-bold shadow-md">
+            Save Rule
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- JAVASCRIPT STATE & APPLICATION LOGIC -->
+  <!-- ========================================== -->
+  <script>
+    // Exact Preserved Mock Data Constants
+    const HISTORICAL_TEMP_DATA = [
+      { year: 1980, tempAnomaly: 0.26, co2: 338.7, seaLevel: 0, rain: 980 },
+      { year: 1985, tempAnomaly: 0.12, co2: 346.1, seaLevel: 12, rain: 975 },
+      { year: 1990, tempAnomaly: 0.44, co2: 354.4, seaLevel: 28, rain: 990 },
+      { year: 1995, tempAnomaly: 0.46, co2: 360.8, seaLevel: 42, rain: 965 },
+      { year: 2000, tempAnomaly: 0.42, co2: 369.5, seaLevel: 58, rain: 985 },
+      { year: 2005, tempAnomaly: 0.69, co2: 379.8, seaLevel: 75, rain: 960 },
+      { year: 2010, tempAnomaly: 0.73, co2: 389.9, seaLevel: 91, rain: 1005 },
+      { year: 2015, tempAnomaly: 0.90, co2: 400.8, seaLevel: 108, rain: 950 },
+      { year: 2020, tempAnomaly: 1.02, co2: 414.2, seaLevel: 126, rain: 940 },
+      { year: 2024, tempAnomaly: 1.18, co2: 422.5, seaLevel: 138, rain: 935 },
+      { year: 2026, tempAnomaly: 1.24, co2: 426.1, seaLevel: 144, rain: 928 },
+    ];
+
+    const PREDICTION_DATA = [
+      { year: 2024, historical: 1.18, forecast: 1.18, lowerBound: 1.15, upperBound: 1.21 },
+      { year: 2026, historical: 1.24, forecast: 1.24, lowerBound: 1.20, upperBound: 1.28 },
+      { year: 2028, forecast: 1.31, lowerBound: 1.24, upperBound: 1.38 },
+      { year: 2030, forecast: 1.39, lowerBound: 1.29, upperBound: 1.49 },
+      { year: 2035, forecast: 1.58, lowerBound: 1.42, upperBound: 1.74 },
+      { year: 2040, forecast: 1.76, lowerBound: 1.55, upperBound: 1.97 },
+      { year: 2045, forecast: 1.95, lowerBound: 1.68, upperBound: 2.22 },
+      { year: 2050, forecast: 2.15, lowerBound: 1.82, upperBound: 2.48 },
+    ];
+
+    const STATIONS = [
+      { id: 'st-1', name: 'Mauna Loa Observatory', region: 'Hawaii, USA', lat: 19.53, lng: -155.57, temp: 14.2, co2: 426.8, aqi: 12, humidity: 45, wind: 18, rain: 1.2, status: 'Active' },
+      { id: 'st-2', name: 'Svalbard Global Station', region: 'Spitsbergen, Norway', lat: 78.22, lng: 15.65, temp: -4.8, co2: 428.1, aqi: 8, humidity: 78, wind: 34, rain: 0.0, status: 'Active' },
+      { id: 'st-3', name: 'Amazon Basin Tower', region: 'Manaus, Brazil', lat: -2.85, lng: -60.02, temp: 31.5, co2: 418.9, aqi: 42, humidity: 89, wind: 8, rain: 14.5, status: 'Warning' },
+      { id: 'st-4', name: 'Great Barrier Reef Buoy', region: 'Queensland, AU', lat: -18.28, lng: 147.7, temp: 27.8, co2: 421.3, aqi: 15, humidity: 82, wind: 22, rain: 3.1, status: 'Active' },
+      { id: 'st-5', name: 'McMurdo Antarctica Post', region: 'Ross Island, AQ', lat: -77.84, lng: 166.66, temp: -18.4, co2: 420.2, aqi: 5, humidity: 62, wind: 45, rain: 0.0, status: 'Active' },
+      { id: 'st-6', name: 'Sahara Boundary Station', region: 'Tamanrasset, Algeria', lat: 22.78, lng: 5.52, temp: 38.6, co2: 424.0, aqi: 68, humidity: 18, wind: 29, rain: 0.0, status: 'Critical' },
+    ];
+
+    const INITIAL_ALERTS = [
+      { id: 'ALT-8901', title: 'Severe SST Anomaly', region: 'Equatorial Pacific', severity: 'Critical', value: '+2.8°C', threshold: '+1.5°C', time: '12 mins ago', status: 'Active', category: 'Ocean Warmth' },
+      { id: 'ALT-8899', title: 'Rapid Methane Spike', region: 'Arctic Permafrost Sector 4', severity: 'High', value: '1940 ppb', threshold: '1880 ppb', time: '45 mins ago', status: 'Active', category: 'Gas Emission' },
+      { id: 'ALT-8892', title: 'Sensor Offline Event', region: 'Amazon Basin Station #3', severity: 'Medium', value: '0 Packets', threshold: '>100/min', time: '2 hrs ago', status: 'Acknowledged', category: 'Hardware' },
+      { id: 'ALT-8884', title: 'Extreme AQI Degradation', region: 'South Asia Urban Zone B', severity: 'High', value: '312 AQI', threshold: '150 AQI', time: '4 hrs ago', status: 'Active', category: 'Air Quality' },
+      { id: 'ALT-8870', title: 'Glacial Runoff Surge', region: 'Jakobshavn Glacier', severity: 'Low', value: '142 m³/s', threshold: '100 m³/s', time: '1 day ago', status: 'Resolved', category: 'Hydrology' },
+    ];
+
+    const HADOOP_JOBS = [
+      { id: 'job_20261028_0012', name: 'Global_Surface_Temp_MapReduce', dataset: 'NOAA_GHCN_v4.nc', type: 'MapReduce Aggregation', startTime: '10:14:22', duration: '4m 12s', status: 'SUCCEEDED', mapProgress: 100, reduceProgress: 100 },
+      { id: 'job_20261028_0013', name: 'Sentinel2_Deforestation_Tile_Index', dataset: 'S2_AMZ_2026_Q3.tif', type: 'Spatial Spark Job', startTime: '10:28:05', duration: '12m 40s', status: 'RUNNING', mapProgress: 84, reduceProgress: 42 },
+      { id: 'job_20261028_0014', name: 'Methane_Plume_Detection_PyTorch', dataset: 'TROPOMI_CH4_L2.parquet', type: 'Inference Pipeline', startTime: '10:41:00', duration: '1m 05s', status: 'SUCCEEDED', mapProgress: 100, reduceProgress: 100 },
+      { id: 'job_20261028_0015', name: 'Precipitation_GRIB2_Ingest_HDFS', dataset: 'GFS_0.25_202610.grib2', type: 'HDFS ETL Load', startTime: '10:50:11', duration: '0m 45s', status: 'FAILED', mapProgress: 23, reduceProgress: 0 },
+    ];
+
+    const INITIAL_DATASETS = [
+      { id: 'DS-901', name: 'NASA GISS Surface Temperature Anomaly', format: 'NetCDF4', size: '14.2 GB', source: 'NASA GISS', quality: '99.8%', ingested: '2026-10-25', missing: '0.02%' },
+      { id: 'DS-902', name: 'Copernicus Atmospheric Monitoring Service CH4', format: 'Parquet', size: '128.5 GB', source: 'ECMWF', quality: '98.5%', ingested: '2026-10-24', missing: '0.15%' },
+      { id: 'DS-903', name: 'Global Precipitation Measurement (GPM) IMERG', format: 'GeoTIFF', size: '412.0 GB', source: 'NASA/JAXA', quality: '97.2%', ingested: '2026-10-20', missing: '0.45%' },
+      { id: 'DS-904', name: 'Argo Float Ocean Salinity & Heat Profiles', format: 'CSV / NetCDF', size: '8.6 GB', source: 'NOAA PMEL', quality: '99.1%', ingested: '2026-10-18', missing: '0.08%' },
+      { id: 'DS-905', name: 'MODIS Vegetation Index Terra/Aqua 250m', format: 'HDF5', size: '890.1 GB', source: 'USGS EROS', quality: '96.0%', ingested: '2026-10-12', missing: '1.20%' },
+    ];
+
+    // Reactive State
+    const state = {
+      activePage: 'landing',
+      sidebarOpen: true,
+      role: 'Admin',
+      currentUser: {
+        name: 'Dr. Elena Rostova',
+        title: 'Lead Climate Data Architect',
+        email: 'elena.rostova@earthscape.gov',
+        avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&q=80'
+      },
+      lastSyncTime: 'Just Now',
+      isSyncing: false,
+      notifications: [
+        { id: 1, text: 'Hadoop cluster rebalanced successfully', time: '5m ago', read: false },
+        { id: 2, text: 'Critical SST Alert triggered in Pacific', time: '12m ago', read: false },
+        { id: 3, text: 'Dataset DS-901 verification passed', time: '1h ago', read: true },
+      ],
+      streamActive: true,
+      streamInterval: 3,
+      liveLogStream: [
+        '[KAFKA-CONSUMER-0] Partition #4 offset 891024 consumed: station_id=st-1, temp=14.2°C',
+        '[SPARK-STREAMING] Micro-batch 44102 processed 12,450 msgs in 120ms',
+        '[HDFS-SINK] Flushed 64MB buffer to /climate/raw/2026/10/28/data.parquet',
+      ],
+      selectedStation: STATIONS[0],
+      alertsList: [...INITIAL_ALERTS],
+      jobsList: [...HADOOP_JOBS],
+      datasetsList: [...INITIAL_DATASETS],
+      forecastHorizon: '2040',
+      analyticsRegion: 'Global',
+      analyticsMetric: 'tempAnomaly'
+    };
+
+    // Chart References
+    let mainTempChartInstance = null;
+    let analyticsChartInstance = null;
+    let mlForecastChartInstance = null;
+    let streamingTimer = null;
+
+    // --- TOAST HELPER (Harvestra Dark Pill Style) ---
+    function triggerToast(message) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = 'bg-[#040404] text-[#f6d987] px-4 py-3 rounded-full shadow-2xl border border-[#2b2b2b] flex items-center space-x-3 transition-all duration-300 transform translate-y-2 opacity-0 font-medium text-xs';
+      toast.innerHTML = `
+        <div class="w-2 h-2 rounded-full bg-[#1a814a]"></div>
+        <span>${message}</span>
+      `;
+      container.appendChild(toast);
+
+      // Animate in
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+
+      // Dismiss after 3.5s
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 350);
+      }, 3500);
+    }
+
+    // --- NAVIGATION ROUTER ---
+    function setActivePage(pageId) {
+      state.activePage = pageId;
+
+      // Update View Visibility
+      document.querySelectorAll('.page-view').forEach(view => {
+        view.classList.add('hidden');
+      });
+      const activeEl = document.getElementById('view-' + pageId);
+      if (activeEl) {
+        activeEl.classList.remove('hidden');
+      }
+
+      // Update Sidebar Nav Styling in Harvestra Pill Style
+      document.querySelectorAll('.sidebar-nav-item').forEach(link => {
+        const id = link.getAttribute('data-nav');
+        if (id === pageId) {
+          link.className = 'sidebar-nav-item flex items-center justify-between px-3.5 py-2.5 rounded-full font-bold transition-all bg-[#1a1a1a] text-[#f6d987] border-l-4 border-[#f6d987] shadow-sm';
+          const icon = link.querySelector('i, svg');
+          if (icon) icon.classList.remove('text-slate-400');
+          if (icon) icon.classList.add('text-[#f6d987]');
+        } else {
+          link.className = 'sidebar-nav-item flex items-center justify-between px-3.5 py-2.5 rounded-full font-medium transition-all text-slate-300 hover:bg-[#141414] hover:text-white';
+          const icon = link.querySelector('i, svg');
+          if (icon) icon.classList.remove('text-[#f6d987]');
+          if (icon) icon.classList.add('text-slate-400');
+        }
+      });
+
+      // Lazy Chart Inits & Updates
+      if (pageId === 'dashboard') {
+        renderDashboardView();
+      } else if (pageId === 'analytics') {
+        renderAnalyticsChart();
+      } else if (pageId === 'monitoring') {
+        renderMonitoringView();
+      } else if (pageId === 'ml') {
+        renderMLForecastChart();
+      } else if (pageId === 'hadoop') {
+        renderHadoopJobsTable();
+      } else if (pageId === 'alerts') {
+        renderAlertsTable();
+      } else if (pageId === 'data') {
+        renderDatasetsTable();
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      lucide.createIcons();
+    }
+
+    // --- CHART 1: EXECUTIVE DASHBOARD TEMPERATURE ANOMALY ---
+    function renderDashboardView() {
+      // Update stats
+      const activeAlerts = state.alertsList.filter(a => a.status === 'Active').length;
+      document.getElementById('mini-active-alerts').textContent = activeAlerts;
+      document.getElementById('mini-dataset-count').textContent = state.datasetsList.length + 1415;
+      document.getElementById('dashboard-alerts-count-badge').textContent = activeAlerts + ' Active';
+
+      // Render Alert Feed
+      const feedContainer = document.getElementById('dashboard-alerts-feed');
+      feedContainer.innerHTML = '';
+      state.alertsList.slice(0, 3).forEach(a => {
+        const item = document.createElement('div');
+        item.className = 'p-3 bg-[#f9f9f9] rounded-2xl border border-[#ebebeb] text-xs space-y-1';
+        item.innerHTML = `
+          <div class="flex justify-between font-bold text-[#040404]">
+            <span>${a.title}</span>
+            <span class="text-rose-600 font-mono">${a.value}</span>
+          </div>
+          <p class="text-[11px] text-slate-500">${a.region} • ${a.time}</p>
+        `;
+        feedContainer.appendChild(item);
+      });
+
+      // Render Jobs Table
+      const jobsTbody = document.getElementById('dashboard-jobs-tbody');
+      jobsTbody.innerHTML = '';
+      state.jobsList.slice(0, 3).forEach(j => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-[#fafafa]';
+        tr.innerHTML = `
+          <td class="p-3 font-mono text-[#040404] font-bold">${j.id}</td>
+          <td class="p-3">${j.dataset}</td>
+          <td class="p-3">${j.type}</td>
+          <td class="p-3">
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+              j.status === 'SUCCEEDED' ? 'bg-emerald-100 text-[#1a814a]' :
+              j.status === 'RUNNING' ? 'bg-sky-100 text-sky-800' : 'bg-rose-100 text-rose-800'
+            }">
+              ${j.status}
+            </span>
+          </td>
+          <td class="p-3 w-36">
+            <div class="w-full bg-[#efefef] h-2 rounded-full overflow-hidden">
+              <div class="bg-[#1a814a] h-full rounded-full" style="width: ${j.mapProgress}%"></div>
+            </div>
+          </td>
+        `;
+        jobsTbody.appendChild(tr);
+      });
+
+      // Init or update Chart.js
+      const canvas = document.getElementById('mainTempChart');
+      if (!canvas) return;
+
+      const ctx = canvas.getContext('2d');
+      const gradient = ctx.createLinearGradient(0, 0, 0, 240);
+      gradient.addColorStop(0, 'rgba(26, 129, 74, 0.4)');
+      gradient.addColorStop(1, 'rgba(26, 129, 74, 0.0)');
+
+      if (mainTempChartInstance) {
+        mainTempChartInstance.destroy();
+      }
+
+      mainTempChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: HISTORICAL_TEMP_DATA.map(d => d.year),
+          datasets: [{
+            label: 'Temperature Anomaly (°C)',
+            data: HISTORICAL_TEMP_DATA.map(d => d.tempAnomaly),
+            borderColor: '#1a814a',
+            backgroundColor: gradient,
+            borderWidth: 3,
+            fill: true,
+            tension: 0.35,
+            pointBackgroundColor: '#1a814a',
+            pointRadius: 4,
+            pointHoverRadius: 6,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#040404',
+              titleColor: '#f6d987',
+              bodyColor: '#ffffff',
+              padding: 10,
+              cornerRadius: 12,
+              callbacks: {
+                label: (ctx) => `Anomaly: +${ctx.parsed.y}°C`
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { color: '#888888', font: { family: '"Instrument Sans", sans-serif', size: 11 } }
+            },
+            y: {
+              grid: { color: '#f0f0f0' },
+              ticks: {
+                color: '#888888',
+                font: { family: '"Instrument Sans", sans-serif', size: 11 },
+                callback: (val) => val + '°C'
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // --- CHART 2: CLIMATE ANALYTICS ---
+    function renderAnalyticsChart() {
+      const region = state.analyticsRegion;
+      const metric = state.analyticsMetric;
+
+      let multiplier = 1.0;
+      if (region === 'Arctic Circle') multiplier = 1.45;
+      else if (region === 'Amazonia') multiplier = 0.85;
+      else if (region === 'North America') multiplier = 1.1;
+
+      const metricLabels = {
+        tempAnomaly: 'Temperature Anomaly (°C)',
+        co2: 'Atmospheric CO₂ (ppm)',
+        seaLevel: 'Sea Level Rise (mm)',
+        rain: 'Annual Rainfall (mm)'
+      };
+
+      const chartTitle = document.getElementById('analytics-chart-title');
+      if (chartTitle) chartTitle.textContent = `Historical Multi-Decadal Analysis (${region})`;
+
+      const values = HISTORICAL_TEMP_DATA.map(d => Number((d[metric] * multiplier).toFixed(2)));
+
+      const canvas = document.getElementById('analyticsChart');
+      if (!canvas) return;
+
+      const ctx = canvas.getContext('2d');
+      if (analyticsChartInstance) {
+        analyticsChartInstance.destroy();
+      }
+
+      analyticsChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: HISTORICAL_TEMP_DATA.map(d => d.year),
+          datasets: [{
+            label: metricLabels[metric],
+            data: values,
+            borderColor: '#040404',
+            backgroundColor: 'rgba(4, 4, 4, 0.05)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.35,
+            pointBackgroundColor: '#1a814a',
+            pointRadius: 4,
+            pointHoverRadius: 7
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: { color: '#040404', font: { family: '"Instrument Sans", sans-serif', weight: 'bold' } }
+            },
+            tooltip: {
+              backgroundColor: '#040404',
+              titleColor: '#f6d987',
+              bodyColor: '#ffffff',
+              padding: 10,
+              cornerRadius: 12
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { color: '#888888', font: { family: '"Instrument Sans", sans-serif' } }
+            },
+            y: {
+              grid: { color: '#f0f0f0' },
+              ticks: { color: '#888888', font: { family: '"Instrument Sans", sans-serif' } }
+            }
+          }
+        }
+      });
+    }
+
+    // --- CHART 3: MACHINE LEARNING FORECAST ---
+    function renderMLForecastChart() {
+      const horizonYear = parseInt(state.forecastHorizon, 10);
+      const filtered = PREDICTION_DATA.filter(d => d.year <= horizonYear);
+
+      const heading = document.getElementById('ml-forecast-heading');
+      if (heading) heading.textContent = `PyTorch/LSTM Temperature Forecast Horizon (2024 - ${state.forecastHorizon})`;
+
+      // Update horizon buttons UI
+      document.querySelectorAll('.btn-horizon').forEach(btn => {
+        if (btn.getAttribute('data-horizon') === state.forecastHorizon) {
+          btn.className = 'btn-horizon harvestra-pill-btn px-4 py-1.5 font-bold bg-[#040404] text-white';
+        } else {
+          btn.className = 'btn-horizon harvestra-pill-btn px-4 py-1.5 font-bold bg-[#f3f3f3] text-[#040404]';
+        }
+      });
+
+      const canvas = document.getElementById('mlForecastChart');
+      if (!canvas) return;
+
+      const ctx = canvas.getContext('2d');
+      if (mlForecastChartInstance) {
+        mlForecastChartInstance.destroy();
+      }
+
+      mlForecastChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: filtered.map(d => d.year),
+          datasets: [
+            {
+              label: 'Historical Verified',
+              data: filtered.map(d => d.historical !== undefined ? d.historical : null),
+              borderColor: '#040404',
+              backgroundColor: '#040404',
+              borderWidth: 3,
+              tension: 0.2,
+              pointRadius: 5
+            },
+            {
+              label: 'LSTM AI Forecast',
+              data: filtered.map(d => d.forecast),
+              borderColor: '#1a814a',
+              borderDash: [5, 5],
+              borderWidth: 3,
+              tension: 0.2,
+              pointRadius: 4,
+              backgroundColor: '#1a814a'
+            },
+            {
+              label: 'Upper 95% Bound',
+              data: filtered.map(d => d.upperBound),
+              borderColor: 'rgba(26, 129, 74, 0.3)',
+              backgroundColor: 'rgba(26, 129, 74, 0.1)',
+              borderWidth: 1,
+              fill: '+1',
+              pointRadius: 0
+            },
+            {
+              label: 'Lower 95% Bound',
+              data: filtered.map(d => d.lowerBound),
+              borderColor: 'rgba(26, 129, 74, 0.3)',
+              backgroundColor: 'transparent',
+              borderWidth: 1,
+              fill: false,
+              pointRadius: 0
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: { color: '#040404', font: { family: '"Instrument Sans", sans-serif', size: 11 } }
+            },
+            tooltip: {
+              backgroundColor: '#040404',
+              titleColor: '#f6d987',
+              bodyColor: '#ffffff',
+              padding: 10,
+              cornerRadius: 12,
+              callbacks: {
+                label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y ? ctx.parsed.y + '°C' : 'N/A'}`
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { color: '#888888', font: { family: '"Instrument Sans", sans-serif' } }
+            },
+            y: {
+              grid: { color: '#f0f0f0' },
+              ticks: {
+                color: '#888888',
+                font: { family: '"Instrument Sans", sans-serif' },
+                callback: val => val + '°C'
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // --- VIEW: LIVE MONITORING ---
+    function renderMonitoringView() {
+      const grid = document.getElementById('monitoring-stations-grid');
+      grid.innerHTML = '';
+
+      STATIONS.forEach(s => {
+        const isSelected = state.selectedStation.id === s.id;
+        const card = document.createElement('div');
+        card.className = `p-4 rounded-2xl border cursor-pointer transition-all space-y-2 ${
+          isSelected ? 'border-[#040404] bg-[#f9f9f9] shadow-md ring-2 ring-[#040404]' : 'border-[#e8e8e8] bg-white hover:border-[#cccccc]'
+        }`;
+        card.innerHTML = `
+          <div class="flex justify-between items-start">
+            <div>
+              <h4 class="font-extrabold text-[#040404] text-xs">${s.name}</h4>
+              <span class="text-[10px] text-slate-500">${s.region}</span>
+            </div>
+            <span class="text-[10px] px-2.5 py-0.5 rounded-full font-bold ${
+              s.status === 'Active' ? 'bg-emerald-100 text-[#1a814a]' :
+              s.status === 'Warning' ? 'bg-[#f6d987] text-[#040404]' : 'bg-rose-100 text-rose-800'
+            }">
+              ${s.status}
+            </span>
+          </div>
+          <div class="flex justify-between text-xs font-mono pt-1 text-slate-700">
+            <span>Temp: <strong class="text-[#040404]">${s.temp}°C</strong></span>
+            <span>CO₂: <strong class="text-[#040404]">${s.co2} ppm</strong></span>
+          </div>
+        `;
+        card.onclick = () => {
+          state.selectedStation = s;
+          renderMonitoringView();
+        };
+        grid.appendChild(card);
+      });
+
+      // Update Selected Station Details
+      const sel = state.selectedStation;
+      document.getElementById('mon-selected-station-name').textContent = sel.name;
+      document.getElementById('mon-selected-station-coords').textContent = `Lat: ${sel.lat} | Lng: ${sel.lng}`;
+      document.getElementById('mon-sensor-temp').textContent = `${sel.temp}°C`;
+      document.getElementById('mon-sensor-co2').textContent = `${sel.co2} ppm`;
+      document.getElementById('mon-sensor-aqi').textContent = `${sel.aqi} AQI`;
+      document.getElementById('mon-sensor-humidity').textContent = `${sel.humidity}%`;
+      document.getElementById('mon-latest-log').textContent = state.liveLogStream[0] || 'Awaiting incoming Kafka packet...';
+    }
+
+    // --- VIEW: HADOOP JOBS TABLE ---
+    function renderHadoopJobsTable() {
+      const tbody = document.getElementById('hadoop-jobs-tbody');
+      tbody.innerHTML = '';
+
+      state.jobsList.forEach(j => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-[#fafafa]';
+        tr.innerHTML = `
+          <td class="p-3.5 font-mono font-bold text-[#040404]">${j.id}</td>
+          <td class="p-3.5 font-semibold text-[#040404]">${j.name}</td>
+          <td class="p-3.5">${j.dataset}</td>
+          <td class="p-3.5">
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+              j.status === 'SUCCEEDED' ? 'bg-emerald-100 text-[#1a814a]' :
+              j.status === 'RUNNING' ? 'bg-sky-100 text-sky-800' : 'bg-rose-100 text-rose-800'
+            }">
+              ${j.status}
+            </span>
+          </td>
+          <td class="p-3.5 font-mono">${j.duration}</td>
+          <td class="p-3.5 space-x-2">
+            <button 
+              onclick="openLogsModal('${j.id}')"
+              class="harvestra-pill-btn harvestra-pill-btn-light px-3 py-1 text-[10px] font-bold"
+            >
+              View Logs
+            </button>
+            ${j.status === 'FAILED' ? `
+              <button 
+                onclick="retryJob('${j.id}')"
+                class="harvestra-pill-btn px-3 py-1 bg-rose-600 hover:bg-rose-500 text-white rounded-full text-[10px] font-bold"
+              >
+                Retry Job
+              </button>
+            ` : ''}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function retryJob(jobId) {
+      const job = state.jobsList.find(j => j.id === jobId);
+      if (job) {
+        job.status = 'RUNNING';
+        job.mapProgress = 15;
+        renderHadoopJobsTable();
+        triggerToast(`Re-submitting job ${jobId} to YARN cluster...`);
+      }
+    }
+
+    function openLogsModal(jobId) {
+      const job = state.jobsList.find(j => j.id === jobId);
+      if (!job) return;
+
+      document.getElementById('modal-logs-title').textContent = `Hadoop Yarn Logs: ${job.id}`;
+      const body = document.getElementById('modal-logs-body');
+      body.innerHTML = `
+        <p class="text-slate-400">[INFO] Initializing MapReduce Task Executor for Job ${job.name}</p>
+        <p class="text-slate-400">[INFO] Reading input split from HDFS path /data/raw/${job.dataset}</p>
+        <p class="text-[#f6d987]">[MAPPER] Mapper phase 100% completed across 128 container slots.</p>
+        <p class="text-[#f6d987]">[SHUFFLE] Shuffling 4.2 GB partitioned key-value pairs across data nodes.</p>
+        <p class="text-[#86efac]">[REDUCER] Reducer phase completed in ${job.duration}.</p>
+        <p class="text-slate-400">[HDFS-WRITE] Output generated at /climate/analytics/results_${job.id}.parquet</p>
+        <p class="text-[#86efac] font-bold">[SUCCESS] Job finished with EXIT_CODE=0</p>
+      `;
+      document.getElementById('modal-logs').classList.remove('hidden');
+    }
+
+    // --- VIEW: ALERTS TABLE ---
+    function renderAlertsTable() {
+      const tbody = document.getElementById('alerts-tbody');
+      tbody.innerHTML = '';
+
+      state.alertsList.forEach(a => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-[#fafafa]';
+        tr.innerHTML = `
+          <td class="p-3.5 font-mono font-bold text-[#040404]">${a.id}</td>
+          <td class="p-3.5">
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+              a.severity === 'Critical' ? 'bg-rose-100 text-rose-800' :
+              a.severity === 'High' ? 'bg-[#f6d987] text-[#040404]' : 'bg-[#efefef] text-[#040404]'
+            }">
+              ${a.severity}
+            </span>
+          </td>
+          <td class="p-3.5 font-bold text-[#040404]">${a.title}</td>
+          <td class="p-3.5">${a.region}</td>
+          <td class="p-3.5 font-mono text-rose-600 font-bold">${a.value} <span class="text-slate-400 text-[10px]">(${a.threshold})</span></td>
+          <td class="p-3.5 font-bold text-[#040404]">${a.status}</td>
+          <td class="p-3.5 space-x-2">
+            ${a.status === 'Active' ? `
+              <button onclick="updateAlertStatus('${a.id}', 'Acknowledged')" class="harvestra-pill-btn harvestra-pill-btn-gold px-3 py-1 text-[10px]">
+                Acknowledge
+              </button>
+            ` : ''}
+            ${a.status !== 'Resolved' ? `
+              <button onclick="updateAlertStatus('${a.id}', 'Resolved')" class="harvestra-pill-btn harvestra-pill-btn-green px-3 py-1 text-[10px]">
+                Resolve
+              </button>
+            ` : ''}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // Update sidebar alert badge
+      const activeCount = state.alertsList.filter(a => a.status === 'Active').length;
+      const badge = document.getElementById('sidebar-alerts-badge');
+      if (badge) badge.textContent = activeCount;
+    }
+
+    function updateAlertStatus(id, newStatus) {
+      const alert = state.alertsList.find(a => a.id === id);
+      if (alert) {
+        alert.status = newStatus;
+        renderAlertsTable();
+        triggerToast(`Alert ${id} updated to ${newStatus}`);
+      }
+    }
+
+    // --- VIEW: DATASETS TABLE ---
+    function renderDatasetsTable() {
+      const tbody = document.getElementById('datasets-tbody');
+      tbody.innerHTML = '';
+      document.getElementById('datasets-count-label').textContent = `${state.datasetsList.length} Total Registered Files`;
+
+      state.datasetsList.forEach(d => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-[#fafafa]';
+        tr.innerHTML = `
+          <td class="p-3.5 font-mono font-bold text-[#040404]">${d.id}</td>
+          <td class="p-3.5 font-semibold text-[#040404]">${d.name}</td>
+          <td class="p-3.5"><span class="px-2.5 py-0.5 bg-[#f0f0f0] rounded-full text-[10px] font-mono text-[#040404] font-semibold">${d.format}</span></td>
+          <td class="p-3.5 font-mono font-medium">${d.size}</td>
+          <td class="p-3.5">${d.source}</td>
+          <td class="p-3.5 text-[#1a814a] font-bold">${d.quality}</td>
+          <td class="p-3.5 text-slate-400">${d.ingested}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // --- STREAMING TICKER SIMULATOR ---
+    function setupStreamingTicker() {
+      if (streamingTimer) clearInterval(streamingTimer);
+      if (!state.streamActive) return;
+
+      streamingTimer = setInterval(() => {
+        const randomStation = STATIONS[Math.floor(Math.random() * STATIONS.length)];
+        randomStation.temp = Number((randomStation.temp + (Math.random() * 0.4 - 0.2)).toFixed(1));
+        randomStation.co2 = Number((420 + Math.random() * 8).toFixed(1));
+        const timestamp = new Date().toLocaleTimeString();
+        const logEntry = `[${timestamp}] [KAFKA-LIVE] Station=${randomStation.name} | Temp=${randomStation.temp}°C | CO2=${randomStation.co2}ppm`;
+
+        state.liveLogStream.unshift(logEntry);
+        if (state.liveLogStream.length > 15) state.liveLogStream.pop();
+
+        if (state.activePage === 'monitoring') {
+          renderMonitoringView();
+        }
+      }, state.streamInterval * 1000);
+    }
+
+    // --- DOM INITIALIZATION & EVENT LISTENERS ---
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Initial Icons
+      lucide.createIcons();
+
+      // 2. Global Navigation Clicks
+      document.addEventListener('click', (e) => {
+        const target = e.target.closest('[data-nav]');
+        if (target) {
+          e.preventDefault();
+          const page = target.getAttribute('data-nav');
+          setActivePage(page);
+          // Close dropdowns if open
+          document.getElementById('user-dropdown').classList.add('hidden');
+          document.getElementById('notif-dropdown').classList.add('hidden');
+        }
+      });
+
+      // 3. Logo Brand Click
+      document.getElementById('brand-logo-trigger').addEventListener('click', () => {
+        setActivePage('landing');
+      });
+
+      // 4. Sidebar Toggle Button
+      document.getElementById('btn-toggle-sidebar').addEventListener('click', () => {
+        state.sidebarOpen = !state.sidebarOpen;
+        const sidebar = document.getElementById('main-sidebar');
+        const labels = document.querySelectorAll('.sidebar-label');
+        const badges = document.querySelectorAll('.sidebar-badge');
+        const title = document.getElementById('sidebar-title');
+        const footer = document.getElementById('sidebar-footer');
+
+        if (state.sidebarOpen) {
+          sidebar.classList.remove('w-16');
+          sidebar.classList.add('w-64');
+          title.textContent = 'Core Navigation';
+          labels.forEach(l => l.classList.remove('hidden'));
+          badges.forEach(b => b.classList.remove('hidden'));
+          if (footer) footer.classList.remove('hidden');
+        } else {
+          sidebar.classList.remove('w-64');
+          sidebar.classList.add('w-16');
+          title.textContent = '•••';
+          labels.forEach(l => l.classList.add('hidden'));
+          badges.forEach(b => b.classList.add('hidden'));
+          if (footer) footer.classList.add('hidden');
+        }
+      });
+
+      // 5. Global Search Bar
+      const searchInput = document.getElementById('global-search-input');
+      const searchDropdown = document.getElementById('search-results-dropdown');
+
+      searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.trim().toLowerCase();
+        if (query.length < 2) {
+          searchDropdown.classList.add('hidden');
+          return;
+        }
+
+        const matchedStations = STATIONS.filter(s => s.name.toLowerCase().includes(query) || s.region.toLowerCase().includes(query));
+        const matchedDatasets = state.datasetsList.filter(d => d.name.toLowerCase().includes(query) || d.format.toLowerCase().includes(query));
+        const matchedAlerts = state.alertsList.filter(a => a.title.toLowerCase().includes(query) || a.region.toLowerCase().includes(query));
+
+        if (matchedStations.length === 0 && matchedDatasets.length === 0 && matchedAlerts.length === 0) {
+          searchDropdown.innerHTML = '<p class="text-slate-400 text-center py-2">No matching resources found.</p>';
+        } else {
+          let html = '';
+          if (matchedStations.length > 0) {
+            html += '<span class="text-[10px] uppercase font-bold text-[#f6d987] block mb-1">Stations</span>';
+            matchedStations.forEach(s => {
+              html += `
+                <div class="p-2 hover:bg-[#1f1f1f] rounded-xl cursor-pointer flex justify-between search-item" data-type="station" data-id="${s.id}">
+                  <span class="font-medium">${s.name}</span>
+                  <span class="text-[#f6d987] font-mono">${s.temp}°C</span>
+                </div>
+              `;
+            });
+          }
+          if (matchedDatasets.length > 0) {
+            html += '<span class="text-[10px] uppercase font-bold text-sky-400 block mb-1 mt-2">Datasets</span>';
+            matchedDatasets.forEach(d => {
+              html += `
+                <div class="p-2 hover:bg-[#1f1f1f] rounded-xl cursor-pointer flex justify-between search-item" data-type="dataset">
+                  <span class="truncate font-medium">${d.name}</span>
+                  <span class="text-slate-400 font-mono text-[10px]">${d.format}</span>
+                </div>
+              `;
+            });
+          }
+          if (matchedAlerts.length > 0) {
+            html += '<span class="text-[10px] uppercase font-bold text-rose-400 block mb-1 mt-2">Alerts</span>';
+            matchedAlerts.forEach(a => {
+              html += `
+                <div class="p-2 hover:bg-[#1f1f1f] rounded-xl cursor-pointer flex justify-between search-item" data-type="alert">
+                  <span class="truncate font-medium">${a.title}</span>
+                  <span class="text-rose-400 font-mono">${a.severity}</span>
+                </div>
+              `;
+            });
+          }
+          searchDropdown.innerHTML = html;
+        }
+
+        searchDropdown.classList.remove('hidden');
+
+        // Search Click Nav
+        searchDropdown.querySelectorAll('.search-item').forEach(item => {
+          item.onclick = () => {
+            const type = item.getAttribute('data-type');
+            if (type === 'station') {
+              const sId = item.getAttribute('data-id');
+              const found = STATIONS.find(s => s.id === sId);
+              if (found) state.selectedStation = found;
+              setActivePage('monitoring');
+            } else if (type === 'dataset') {
+              setActivePage('data');
+            } else if (type === 'alert') {
+              setActivePage('alerts');
+            }
+            searchDropdown.classList.add('hidden');
+            searchInput.value = '';
+          };
+        });
+      });
+
+      // Close search when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!searchInput.contains(e.target) && !searchDropdown.contains(e.target)) {
+          searchDropdown.classList.add('hidden');
+        }
+      });
+
+      // 6. Sync Button
+      document.getElementById('btn-sync').addEventListener('click', () => {
+        const icon = document.getElementById('sync-icon');
+        icon.classList.add('animate-spin');
+        triggerToast('Kafka & HDFS sync triggered...');
+        setTimeout(() => {
+          icon.classList.remove('animate-spin');
+          const time = new Date().toLocaleTimeString();
+          document.getElementById('sync-time').textContent = time;
+          triggerToast('Data pipeline synchronized successfully.');
+        }, 1800);
+      });
+
+      // 7. Role Switcher Pill
+      const btnAdmin = document.getElementById('role-btn-admin');
+      const btnAnalyst = document.getElementById('role-btn-analyst');
+      const bannerRole = document.getElementById('banner-role-tag');
+      const rbacIndicator = document.getElementById('rbac-role-indicator');
+
+      btnAdmin.addEventListener('click', () => {
+        state.role = 'Admin';
+        btnAdmin.className = 'px-3 py-1 rounded-full transition-all bg-[#1a814a] font-bold text-white shadow-sm';
+        btnAnalyst.className = 'px-3 py-1 rounded-full transition-all text-slate-400 hover:text-white';
+        bannerRole.textContent = 'ROLE: ADMIN';
+        rbacIndicator.textContent = 'Admin';
+        const addBtn = document.getElementById('btn-add-team-member');
+        addBtn.className = 'harvestra-pill-btn harvestra-pill-btn-dark px-4 py-2 text-xs font-bold shadow-md transition-all';
+        triggerToast('Switched role to System Administrator');
+      });
+
+      btnAnalyst.addEventListener('click', () => {
+        state.role = 'Analyst';
+        btnAnalyst.className = 'px-3 py-1 rounded-full transition-all bg-[#1a814a] font-bold text-white shadow-sm';
+        btnAdmin.className = 'px-3 py-1 rounded-full transition-all text-slate-400 hover:text-white';
+        bannerRole.textContent = 'ROLE: ANALYST';
+        rbacIndicator.textContent = 'Analyst';
+        const addBtn = document.getElementById('btn-add-team-member');
+        addBtn.className = 'harvestra-pill-btn px-4 py-2 rounded-full text-xs font-bold shadow-md transition-all bg-[#e0e0e0] text-slate-400 cursor-not-allowed';
+        triggerToast('Switched role to Climate Analyst');
+      });
+
+      // 8. Notifications Toggle
+      const notifBtn = document.getElementById('btn-notif');
+      const notifDropdown = document.getElementById('notif-dropdown');
+      notifBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        notifDropdown.classList.toggle('hidden');
+        document.getElementById('user-dropdown').classList.add('hidden');
+        renderNotifications();
+      });
+
+      function renderNotifications() {
+        const notifList = document.getElementById('notif-list');
+        notifList.innerHTML = '';
+        state.notifications.forEach(n => {
+          const item = document.createElement('div');
+          item.className = `p-3.5 hover:bg-[#1a1a1a] transition-colors ${!n.read ? 'bg-[#141414]' : ''}`;
+          item.innerHTML = `
+            <p class="text-slate-200 font-medium">${n.text}</p>
+            <span class="text-[10px] text-slate-500">${n.time}</span>
+          `;
+          notifList.appendChild(item);
+        });
+      }
+
+      document.getElementById('btn-mark-all-read').addEventListener('click', () => {
+        state.notifications.forEach(n => n.read = true);
+        document.getElementById('notif-badge').classList.add('hidden');
+        renderNotifications();
+        triggerToast('All notifications marked as read.');
+      });
+
+      // 9. User Avatar Dropdown
+      const avatarBtn = document.getElementById('btn-user-avatar');
+      const userDropdown = document.getElementById('user-dropdown');
+      avatarBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        userDropdown.classList.toggle('hidden');
+        notifDropdown.classList.add('hidden');
+      });
+
+      document.getElementById('btn-sign-out').addEventListener('click', () => {
+        userDropdown.classList.add('hidden');
+        setActivePage('landing');
+        triggerToast('Signed out of demonstration session');
+      });
+
+      // Close dropdowns on window click
+      document.addEventListener('click', () => {
+        notifDropdown.classList.add('hidden');
+        userDropdown.classList.add('hidden');
+      });
+
+      // 10. Climate Analytics Dropdown Selectors
+      document.getElementById('analytics-region-select').addEventListener('change', (e) => {
+        state.analyticsRegion = e.target.value;
+        renderAnalyticsChart();
+      });
+
+      document.getElementById('analytics-metric-select').addEventListener('change', (e) => {
+        state.analyticsMetric = e.target.value;
+        renderAnalyticsChart();
+      });
+
+      // 11. Live Monitoring Controls
+      document.getElementById('btn-toggle-stream').addEventListener('click', () => {
+        state.streamActive = !state.streamActive;
+        const btn = document.getElementById('btn-toggle-stream');
+        const indicator = document.getElementById('monitoring-status-indicator');
+
+        if (state.streamActive) {
+          btn.textContent = 'Pause Stream';
+          btn.className = 'harvestra-pill-btn px-4 py-2 text-xs font-bold transition-all bg-rose-600 text-white';
+          indicator.classList.remove('bg-slate-400');
+          indicator.classList.add('bg-[#1a814a]', 'animate-pulse');
+          setupStreamingTicker();
+          triggerToast('Live Kafka telemetry feed resumed');
+        } else {
+          btn.textContent = 'Resume Live Feed';
+          btn.className = 'harvestra-pill-btn harvestra-pill-btn-green px-4 py-2 text-xs font-bold transition-all';
+          indicator.classList.remove('bg-[#1a814a]', 'animate-pulse');
+          indicator.classList.add('bg-slate-400');
+          if (streamingTimer) clearInterval(streamingTimer);
+          triggerToast('Telemetry feed paused');
+        }
+      });
+
+      document.querySelectorAll('.btn-interval').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const val = parseInt(btn.getAttribute('data-interval'), 10);
+          state.streamInterval = val;
+          document.querySelectorAll('.btn-interval').forEach(b => {
+            b.className = 'btn-interval px-2.5 py-1 rounded-full text-slate-300';
+          });
+          btn.className = 'btn-interval px-2.5 py-1 rounded-full bg-[#1a814a] text-white font-bold';
+          setupStreamingTicker();
+          triggerToast(`Stream sampling rate set to ${val}s`);
+        });
+      });
+
+      // 12. Simulate Dataset Upload
+      const uploadBtn = document.getElementById('btn-simulate-upload');
+      const progressContainer = document.getElementById('upload-progress-container');
+      const progressBar = document.getElementById('upload-progress-bar');
+      const progressLabel = document.getElementById('upload-progress-label');
+
+      uploadBtn.addEventListener('click', () => {
+        uploadBtn.classList.add('hidden');
+        progressContainer.classList.remove('hidden');
+
+        let pct = 10;
+        progressBar.style.width = '10%';
+        progressLabel.textContent = 'Pipeline: Uploading → HDFS Storage (10%)';
+
+        const timer = setInterval(() => {
+          pct += 30;
+          if (pct >= 100) {
+            clearInterval(timer);
+            progressBar.style.width = '100%';
+            progressLabel.textContent = 'Pipeline: Ingestion Complete! (100%)';
+            setTimeout(() => {
+              progressContainer.classList.add('hidden');
+              uploadBtn.classList.remove('hidden');
+              progressBar.style.width = '0%';
+
+              const newDataset = {
+                id: `DS-${Math.floor(Math.random() * 900 + 100)}`,
+                name: 'Uploaded_Climate_Telemetry_Payload.nc',
+                format: 'NetCDF4',
+                size: '2.4 GB',
+                source: 'Manual Upload',
+                quality: '99.5%',
+                ingested: new Date().toISOString().split('T')[0],
+                missing: '0.00%'
+              };
+              state.datasetsList.unshift(newDataset);
+              renderDatasetsTable();
+              triggerToast('Dataset validated & ingested into HDFS');
+            }, 500);
+          } else {
+            progressBar.style.width = pct + '%';
+            progressLabel.textContent = `Pipeline: Uploading → HDFS Storage (${pct}%)`;
+          }
+        }, 350);
+      });
+
+      // 13. ML Forecast Horizon Buttons
+      document.querySelectorAll('.btn-horizon').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.forecastHorizon = btn.getAttribute('data-horizon');
+          renderMLForecastChart();
+        });
+      });
+
+      // ML Retrain Buttons
+      document.querySelectorAll('.btn-retrain').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const m = btn.getAttribute('data-model');
+          triggerToast(`Retraining pipeline scheduled for ${m}`);
+        });
+      });
+
+      // 14. Alert Creation Modal Handlers
+      const alertModal = document.getElementById('modal-create-alert');
+      document.getElementById('btn-open-create-alert').addEventListener('click', () => {
+        alertModal.classList.remove('hidden');
+      });
+      document.getElementById('btn-close-alert-modal').addEventListener('click', () => {
+        alertModal.classList.add('hidden');
+      });
+      document.getElementById('btn-cancel-alert-modal').addEventListener('click', () => {
+        alertModal.classList.add('hidden');
+      });
+
+      document.getElementById('form-create-alert').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const title = document.getElementById('new-alert-title').value.trim();
+        const region = document.getElementById('new-alert-region').value.trim();
+        const severity = document.getElementById('new-alert-severity').value;
+        const threshold = document.getElementById('new-alert-threshold').value.trim();
+
+        if (!title) return;
+
+        const newAlert = {
+          id: `ALT-${Math.floor(Math.random() * 900 + 8900)}`,
+          title,
+          region,
+          severity,
+          value: threshold,
+          threshold,
+          time: 'Just Now',
+          status: 'Active',
+          category: 'Environmental Rule'
+        };
+
+        state.alertsList.unshift(newAlert);
+        renderAlertsTable();
+        alertModal.classList.add('hidden');
+        document.getElementById('form-create-alert').reset();
+        triggerToast(`New alert rule created: ${newAlert.id}`);
+      });
+
+      // 15. Hadoop Logs Modal Close
+      const logsModal = document.getElementById('modal-logs');
+      document.getElementById('btn-close-logs-modal').addEventListener('click', () => {
+        logsModal.classList.add('hidden');
+      });
+      document.getElementById('btn-close-logs-modal-footer').addEventListener('click', () => {
+        logsModal.classList.add('hidden');
+      });
+
+      // 16. Custom Report Generator
+      document.getElementById('btn-generate-report').addEventListener('click', () => {
+        const btn = document.getElementById('btn-generate-report');
+        const sector = document.getElementById('report-sector-select').value;
+        const format = document.getElementById('report-format-select').value;
+
+        btn.disabled = true;
+        btn.textContent = 'Compiling Report...';
+
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.textContent = 'Generate & Download';
+          triggerToast(`${format} for ${sector} generated successfully!`);
+        }, 1500);
+      });
+
+      // 17. User Management Add Member
+      document.getElementById('btn-add-team-member').addEventListener('click', () => {
+        if (state.role !== 'Admin') {
+          triggerToast('Access Denied: Only Administrators can provision users.');
+        } else {
+          triggerToast('User Invitation Dialog Triggered.');
+        }
+      });
+
+      // 18. Support Ticket Submit
+      document.getElementById('support-ticket-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const category = document.getElementById('support-category-select').value;
+        const descInput = document.getElementById('support-desc-input');
+        if (!descInput.value.trim()) return;
+
+        triggerToast(`Support ticket submitted under ${category}`);
+        descInput.value = '';
+      });
+
+      // 19. Settings Save
+      document.getElementById('btn-save-settings').addEventListener('click', () => {
+        const name = document.getElementById('settings-name-input').value.trim();
+        const title = document.getElementById('settings-title-input').value.trim();
+        const email = document.getElementById('settings-email-input').value.trim();
+
+        state.currentUser.name = name;
+        state.currentUser.title = title;
+        state.currentUser.email = email;
+
+        document.getElementById('dropdown-username').textContent = name;
+        document.getElementById('dropdown-title').textContent = title;
+        document.getElementById('dropdown-email').textContent = email;
+
+        triggerToast('Profile changes saved successfully');
+      });
+
+      // 20. Start Streaming Ticker & Initial Route
+      setupStreamingTicker();
+      setActivePage('landing');
+    });
+  </script>
+</body>
+</html>
+
