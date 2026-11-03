@@ -110,13 +110,17 @@ def run_job(name, job_input, needs_stations, reducers):
     return time.time() - started
 
 
+def timing(name, seconds):
+    return {"job": name, "seconds": round(seconds, 1),
+            "finished_at": datetime.datetime.utcnow()}
+
+
 def jobs():
     timings = []
     for name, job_input, needs_stations, reducers, _ in JOB_SPECS:
         seconds = run_job(name, job_input, needs_stations, reducers)
         print("%s finished in %.0f s" % (name, seconds))
-        timings.append({"job": name, "seconds": round(seconds, 1),
-                        "finished_at": datetime.datetime.utcnow()})
+        timings.append(timing(name, seconds))
     return timings
 
 
@@ -160,23 +164,32 @@ def replace_collection(db, name, documents):
     print("%s: %d documents" % (name, len(documents)))
 
 
+def load_job_output(db, spec):
+    name, columns = spec[0], spec[4]
+    documents = []
+    for fields in read_job_output(name):
+        values = [fields[0]] + [typed(v) for v in fields[1:]]
+        documents.append(dict(zip(columns, values)))
+    replace_collection(db, name, documents)
+    db.station_anomalies.create_index([("station", 1), ("date", 1)])
+    db.regional_monthly.create_index([("zone", 1), ("year", 1), ("month", 1)])
+
+
+def record_timings(db, timings):
+    if timings:
+        db.pipeline_runs.insert_many(timings)
+
+
 def to_mongo(timings):
     from pymongo import MongoClient
 
     db = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)[MONGO_DB]
-    for name, _, _, _, columns in JOB_SPECS:
-        documents = []
-        for fields in read_job_output(name):
-            values = [fields[0]] + [typed(v) for v in fields[1:]]
-            documents.append(dict(zip(columns, values)))
-        replace_collection(db, name, documents)
+    for spec in JOB_SPECS:
+        load_job_output(db, spec)
     replace_collection(db, "gistemp_global", read_gistemp("GLB.Ts+dSST.csv"))
     replace_collection(db, "gistemp_zonal", read_gistemp("ZonAnn.Ts+dSST.csv"))
     replace_collection(db, "co2_annual", read_co2())
-    db.station_anomalies.create_index([("station", 1), ("date", 1)])
-    db.regional_monthly.create_index([("zone", 1), ("year", 1), ("month", 1)])
-    if timings:
-        db.pipeline_runs.insert_many(timings)
+    record_timings(db, timings)
 
 
 def main():

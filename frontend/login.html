@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign in - EarthScape</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 16px;
+      font-family: "Instrument Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #0c1f15, #040404 55%, #121c16); color: #040404;
+    }
+    .card { width: 100%; max-width: 400px; background: #fff; border-radius: 24px; padding: 32px; box-shadow: 0 20px 60px rgba(0,0,0,.4); }
+    h1 { margin: 0 0 4px; font-size: 24px; letter-spacing: -0.025em; }
+    p { margin: 0 0 24px; color: #5f6660; font-size: 14px; }
+    label { display: block; font-size: 13px; font-weight: 600; margin: 16px 0 6px; }
+    input { width: 100%; padding: 12px; font: inherit; font-size: 14px; background: #f9f9f9; border: 1px solid #d8d8d8; border-radius: 12px; }
+    input:focus { outline: 2px solid #1a814a; outline-offset: 1px; }
+    button { width: 100%; margin-top: 24px; padding: 12px; font: inherit; font-weight: 700; color: #fff; background: #1a814a; border: 0; border-radius: 99px; cursor: pointer; }
+    button:hover { background: #14663b; }
+    button:disabled { opacity: .6; cursor: wait; }
+    #error { margin-top: 16px; padding: 10px 12px; font-size: 13px; color: #9f1239; background: #ffe4e6; border-radius: 12px; }
+    #error[hidden] { display: none; }
+    a { display: block; margin-top: 20px; text-align: center; font-size: 13px; color: #1a814a; }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>EarthScape</h1>
+    <p>Sign in to the Climate Intelligence dashboard.</p>
+    <form id="login-form">
+      <label for="email">Email</label>
+      <input id="email" type="email" autocomplete="username" required autofocus />
+      <label for="password">Password</label>
+      <input id="password" type="password" autocomplete="current-password" required />
+      <button id="submit" type="submit">Sign in</button>
+      <div id="error" role="alert" hidden></div>
+    </form>
+    <a href="index.html">Back to the website</a>
+  </main>
+  <script>
+    const form = document.getElementById('login-form');
+    const errorBox = document.getElementById('error');
+    const submit = document.getElementById('submit');
+
+    if (sessionStorage.getItem('es_token')) location.replace('dashboard.html');
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      errorBox.hidden = true;
+      submit.disabled = true;
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value,
+          }),
+        });
+        const body = await response.json();
+        if (!response.ok) throw new Error(body.detail || 'Sign-in failed.');
+        sessionStorage.setItem('es_token', body.token);
+        location.replace('dashboard.html');
+      } catch (error) {
+        errorBox.textContent = error instanceof TypeError ? "Can't reach the server. Is the backend running?" : error.message;
+        errorBox.hidden = false;
+        submit.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
