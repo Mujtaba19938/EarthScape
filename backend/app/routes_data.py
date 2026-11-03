@@ -1,5 +1,6 @@
 """Read-only climate data produced by the pipeline, and report downloads."""
 import csv
+import datetime
 import io
 import json
 
@@ -133,7 +134,11 @@ def quality():
 def _report_rows(report):
     columns = report["columns"]
     query = db[report["collection"]].find(report["query"], {"_id": 0}).sort(report["sort"])
-    return [{column: row.get(column) for column in columns} for row in query]
+    return [{column: _plain(row.get(column)) for column in columns} for row in query]
+
+
+def _plain(value):
+    return value.isoformat() if isinstance(value, datetime.datetime) else value
 
 
 def _as_csv(columns, rows):

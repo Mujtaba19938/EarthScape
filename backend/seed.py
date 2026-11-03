@@ -12,6 +12,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from app import config  # noqa: E402
 
+DEFAULT_RULES = [
+    ("Unhealthy air", "live_aqi", 150, "High"),
+    ("Very high PM2.5", "air_pm25", 125, "Critical"),
+    ("Extreme heat", "live_temperature", 40, "Critical"),
+    ("Strong wind", "live_wind", 60, "Medium"),
+]
+
 
 def env_values():
     values = {
@@ -55,6 +62,13 @@ def main():
             "created_at": datetime.datetime.now(datetime.timezone.utc),
         })
         print("Created:", email)
+    if db.alert_rules.count_documents({}) == 0:
+        now = datetime.datetime.now(datetime.timezone.utc)
+        db.alert_rules.insert_many([
+            {"name": name, "metric": metric, "threshold": threshold, "severity": severity,
+             "created_by": "Setup", "created_at": now}
+            for name, metric, threshold, severity in DEFAULT_RULES])
+        print("Created", len(DEFAULT_RULES), "alert rules")
     print("Sign-in details are in", config.ENV_FILE)
 
 

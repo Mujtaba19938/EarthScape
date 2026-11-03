@@ -6,12 +6,14 @@ from . import config
 from .db import ensure_indexes
 from .routes_auth import router as auth_router
 from .routes_data import router as data_router
+from .routes_live import router as live_router
 from .routes_ml import router as ml_router
 from .routes_ops import router as ops_router
 
 app = FastAPI(title="EarthScape API", version="0.2.0")
 app.include_router(auth_router)
 app.include_router(data_router)
+app.include_router(live_router)
 app.include_router(ml_router)
 app.include_router(ops_router)
 

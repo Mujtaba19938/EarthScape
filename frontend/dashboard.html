@@ -182,7 +182,27 @@
       </section>
 
       <section id="view-monitoring" class="page-view hidden space-y-6">
-        <div class="card p-5"><h2 class="text-xl font-extrabold">Sensor monitor</h2><p class="text-xs text-slate-500">Each sensor's most recent month in the OpenAQ 2023 data. This isn't live yet; a live feed arrives in Phase 4.</p></div>
+        <div class="card p-5 flex flex-wrap gap-3 justify-between items-center">
+          <div class="space-y-1">
+            <h2 class="text-xl font-extrabold">Live monitor</h2>
+            <p class="text-xs text-slate-500">Current weather and air quality for 12 cities. These are model estimates from <a class="underline" href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>, not readings from sensors.</p>
+            <p id="live-status" class="text-xs font-medium text-slate-700"></p>
+            <p id="live-batch" class="text-xs text-slate-500"></p>
+          </div>
+          <button id="btn-live-poll" class="admin-only pill pill-dark disabled:opacity-50">Check now</button>
+        </div>
+        <div id="live-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+        <div class="card p-6 space-y-4">
+          <div class="flex flex-wrap gap-3 justify-between items-center">
+            <h3 class="font-bold">Last 48 hours</h3>
+            <div class="flex flex-wrap gap-2">
+              <select id="live-location" aria-label="City" class="field w-auto"></select>
+              <select id="live-metric" aria-label="Measurement" class="field w-auto"></select>
+            </div>
+          </div>
+          <div class="h-72 relative"><canvas id="chart-live"></canvas></div>
+        </div>
+        <div class="card p-5"><h3 class="font-bold">OpenAQ sensors, 2023</h3><p class="text-xs text-slate-500">Historical readings from real sensors: each location's most recent month in the data. These don't update.</p></div>
         <div id="sensor-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
       </section>
 
@@ -269,7 +289,7 @@
 
       <section id="view-alerts" class="page-view hidden space-y-6">
         <div class="card p-5 flex flex-wrap gap-3 justify-between items-center">
-          <div><h2 class="text-xl font-extrabold">Alert management</h2><p class="text-xs text-slate-500">Rules are saved here. Automatic checking against incoming data arrives in Phase 4, so no alerts will fire until then.</p></div>
+          <div><h2 class="text-xl font-extrabold">Alert management</h2><p class="text-xs text-slate-500">Rules are checked each time live data arrives. An alert closes by itself once the value drops back under its limit.</p><p id="alerts-status" class="text-xs font-medium text-slate-700 mt-1"></p></div>
           <button id="btn-new-rule" class="admin-only pill pill-dark">Create alert rule</button>
         </div>
         <div class="card p-6 space-y-3"><h3 class="font-bold">Alerts</h3><div id="alerts-table" class="overflow-x-auto"></div></div>
@@ -318,8 +338,10 @@
           <div class="p-4 bg-[#121212] rounded-xl font-mono text-xs text-[#86efac] space-y-1 overflow-x-auto">
             <p>NOAA, NASA, OpenAQ &rarr; HDFS &rarr; MapReduce on YARN &rarr; MongoDB &rarr; FastAPI &rarr; Dashboard</p>
             <p>MongoDB &rarr; scikit-learn, statsmodels &rarr; MongoDB (scores and forecasts)</p>
+            <p>Open-Meteo &rarr; Collector service &rarr; MongoDB &rarr; Alert rules &rarr; Email and notifications</p>
+            <p>Collector service &rarr; Hourly CSV batches &rarr; HDFS</p>
           </div>
-          <p class="text-xs text-slate-400">Live data is a later phase, and isn't part of this system yet.</p>
+          <p class="text-xs text-slate-400">Live data is collected on a timer, not through a streaming system such as Kafka. Each new value is available within one collection cycle.</p>
           <p class="text-xs"><a class="text-[#f6d987] underline" href="/docs" target="_blank" rel="noopener">API reference</a></p>
         </div>
       </section>

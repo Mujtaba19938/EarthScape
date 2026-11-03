@@ -13,3 +13,9 @@ def ensure_indexes():
     db.revoked_tokens.create_index("expires_at", expireAfterSeconds=0)
     db.tickets.create_index([("created_by", ASCENDING), ("created_at", ASCENDING)])
     db.alerts.create_index([("status", ASCENDING)])
+    # Only one open alert per rule and place, even if two processes check at once.
+    db.alerts.create_index([("rule_id", ASCENDING), ("subject", ASCENDING)], unique=True,
+                           partialFilterExpression={"cleared": False})
+    db.live_readings.create_index([("location", ASCENDING), ("observed_at", ASCENDING)], unique=True)
+    db.live_readings.create_index([("archived", ASCENDING)])
+    db.live_polls.create_index([("started_at", ASCENDING)])

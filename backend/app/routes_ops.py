@@ -10,6 +10,7 @@ from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from pydantic import BaseModel, Field
 
 from . import config, hadoop_client
+from .alert_checks import ALERT_METRICS
 from .catalogue import DATASETS, UPLOAD_SIGNATURES
 from .db import db
 from .notifications import notify
@@ -17,13 +18,6 @@ from .security import current_user, require_admin
 
 router = APIRouter(prefix="/api")
 
-ALERT_METRICS = {
-    "station_temperature_z": "Station temperature z-score",
-    "air_pm25": "Air quality PM2.5 (µg/m³)",
-    "air_pm10": "Air quality PM10 (µg/m³)",
-    "global_anomaly": "Global temperature anomaly (°C)",
-    "co2": "Atmospheric CO2 (ppm)",
-}
 SEVERITIES = ("Critical", "High", "Medium", "Low")
 ALERT_STATUSES = ("Acknowledged", "Resolved")
 TICKET_CATEGORIES = ("Data pipeline problem", "Incorrect data", "Website or dashboard bug", "Feedback")

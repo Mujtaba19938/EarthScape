@@ -13,6 +13,8 @@ DATASETS = [
      "format": "CSV", "source": "NASA POWER (CERES, MERRA-2)", "path": "/climate/raw/power"},
     {"id": "OPENAQ", "name": "OpenAQ air-quality sensor readings (9 locations, 2023)",
      "format": "CSV", "source": "OpenAQ", "path": "/climate/raw/openaq"},
+    {"id": "LIVE", "name": "Live weather and air quality estimates (12 cities, hourly batches)",
+     "format": "CSV", "source": "Open-Meteo models", "path": "/climate/raw/live"},
 ]
 
 # Some OpenAQ readings at the end of the files fall into January 2024.
@@ -48,6 +50,11 @@ REPORTS = {
         "columns": ["location_id", "location", "lat", "lon", "parameter", "units", "year", "month",
                     "mean", "max", "readings", "rejected"],
         "sort": [("location", 1), ("parameter", 1), ("month", 1)], "geo": True},
+    "live_readings": {
+        "title": "Live weather and air quality estimates", "collection": "live_readings", "query": {},
+        "columns": ["location", "lat", "lon", "observed_at", "temperature_c", "humidity_pct", "precipitation_mm",
+                    "wind_kmh", "pm25", "pm10", "no2", "o3", "us_aqi"],
+        "sort": [("observed_at", 1), ("location", 1)], "geo": True},
 }
 
 # Signatures of binary formats, so a renamed file can't be registered as climate data.

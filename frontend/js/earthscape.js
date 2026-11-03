@@ -3,6 +3,12 @@ const TOKEN_KEY = 'es_token';
 const ZONES = ['64N-90N', '44N-64N', '24N-44N', 'EQU-24N', '24S-EQU', '44S-24S', '64S-44S', '90S-64S'];
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const YEAR_COLORS = ['#94a3b8', '#1a814a', '#040404', '#c0a78c', '#0284c7'];
+const LIVE_LOCATIONS = ['Karachi', 'Delhi', 'Beijing', 'Tokyo', 'Jakarta', 'Sydney', 'Cairo', 'Lagos', 'Nairobi', 'London', 'New York', 'Sao Paulo'];
+const LIVE_METRICS = [
+  ['temperature_c', 'Temperature (°C)'], ['humidity_pct', 'Humidity (%)'], ['wind_kmh', 'Wind (km/h)'], ['precipitation_mm', 'Precipitation (mm)'],
+  ['pm25', 'PM2.5 (µg/m³)'], ['pm10', 'PM10 (µg/m³)'], ['no2', 'NO₂ (µg/m³)'], ['o3', 'Ozone (µg/m³)'], ['us_aqi', 'US AQI'],
+];
+const LIVE_REFRESH_MS = 60000;
 const ML_HORIZONS = [2030, 2040, 2050];
 const ML_CHART_START = 1950;
 
@@ -169,7 +175,7 @@ async function renderDashboard() {
   $('dashboard-stats').innerHTML = [
     statCard('Temp anomaly', temperature ? formatSigned(temperature['J-D'], ' °C') : 'n/a', temperature ? String(temperature.Year) : ''),
     statCard('CO₂', overview.co2 ? overview.co2.mean + ' ppm' : 'n/a', overview.co2 ? String(overview.co2.year) : ''),
-    statCard('Active alerts', overview.active_alerts, 'Alert checking arrives in Phase 4'),
+    statCard('Active alerts', overview.active_alerts, 'Checked each time live data arrives'),
     statCard('Datasets', overview.dataset_count, 'In HDFS'),
     statCard('Hadoop', cluster.hdfs_online && cluster.yarn_online ? 'Online' : 'Offline',
       cluster.hdfs_online ? cluster.live_datanodes + ' DataNode, ' + formatNumber(cluster.active_nodes) + ' YARN node' : 'Start HDFS and YARN'),
@@ -244,8 +250,55 @@ async function renderAnalytics() {
   updateRefreshTime();
 }
 
+function aqiTag(value) {
+  if (value === null || value === undefined) return '<span class="tag tag-grey">AQI n/a</span>';
+  const [cls, label] = value > 150 ? ['tag-red', 'Unhealthy'] : value > 100 ? ['tag-gold', 'Unhealthy for sensitive groups'] : value > 50 ? ['tag-gold', 'Moderate'] : ['tag-green', 'Good'];
+  return '<span class="tag ' + cls + '">AQI ' + esc(value) + ' ' + label + '</span>';
+}
+
+function liveValue(label, value, unit) {
+  return '<div class="flex justify-between text-xs font-mono"><span>' + esc(label) + '</span><strong>' + (value === null || value === undefined ? 'n/a' : esc(value) + ' ' + esc(unit)) + '</strong></div>';
+}
+
+function liveStatusText(status) {
+  if (!status.last_success_at) return 'No live data yet. Start the collector: backend\\.venv\\Scripts\\python.exe backend\\collector.py';
+  const last = 'Last updated ' + formatDate(status.last_success_at);
+  if (status.stale) return last + '. This is out of date: the collector may have stopped.';
+  if (status.last_poll && !status.last_poll.ok) return last + '. The latest attempt failed and will be retried.';
+  return last + ', checking every ' + status.poll_minutes + ' minutes.';
+}
+
+async function renderLiveChart() {
+  const metric = LIVE_METRICS.find((entry) => entry[0] === $('live-metric').value);
+  const rows = await request('/live/history?location=' + encodeURIComponent($('live-location').value));
+  const labels = rows.map((row) => new Date(row.observed_at).toLocaleString([], { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }));
+  drawLineChart('live', 'chart-live', labels, [{
+    label: metric[1], data: rows.map((row) => row[metric[0]]), borderColor: '#1a814a', backgroundColor: '#1a814a',
+    pointRadius: 2, tension: 0.2, borderWidth: 2,
+  }], metric[1]);
+}
+
 async function renderMonitoring() {
-  const sensors = await request('/air-quality');
+  const [live, sensors] = await Promise.all([request('/live/latest'), request('/air-quality')]);
+  const status = live.status;
+  $('live-status').textContent = liveStatusText(status);
+  $('live-status').classList.toggle('text-rose-600', status.stale);
+  const batch = status.last_batch;
+  $('live-batch').textContent = (batch
+    ? (batch.ok ? 'Last HDFS batch: ' + batch.rows + ' readings at ' + formatDate(batch.finished_at) + '.' :'The last HDFS batch failed and will be retried.')
+    : 'No HDFS batch yet.') + ' ' + status.waiting_for_hdfs + ' readings waiting for the next batch.';
+  $('live-grid').innerHTML = live.readings.map((row) => (
+    '<div class="card p-5 space-y-2"><div class="flex justify-between gap-2 items-start"><h4 class="font-extrabold text-sm">' + esc(row.location) + '</h4>' + aqiTag(row.us_aqi) + '</div>'
+    + '<p class="text-[10px] text-slate-500 font-mono">' + esc(formatDate(row.observed_at)) + '</p>'
+    + liveValue('Temperature', row.temperature_c, '°C') + liveValue('Humidity', row.humidity_pct, '%')
+    + liveValue('Wind', row.wind_kmh, 'km/h') + liveValue('Precipitation', row.precipitation_mm, 'mm')
+    + liveValue('PM2.5', row.pm25, 'µg/m³') + liveValue('PM10', row.pm10, 'µg/m³')
+    + liveValue('NO₂', row.no2, 'µg/m³') + liveValue('Ozone', row.o3, 'µg/m³') + '</div>'
+  )).join('') || '<div class="card empty md:col-span-2 xl:col-span-3">No live readings yet.</div>';
+  await renderLiveChart();
+  // Keep the page current while someone is watching it.
+  clearTimeout(state.jobPoll);
+  state.jobPoll = setTimeout(() => { if (state.page === 'monitoring') attempt(renderMonitoring); }, LIVE_REFRESH_MS);
   $('sensor-grid').innerHTML = sensors.map((sensor) => {
     const rows = Object.values(sensor.pollutants).map((row) => (
       '<div class="flex justify-between text-xs font-mono"><span>' + esc(row.parameter.toUpperCase()) + ' <span class="text-slate-400">(' + esc(MONTHS[row.month - 1]) + ')</span></span><strong>' + esc(Number(row.mean).toPrecision(3)) + ' ' + esc(row.units) + '</strong></div>'
@@ -439,12 +492,16 @@ function severityTag(severity) {
 }
 
 async function renderAlerts() {
-  const [alerts, rules, options] = await Promise.all([request('/alerts'), request('/alert-rules'), request('/alert-metrics')]);
-  $('alerts-table').innerHTML = table(['Severity', 'Title', 'Measured', 'Status', ''], alerts.map((alert) => [
-    severityTag(alert.severity), esc(alert.title), esc(alert.value), esc(alert.status),
+  const [alerts, rules, options, live] = await Promise.all([request('/alerts'), request('/alert-rules'), request('/alert-metrics'), request('/live/latest')]);
+  $('alerts-status').textContent = liveStatusText(live.status);
+  $('alerts-status').classList.toggle('text-rose-600', live.status.stale);
+  $('alerts-table').innerHTML = table(['Severity', 'Title', 'Measured', 'Started', 'Status', 'Email', ''], alerts.map((alert) => [
+    severityTag(alert.severity), esc(alert.title), esc(alert.value), esc(formatDate(alert.created_at)),
+    esc(alert.status) + (alert.updated_by ? ' <span class="text-[11px] text-slate-400">(' + esc(alert.updated_by) + ')</span>' : ''),
+    esc(alert.email_status || ''),
     (alert.status === 'Active' ? '<button class="pill pill-gold" data-action="alert-status" data-id="' + esc(alert.id) + '" data-status="Acknowledged">Acknowledge</button> ' : '')
     + (alert.status !== 'Resolved' ? '<button class="pill pill-green" data-action="alert-status" data-id="' + esc(alert.id) + '" data-status="Resolved">Resolve</button>' : ''),
-  ]), 'No alerts have fired. Automatic checking arrives in Phase 4.');
+  ]), 'No alerts have fired.');
   $('rules-table').innerHTML = table(['Name', 'Metric', 'Fire above', 'Severity', 'Created by'].concat(isAdmin() ? [''] : []), rules.map((rule) => {
     const cells = [esc(rule.name), esc(options.metrics[rule.metric] || rule.metric), esc(rule.threshold), severityTag(rule.severity), esc(rule.created_by)];
     if (isAdmin()) cells.push('<button class="pill pill-light" data-action="delete-rule" data-id="' + esc(rule.id) + '">Delete</button>');
@@ -770,6 +827,19 @@ function bindEvents() {
   $('upload-input').addEventListener('change', (event) => { if (event.target.files[0]) uploadFile(event.target.files[0]); });
   $('report-select').addEventListener('change', updateReportFormats);
   $('btn-download').addEventListener('click', () => attempt(downloadReport));
+  $('live-location').addEventListener('change', () => attempt(renderLiveChart));
+  $('live-metric').addEventListener('change', () => attempt(renderLiveChart));
+  $('btn-live-poll').addEventListener('click', () => attempt(async () => {
+    $('btn-live-poll').disabled = true;
+    try {
+      const result = await request('/live/poll', { method: 'POST' });
+      toast('Checked ' + result.readings + ' cities: ' + result.alerts_fired + ' new alerts, ' + result.alerts_cleared + ' cleared.');
+      await renderMonitoring();
+      await refreshAlertSignals();
+    } finally {
+      $('btn-live-poll').disabled = false;
+    }
+  }));
   $('ml-series').addEventListener('change', () => attempt(renderForecast));
   $('btn-retrain').addEventListener('click', () => attempt(async () => {
     const before = await request('/ml/summary');
@@ -839,6 +909,8 @@ async function start() {
   buildSidebar();
   $('analytics-zone').innerHTML = '<option value="Glob">Global</option>' + ZONES.map((zone) => '<option>' + zone + '</option>').join('');
   $('ml-series').innerHTML = $('analytics-zone').innerHTML;
+  $('live-location').innerHTML = LIVE_LOCATIONS.map((name) => '<option>' + name + '</option>').join('');
+  $('live-metric').innerHTML = LIVE_METRICS.map(([key, label]) => '<option value="' + key + '">' + label + '</option>').join('');
   bindEvents();
   state.sidebarOpen = true;
   try {
@@ -851,8 +923,13 @@ async function start() {
   lucide.createIcons();
   if (window.innerWidth < 768) setSidebar(false);
   await setPage('landing');
-  attempt(loadNotifications);
-  attempt(async () => updateAlertBadge(await request('/alerts')));
+  attempt(refreshAlertSignals);
+  setInterval(() => attempt(refreshAlertSignals), LIVE_REFRESH_MS);
+}
+
+async function refreshAlertSignals() {
+  await loadNotifications();
+  updateAlertBadge(await request('/alerts'));
 }
 
 start();
