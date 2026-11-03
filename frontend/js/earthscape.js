@@ -3,6 +3,8 @@ const TOKEN_KEY = 'es_token';
 const ZONES = ['64N-90N', '44N-64N', '24N-44N', 'EQU-24N', '24S-EQU', '44S-24S', '64S-44S', '90S-64S'];
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const YEAR_COLORS = ['#94a3b8', '#1a814a', '#040404', '#c0a78c', '#0284c7'];
+const ML_HORIZONS = [2030, 2040, 2050];
+const ML_CHART_START = 1950;
 
 const NAV = [
   ['landing', 'globe', 'Agency Landing'],
@@ -22,7 +24,7 @@ const NAV = [
   ['settings', 'settings', 'Account Settings'],
 ];
 
-const state = { page: 'landing', user: null, charts: {}, searchIndex: null, jobPoll: null };
+const state = { page: 'landing', user: null, charts: {}, searchIndex: null, jobPoll: null, mlForecast: null, mlHorizon: 2050 };
 
 const $ = (id) => document.getElementById(id);
 
@@ -130,7 +132,8 @@ function drawLineChart(name, canvasId, labels, datasets, yLabel) {
       responsive: true,
       maintainAspectRatio: false,
       spanGaps: false,
-      plugins: { legend: { display: datasets.length > 1 } },
+      interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { display: datasets.length > 1, labels: { filter: (item, data) => !data.datasets[item.datasetIndex].hideFromLegend } } },
       scales: {
         x: { grid: { display: false } },
         y: { grid: { color: '#f0f0f0' }, title: { display: Boolean(yLabel), text: yLabel } },
@@ -325,6 +328,111 @@ async function showJobDetails(id) {
   $('modal-job').classList.remove('hidden');
 }
 
+function seriesLabel(series) {
+  return series === 'Glob' ? 'Global' : series;
+}
+
+function percent(share, decimals) {
+  return (100 * share).toFixed(decimals || 0) + '%';
+}
+
+function drawForecast() {
+  const forecast = state.mlForecast;
+  const history = forecast.history.filter((row) => row.year >= ML_CHART_START);
+  const future = forecast.forecast.filter((row) => row.year <= state.mlHorizon);
+  const last = history[history.length - 1];
+  const blanks = history.slice(0, -1).map(() => null);
+  drawLineChart('mlForecast', 'chart-ml-forecast', history.map((row) => row.year).concat(future.map((row) => row.year)), [
+    { label: 'Measured', data: history.map((row) => row.value), borderColor: '#040404', backgroundColor: '#040404', pointRadius: 0, tension: 0.2, borderWidth: 2 },
+    { label: 'Forecast', data: blanks.concat([last.value], future.map((row) => row.forecast)), borderColor: '#1a814a', backgroundColor: '#1a814a', borderDash: [6, 4], pointRadius: 0, borderWidth: 2 },
+    { label: '95% range, upper', data: blanks.concat([last.value], future.map((row) => row.upper)), borderWidth: 0, pointRadius: 0, backgroundColor: 'rgba(26,129,74,.15)', fill: '+1' },
+    { label: '95% range, lower', data: blanks.concat([last.value], future.map((row) => row.lower)), borderWidth: 0, pointRadius: 0, hideFromLegend: true },
+  ], '°C');
+  $('ml-horizons').innerHTML = ML_HORIZONS.map((year) => (
+    '<button class="pill ' + (year === state.mlHorizon ? 'pill-dark' : 'pill-light') + '" data-action="ml-horizon" data-year="' + year + '" aria-pressed="' + (year === state.mlHorizon) + '">' + year + '</button>'
+  )).join('');
+}
+
+async function renderForecast() {
+  const series = $('ml-series').value;
+  const forecast = await request('/ml/forecast?series=' + encodeURIComponent(series));
+  state.mlForecast = forecast;
+  drawForecast();
+  $('ml-forecast-table').innerHTML = table(['Year', 'Forecast', '95% range'], forecast.forecast.filter((row) => ML_HORIZONS.includes(row.year)).map((row) => [
+    esc(row.year), esc(formatSigned(row.forecast.toFixed(2), ' °C')), esc(formatSigned(row.lower.toFixed(2), '')) + ' to ' + esc(formatSigned(row.upper.toFixed(2), ' °C')),
+  ]), 'No forecast yet.');
+  $('ml-verdict').textContent = 'Method for ' + seriesLabel(series) + ': ' + forecast.chosen_label + '. It had the lowest error on past data. On '
+    + forecast.test_period + ', held back from that choice, it ' + (forecast.beats_baseline ? 'beat' : "didn't beat") + ' simply repeating the last value (error '
+    + forecast.test_rmse.toFixed(3) + ' against ' + forecast.baseline_test_rmse.toFixed(3) + ' °C), and ' + percent(forecast.test_coverage) + ' of those years fell inside its 95% range. One decade is a small test.';
+  $('ml-comparison').innerHTML = table(['Method', 'Error on past data', 'Error on ' + forecast.test_period, 'Average miss'], forecast.comparison.map((row) => [
+    '<strong class="text-[#040404]">' + esc(row.label) + '</strong>' + (row.method === forecast.chosen_method ? ' <span class="tag tag-green">Chosen</span>' : ''),
+    esc(row.backtest_rmse.toFixed(3)) + ' °C', esc(row.test_rmse.toFixed(3)) + ' °C', esc(formatSigned(row.test_bias, ' °C')),
+  ]), 'No results yet.');
+}
+
+function renderMlEmpty() {
+  ['ml-stats', 'ml-forecast-table', 'ml-comparison', 'ml-anomalies', 'ml-correlations', 'ml-history', 'ml-horizons'].forEach((id) => { $(id).innerHTML = ''; });
+  $('ml-verdict').textContent = '';
+  $('ml-run-note').textContent = 'No models have been trained yet. Run ml/train_models.py or use the Retrain button.';
+}
+
+function showRetrainState(retraining) {
+  $('btn-retrain').disabled = retraining;
+  $('btn-retrain').textContent = retraining ? 'Training...' : 'Retrain models';
+}
+
+async function renderMl() {
+  const [summary, anomalies, correlations] = await Promise.all([request('/ml/summary'), request('/ml/anomalies?limit=25'), request('/ml/correlations')]);
+  showRetrainState(summary.retraining);
+  clearTimeout(state.jobPoll);
+  if (summary.retraining) state.jobPoll = setTimeout(() => attempt(() => watchTraining(summary.latest && summary.latest.version)), 5000);
+  const latest = summary.latest;
+  if (!latest) {
+    renderMlEmpty();
+    return;
+  }
+  const scores = latest.forecast_scores;
+  const anomaly = latest.anomaly;
+  const recall = anomaly.recall_by_spike_size;
+  const beating = scores.filter((score) => score.beats_baseline).length;
+  const coverage = scores.reduce((total, score) => total + score.test_coverage, 0) / scores.length;
+  $('ml-run-note').textContent = 'Version ' + latest.version + ', trained ' + formatDate(latest.trained_at) + ' by ' + latest.triggered_by + '. Every figure here comes from this run.';
+  $('ml-stats').innerHTML = [
+    statCard('Beat the baseline', beating + ' of ' + scores.length, 'Regions where the forecast beat repeating the last value on ' + scores[0].test_period),
+    statCard('Inside the 95% range', percent(coverage), 'Held-back years inside the range, averaged across regions'),
+    statCard('False alarms', percent(anomaly.false_alarm_rate, 2), 'Oct-Dec days flagged after training on Jan-Sep, target about 1%'),
+    statCard('Test spikes found', percent(recall['10']), 'At 10 times a sensor\'s usual spread. At 6: ' + percent(recall['6']) + ', at 3: ' + percent(recall['3'])),
+  ].join('');
+  await renderForecast();
+  $('ml-anomalies').innerHTML = table(['Date', 'Sensor', 'Pollutant', 'Daily mean', 'Daily peak', 'Spreads above recent normal'], anomalies.map((row) => [
+    esc(row.date), esc(row.location), esc(row.parameter.toUpperCase()), esc(row.mean) + ' ' + esc(row.units), esc(row.max) + ' ' + esc(row.units), esc(row.z_mean),
+  ]), 'No unusual days flagged.');
+  $('ml-correlations').innerHTML = table(['Compared', 'Data', 'Pairs', 'Pearson', 'Spearman', 'p-value', 'How to read it'], correlations.map((row) => [
+    '<strong class="text-[#040404]">' + esc(row.left) + '</strong><br />' + esc(row.right), esc(row.kind), esc(row.n), esc(row.pearson), esc(row.spearman),
+    esc(row.pearson_p) + (row.pearson_p >= 0.05 ? ' <span class="tag tag-grey">Not significant</span>' : ''), esc(row.note),
+  ]), 'No correlations yet.');
+  $('ml-history').innerHTML = table(['Version', 'Trained', 'By', 'Global error', 'Baseline error', 'Regions beating baseline', 'False alarms', 'Spikes found (10 spreads)'], summary.history.map((run) => [
+    '<span class="font-mono text-[11px]">' + esc(run.version) + '</span>', esc(formatDate(run.trained_at)), esc(run.triggered_by),
+    esc(run.global_test_rmse) + ' °C', esc(run.global_baseline_rmse) + ' °C', esc(run.series_beating_baseline) + ' of ' + esc(run.series_count),
+    esc(percent(run.false_alarm_rate, 2)), esc(percent(run.recall_by_spike_size['10'])),
+  ]), 'No runs yet.');
+  updateRefreshTime();
+}
+
+async function watchTraining(previousVersion) {
+  if (state.page !== 'ml') return;
+  const summary = await request('/ml/summary');
+  if (summary.retraining) {
+    state.jobPoll = setTimeout(() => attempt(() => watchTraining(previousVersion)), 5000);
+    return;
+  }
+  const version = summary.latest && summary.latest.version;
+  if (version !== previousVersion) toast('Models retrained: version ' + version);
+  else toast('Training failed. See notifications for the reason.', true);
+  attempt(loadNotifications);
+  await renderMl();
+}
+
 function severityTag(severity) {
   const cls = severity === 'Critical' ? 'tag-red' : severity === 'High' ? 'tag-gold' : 'tag-grey';
   return '<span class="tag ' + cls + '">' + esc(severity) + '</span>';
@@ -424,7 +532,7 @@ function renderSettings() {
 
 const RENDERERS = {
   landing: renderLanding, dashboard: renderDashboard, analytics: renderAnalytics, monitoring: renderMonitoring,
-  data: renderData, hadoop: renderHadoop, alerts: renderAlerts, reports: renderReports, rbac: renderUsers,
+  data: renderData, hadoop: renderHadoop, ml: renderMl, alerts: renderAlerts, reports: renderReports, rbac: renderUsers,
   support: renderSupport, settings: renderSettings,
 };
 
@@ -571,6 +679,10 @@ const ACTIONS = {
     toast('Started ' + data.name + '. It will appear below shortly.');
     setTimeout(() => { if (state.page === 'hadoop') attempt(renderHadoop); }, 4000);
   },
+  'ml-horizon': (data) => {
+    state.mlHorizon = Number(data.year);
+    drawForecast();
+  },
   'alert-status': async (data) => {
     await request('/alerts/' + data.id, { method: 'PATCH', json: { status: data.status } });
     await renderAlerts();
@@ -658,6 +770,14 @@ function bindEvents() {
   $('upload-input').addEventListener('change', (event) => { if (event.target.files[0]) uploadFile(event.target.files[0]); });
   $('report-select').addEventListener('change', updateReportFormats);
   $('btn-download').addEventListener('click', () => attempt(downloadReport));
+  $('ml-series').addEventListener('change', () => attempt(renderForecast));
+  $('btn-retrain').addEventListener('click', () => attempt(async () => {
+    const before = await request('/ml/summary');
+    await request('/ml/retrain', { method: 'POST' });
+    showRetrainState(true);
+    toast('Training started. This takes about a minute.');
+    state.jobPoll = setTimeout(() => attempt(() => watchTraining(before.latest && before.latest.version)), 5000);
+  }));
   $('btn-new-rule').addEventListener('click', () => $('modal-rule').classList.remove('hidden'));
   $('btn-new-user').addEventListener('click', () => $('modal-user').classList.remove('hidden'));
 
@@ -718,6 +838,7 @@ function bindEvents() {
 async function start() {
   buildSidebar();
   $('analytics-zone').innerHTML = '<option value="Glob">Global</option>' + ZONES.map((zone) => '<option>' + zone + '</option>').join('');
+  $('ml-series').innerHTML = $('analytics-zone').innerHTML;
   bindEvents();
   state.sidebarOpen = true;
   try {

@@ -229,9 +229,41 @@
       </section>
 
       <section id="view-ml" class="page-view hidden space-y-6">
-        <div class="card p-10 text-center space-y-2">
-          <h2 class="text-xl font-extrabold">Forecasts aren't built yet</h2>
-          <p class="text-sm text-slate-500 max-w-xl mx-auto">The earlier forecast chart and model scores here were made-up numbers, so they've been removed. Real models, trained and tested on this data, arrive in Phase 3.</p>
+        <div class="card p-5 flex flex-wrap gap-3 justify-between items-center">
+          <div><h2 class="text-xl font-extrabold">ML models &amp; forecasts</h2><p id="ml-run-note" class="text-xs text-slate-500"></p></div>
+          <button id="btn-retrain" class="admin-only pill pill-dark disabled:opacity-50">Retrain models</button>
+        </div>
+        <div id="ml-stats" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4"></div>
+        <div class="card p-6 space-y-4">
+          <div class="flex flex-wrap gap-3 justify-between items-center">
+            <div><h3 class="font-bold">Temperature anomaly forecast</h3><p class="text-xs text-slate-500">°C compared with the 1951-1980 average. NASA GISTEMP history.</p></div>
+            <div class="flex flex-wrap gap-2 items-center">
+              <select id="ml-series" aria-label="Region" class="field w-auto"></select>
+              <div id="ml-horizons" class="flex gap-2"></div>
+            </div>
+          </div>
+          <div class="h-80 relative"><canvas id="chart-ml-forecast"></canvas></div>
+          <p class="text-xs text-slate-500">This extends past temperatures forward using statistics. It isn't a climate model and knows nothing about future emissions, so treat later years with caution.</p>
+          <div id="ml-forecast-table" class="overflow-x-auto"></div>
+        </div>
+        <div class="card p-6 space-y-3">
+          <h3 class="font-bold">How the methods compared</h3>
+          <p id="ml-verdict" class="text-xs text-slate-500"></p>
+          <div id="ml-comparison" class="overflow-x-auto"></div>
+        </div>
+        <div class="card p-6 space-y-3">
+          <h3 class="font-bold">Unusual air quality days</h3>
+          <p class="text-xs text-slate-500">Isolation Forest on daily OpenAQ readings from 2023, comparing each day with the same sensor's previous 30 days. No one has labelled which days were truly abnormal, so a flag means unusual, not confirmed.</p>
+          <div id="ml-anomalies" class="overflow-x-auto"></div>
+        </div>
+        <div class="card p-6 space-y-3">
+          <h3 class="font-bold">Correlations</h3>
+          <p class="text-xs text-slate-500">Correlation shows that two things move together. It doesn't show that one causes the other.</p>
+          <div id="ml-correlations" class="overflow-x-auto"></div>
+        </div>
+        <div class="card p-6 space-y-3">
+          <h3 class="font-bold">Training history</h3>
+          <div id="ml-history" class="overflow-x-auto"></div>
         </div>
       </section>
 
@@ -282,11 +314,12 @@
       <section id="view-architecture" class="page-view hidden space-y-6">
         <div class="bg-[#040404] text-white p-8 rounded-[24px] space-y-4">
           <h2 class="text-xl font-extrabold text-[#f6d987]">Architecture</h2>
-          <p class="text-xs text-slate-300 max-w-2xl">Public datasets are downloaded and stored in HDFS. Python jobs run on YARN through Hadoop Streaming, and their results are loaded into MongoDB. A FastAPI backend applies login and roles, and serves both this dashboard and the data.</p>
+          <p class="text-xs text-slate-300 max-w-2xl">Public datasets are downloaded and stored in HDFS. Python jobs run on YARN through Hadoop Streaming, and their results are loaded into MongoDB. A FastAPI backend applies login and roles, and serves both this dashboard and the data. Models train in Python on the results in MongoDB, and every run's scores are saved.</p>
           <div class="p-4 bg-[#121212] rounded-xl font-mono text-xs text-[#86efac] space-y-1 overflow-x-auto">
             <p>NOAA, NASA, OpenAQ &rarr; HDFS &rarr; MapReduce on YARN &rarr; MongoDB &rarr; FastAPI &rarr; Dashboard</p>
+            <p>MongoDB &rarr; scikit-learn, statsmodels &rarr; MongoDB (scores and forecasts)</p>
           </div>
-          <p class="text-xs text-slate-400">Live data and machine learning are later phases, and aren't part of this system yet.</p>
+          <p class="text-xs text-slate-400">Live data is a later phase, and isn't part of this system yet.</p>
           <p class="text-xs"><a class="text-[#f6d987] underline" href="/docs" target="_blank" rel="noopener">API reference</a></p>
         </div>
       </section>
