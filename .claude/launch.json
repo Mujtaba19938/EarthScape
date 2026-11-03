@@ -4,8 +4,14 @@
     {
       "name": "earthscape",
       "runtimeExecutable": "backend\\.venv\\Scripts\\python.exe",
-      "runtimeArgs": ["-m", "uvicorn", "app.main:app", "--app-dir", "backend", "--host", "127.0.0.1", "--port", "8000"],
+      "runtimeArgs": ["backend\\serve.py", "--port", "8000"],
       "port": 8000
+    },
+    {
+      "name": "earthscape-2",
+      "runtimeExecutable": "backend\\.venv\\Scripts\\python.exe",
+      "runtimeArgs": ["backend\\serve.py", "--port", "8001"],
+      "port": 8001
     }
   ]
 }

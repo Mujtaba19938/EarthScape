@@ -4,11 +4,13 @@ import re
 
 from bson import ObjectId
 from bson.errors import InvalidId
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
 from pymongo.errors import DuplicateKeyError
 
+from . import login_limit
 from .db import db
+from .field_crypto import decrypt, email_fields, email_lookup
 from .security import (ROLES, bearer, create_token, current_user, hash_password, require_admin,
                        revoke_token, verify_password)
 
@@ -51,19 +53,26 @@ def public_user(user):
         "id": str(user["_id"]),
         "name": user["name"],
         "title": user.get("title", ""),
-        "email": user["email"],
+        "email": decrypt(user["email_enc"]),
         "role": user["role"],
         "active": user.get("active", True),
     }
 
 
 @router.post("/auth/login")
-def login(body: Login):
-    user = db.users.find_one({"email": body.email.strip().lower()})
+def login(body: Login, request: Request):
+    email = body.email.strip().lower()
+    address = request.client.host if request.client else "unknown"
+    if login_limit.is_blocked(email, address):
+        raise HTTPException(status_code=429, detail="Too many failed sign-ins. Please try again in 15 minutes.",
+                            headers={"Retry-After": str(login_limit.RETRY_AFTER_SECONDS)})
+    user = db.users.find_one({"email_lookup": email_lookup(email)})
     hashed = user["password_hash"] if user else _DUMMY_HASH
     valid = verify_password(body.password, hashed)
     if not user or not valid or not user.get("active", True):
+        login_limit.record_failure(email, address)
         raise HTTPException(status_code=401, detail="Incorrect email or password.")
+    login_limit.clear_account(email, address)
     return {"token": create_token(user["_id"]), "user": public_user(user)}
 
 
@@ -105,7 +114,7 @@ def create_user(body: NewUser, _admin=Depends(require_admin)):
     if body.role not in ROLES:
         raise HTTPException(status_code=422, detail="Unknown role.")
     document = {
-        "name": body.name.strip(), "title": body.title.strip(), "email": email, "role": body.role,
+        "name": body.name.strip(), "title": body.title.strip(), **email_fields(email), "role": body.role,
         "active": True, "password_hash": hash_password(body.password),
         "created_at": datetime.datetime.now(datetime.timezone.utc),
     }

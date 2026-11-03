@@ -6,3 +6,6 @@ __pycache__/
 *.log
 data/raw/
 ml/saved_models/
+backups/
+logs/
+deploy/apache/certs/

@@ -344,7 +344,7 @@ def export_for_r(db, path):
 
 # --- Saving ---
 
-def save_run(db, version, forecasts, anomaly_rows, anomaly_summary, correlation_rows, triggered_by):
+def save_run(db, version, forecasts, anomaly_rows, anomaly_summary, correlation_rows, triggered_by, seconds):
     """Replaces the current results and adds a permanent record of this run's scores."""
     trained_at = datetime.datetime.utcnow()
     for name, documents in (("ml_forecasts", forecasts), ("ml_anomalies", anomaly_rows), ("ml_correlations", correlation_rows)):
@@ -352,7 +352,7 @@ def save_run(db, version, forecasts, anomaly_rows, anomaly_summary, correlation_
         if documents:
             db[name].insert_many([dict(document, version=version) for document in documents])
     db.ml_runs.insert_one({
-        "version": version, "trained_at": trained_at, "triggered_by": triggered_by,
+        "version": version, "trained_at": trained_at, "triggered_by": triggered_by, "seconds": seconds,
         "forecast_scores": [{key: forecast[key] for key in FORECAST_SCORE_FIELDS} for forecast in forecasts],
         "anomaly": anomaly_summary,
     })
@@ -364,7 +364,8 @@ def main():
     arguments = parser.parse_args()
 
     db = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)[MONGO_DB]
-    version = datetime.datetime.utcnow().strftime("%Y%m%d-%H%M%S")
+    started = datetime.datetime.utcnow()
+    version = started.strftime("%Y%m%d-%H%M%S")
     forecasts = train_forecasts(db)
     print("Forecasts trained:", len(forecasts))
     model, anomaly_rows, anomaly_summary = train_anomaly_model()
@@ -376,7 +377,8 @@ def main():
     os.makedirs(folder, exist_ok=True)
     joblib.dump(model, os.path.join(folder, "isolation_forest.joblib"))
     export_for_r(db, os.path.join(ROOT, "ml", "co2_temperature.csv"))
-    save_run(db, version, forecasts, anomaly_rows, anomaly_summary, correlation_rows, arguments.triggered_by)
+    seconds = round((datetime.datetime.utcnow() - started).total_seconds(), 1)
+    save_run(db, version, forecasts, anomaly_rows, anomaly_summary, correlation_rows, arguments.triggered_by, seconds)
     print("Saved version", version)
 
 

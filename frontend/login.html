@@ -8,44 +8,165 @@
   <style>
     * { box-sizing: border-box; }
     body {
-      margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 16px;
+      margin: 0;
       font-family: "Instrument Sans", -apple-system, BlinkMacSystemFont, sans-serif;
-      background: linear-gradient(135deg, #0c1f15, #040404 55%, #121c16); color: #040404;
+      background: #fff; color: #040404;
     }
-    .card { width: 100%; max-width: 400px; background: #fff; border-radius: 24px; padding: 32px; box-shadow: 0 20px 60px rgba(0,0,0,.4); }
-    h1 { margin: 0 0 4px; font-size: 24px; letter-spacing: -0.025em; }
-    p { margin: 0 0 24px; color: #5f6660; font-size: 14px; }
-    label { display: block; font-size: 13px; font-weight: 600; margin: 16px 0 6px; }
-    input { width: 100%; padding: 12px; font: inherit; font-size: 14px; background: #f9f9f9; border: 1px solid #d8d8d8; border-radius: 12px; }
-    input:focus { outline: 2px solid #1a814a; outline-offset: 1px; }
-    button { width: 100%; margin-top: 24px; padding: 12px; font: inherit; font-weight: 700; color: #fff; background: #1a814a; border: 0; border-radius: 99px; cursor: pointer; }
-    button:hover { background: #14663b; }
-    button:disabled { opacity: .6; cursor: wait; }
+    .shell { display: grid; grid-template-columns: 1.05fr 1fr; min-height: 100vh; min-height: 100dvh; padding: 12px; }
+
+    .art { position: relative; display: flex; flex-direction: column; justify-content: space-between; padding: 24px; overflow: hidden; color: #fff; background: #06190f; border-radius: 18px; }
+    .art svg.scene { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .art-top, .art-bottom { position: relative; }
+    .art-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .brand { font-size: 22px; font-weight: 700; letter-spacing: -0.025em; }
+    .back { flex: none; padding: 8px 14px; font-size: 13px; font-weight: 500; color: #fff; text-decoration: none; background: rgba(255,255,255,.16); border-radius: 99px; backdrop-filter: blur(6px); }
+    .back:hover { background: rgba(255,255,255,.28); }
+    .back:focus-visible, .dot:focus-visible { outline: 2px solid #f6d987; outline-offset: 2px; }
+    .captions { display: grid; }
+    .caption { grid-area: 1 / 1; margin: 0; font-size: 26px; font-weight: 500; line-height: 1.25; letter-spacing: -0.02em; text-align: center; opacity: 0; transition: opacity .6s; }
+    .caption.on { opacity: 1; }
+    .dots { display: flex; justify-content: center; gap: 2px; margin-top: 12px; }
+    .dot { width: 40px; height: 24px; padding: 0; background: none; border: 0; cursor: pointer; }
+    .dot::before { content: ""; display: block; height: 3px; background: rgba(255,255,255,.35); border-radius: 99px; transition: background .3s; }
+    .dot[aria-current="true"]::before { background: #fff; }
+
+    .panel { display: flex; flex-direction: column; justify-content: center; padding: 32px 56px; }
+    .panel > * { width: 100%; max-width: 440px; align-self: center; }
+    h1 { margin: 0 0 10px; font-size: 40px; font-weight: 600; line-height: 1.1; letter-spacing: -0.03em; }
+    .lead { margin: 0 0 32px; color: #5f6660; font-size: 14px; }
+    label { display: block; margin: 0 0 6px; font-size: 13px; font-weight: 600; }
+    input { width: 100%; height: 48px; padding: 0 14px; font: inherit; font-size: 14px; background: #f4f6f4; border: 1px solid #e0e4e1; border-radius: 12px; }
+    input:focus { outline: 2px solid #1a814a; outline-offset: 1px; background: #fff; }
+    .field { margin-bottom: 16px; }
+    .password { position: relative; }
+    .password input { padding-right: 48px; }
+    .toggle { position: absolute; top: 0; right: 0; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; padding: 0; color: #5f6660; background: none; border: 0; border-radius: 12px; cursor: pointer; }
+    .toggle:hover { color: #040404; }
+    .toggle:focus-visible { outline: 2px solid #1a814a; outline-offset: -2px; }
+    .toggle svg { width: 20px; height: 20px; }
+    .toggle .eye-off, .toggle[aria-pressed="true"] .eye-on { display: none; }
+    .toggle[aria-pressed="true"] .eye-off { display: block; }
+    #submit { width: 100%; height: 48px; margin-top: 8px; font: inherit; font-weight: 600; color: #fff; background: #1a814a; border: 0; border-radius: 12px; cursor: pointer; }
+    #submit:hover { background: #14663b; }
+    #submit:focus-visible { outline: 2px solid #1a814a; outline-offset: 2px; }
+    #submit:disabled { opacity: .6; cursor: wait; }
     #error { margin-top: 16px; padding: 10px 12px; font-size: 13px; color: #9f1239; background: #ffe4e6; border-radius: 12px; }
-    #error[hidden] { display: none; }
-    a { display: block; margin-top: 20px; text-align: center; font-size: 13px; color: #1a814a; }
+    #error[hidden], #maintenance[hidden] { display: none; }
+    #maintenance { margin-bottom: 20px; padding: 10px 12px; font-size: 13px; font-weight: 600; background: #f6d987; border-radius: 12px; }
+
+    @media (max-width: 820px) {
+      .shell { grid-template-columns: 1fr; grid-template-rows: auto 1fr; padding: 8px; }
+      .art { min-height: 168px; padding: 16px; }
+      /* The banner is short, so frame the part of the scene with the sun in it. */
+      .art svg.scene { inset: 0 0 auto 0; height: auto; margin-top: -52%; }
+      .art-bottom { display: none; }
+      .panel { justify-content: flex-start; padding: 28px 16px 24px; }
+      h1 { font-size: 32px; }
+      .lead { margin-bottom: 24px; }
+    }
+    @media (prefers-reduced-motion: reduce) { .caption, .dot::before { transition: none; } }
   </style>
 </head>
 <body>
-  <main class="card">
-    <h1>EarthScape</h1>
-    <p>Sign in to the Climate Intelligence dashboard.</p>
-    <form id="login-form">
-      <label for="email">Email</label>
-      <input id="email" type="email" autocomplete="username" required autofocus />
-      <label for="password">Password</label>
-      <input id="password" type="password" autocomplete="current-password" required />
-      <button id="submit" type="submit">Sign in</button>
-      <div id="error" role="alert" hidden></div>
-    </form>
-    <a href="index.html">Back to the website</a>
-  </main>
+  <div class="shell">
+    <aside class="art">
+      <svg class="scene" viewBox="0 0 600 800" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+        <defs>
+          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#06190f" />
+            <stop offset=".38" stop-color="#14663b" />
+            <stop offset=".6" stop-color="#7fae6a" />
+            <stop offset=".72" stop-color="#f6d987" />
+          </linearGradient>
+          <linearGradient id="shade" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#06190f" stop-opacity="0" />
+            <stop offset="1" stop-color="#06190f" stop-opacity=".85" />
+          </linearGradient>
+        </defs>
+        <rect width="600" height="800" fill="url(#sky)" />
+        <circle cx="405" cy="470" r="46" fill="#fff4cf" />
+        <path d="M0 505 C90 470 170 455 260 490 S450 530 600 470 V800 H0 Z" fill="#3f8a58" />
+        <path d="M0 565 C110 520 200 520 300 560 S500 610 600 545 V800 H0 Z" fill="#1a814a" />
+        <path d="M0 610 C70 600 150 545 255 510 C330 560 470 640 600 655 V800 H0 Z" fill="#14663b" />
+        <path d="M255 510 C235 580 170 650 60 720 L0 750 V610 C70 600 150 545 255 510 Z" fill="#0c3f25" />
+        <path d="M0 720 C120 680 260 660 380 690 S540 740 600 725 V800 H0 Z" fill="#06190f" />
+        <rect y="540" width="600" height="260" fill="url(#shade)" />
+      </svg>
+      <div class="art-top">
+        <span class="brand">EarthScape</span>
+        <a class="back" href="index.html">Back to website &rarr;</a>
+      </div>
+      <div class="art-bottom">
+        <div class="captions">
+          <p class="caption on">Live readings<br />from twelve cities</p>
+          <p class="caption">Spotting anomalies,<br />forecasting trends</p>
+          <p class="caption">Alerts when a reading<br />crosses the line</p>
+        </div>
+        <div class="dots">
+          <button class="dot" type="button" aria-label="Show message 1" aria-current="true"></button>
+          <button class="dot" type="button" aria-label="Show message 2" aria-current="false"></button>
+          <button class="dot" type="button" aria-label="Show message 3" aria-current="false"></button>
+        </div>
+      </div>
+    </aside>
+    <main class="panel">
+      <h1>Sign in</h1>
+      <p class="lead">Need an account? Ask your administrator.</p>
+      <div id="maintenance" role="status" hidden></div>
+      <form id="login-form">
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" type="email" autocomplete="username" required autofocus />
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <div class="password">
+            <input id="password" type="password" autocomplete="current-password" required />
+            <button id="toggle-password" class="toggle" type="button" aria-label="Show password" aria-pressed="false">
+              <svg class="eye-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /></svg>
+              <svg class="eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /><path d="M4 4l16 16" /></svg>
+            </button>
+          </div>
+        </div>
+        <button id="submit" type="submit">Sign in</button>
+        <div id="error" role="alert" hidden></div>
+      </form>
+    </main>
+  </div>
   <script>
     const form = document.getElementById('login-form');
     const errorBox = document.getElementById('error');
     const submit = document.getElementById('submit');
+    const password = document.getElementById('password');
+    const togglePassword = document.getElementById('toggle-password');
 
     if (sessionStorage.getItem('es_token')) location.replace('dashboard.html');
+
+    fetch('/api/maintenance').then((response) => response.json()).then((notice) => {
+      const box = document.getElementById('maintenance');
+      box.textContent = notice.message;
+      box.hidden = !(notice.active && notice.message);
+    }).catch(() => {});
+
+    togglePassword.addEventListener('click', () => {
+      const showing = password.type === 'text';
+      password.type = showing ? 'password' : 'text';
+      togglePassword.setAttribute('aria-pressed', String(!showing));
+      togglePassword.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
+    });
+
+    const captions = [...document.querySelectorAll('.caption')];
+    const dots = [...document.querySelectorAll('.dot')];
+    let current = 0;
+    const showCaption = (index) => {
+      current = index;
+      captions.forEach((caption, i) => caption.classList.toggle('on', i === index));
+      dots.forEach((dot, i) => dot.setAttribute('aria-current', String(i === index)));
+    };
+    dots.forEach((dot, i) => dot.addEventListener('click', () => showCaption(i)));
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setInterval(() => showCaption((current + 1) % captions.length), 6000);
+    }
 
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
@@ -57,7 +178,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             email: document.getElementById('email').value,
-            password: document.getElementById('password').value,
+            password: password.value,
           }),
         });
         const body = await response.json();

@@ -13,6 +13,7 @@ from . import config, hadoop_client
 from .alert_checks import ALERT_METRICS
 from .catalogue import DATASETS, UPLOAD_SIGNATURES
 from .db import db
+from .field_crypto import decrypt, encrypt
 from .notifications import notify
 from .security import current_user, require_admin
 
@@ -208,10 +209,16 @@ class TicketUpdate(BaseModel):
     status: str
 
 
+def _public_ticket(ticket):
+    result = _public(ticket)
+    result["description"] = decrypt(result.pop("description_enc"))
+    return result
+
+
 @router.get("/tickets")
 def tickets(user=Depends(current_user)):
     query = {} if user["role"] == "Admin" else {"created_by": str(user["_id"])}
-    return [_public(ticket) for ticket in db.tickets.find(query).sort("created_at", -1)]
+    return [_public_ticket(ticket) for ticket in db.tickets.find(query).sort("created_at", -1)]
 
 
 @router.post("/tickets", status_code=201)
@@ -221,11 +228,11 @@ def create_ticket(body: NewTicket, user=Depends(current_user)):
     if not body.description.strip():
         raise HTTPException(status_code=422, detail="Please describe the issue.")
     document = {
-        "category": body.category, "description": body.description.strip(), "status": "Open",
+        "category": body.category, "description_enc": encrypt(body.description.strip()), "status": "Open",
         "created_by": str(user["_id"]), "created_by_name": user["name"], "created_at": _now(),
     }
     db.tickets.insert_one(document)
-    return _public(document)
+    return _public_ticket(document)
 
 
 @router.patch("/tickets/{ticket_id}")
@@ -238,7 +245,7 @@ def update_ticket(ticket_id: str, body: TicketUpdate, _admin=Depends(require_adm
         raise HTTPException(status_code=404, detail="Ticket not found.")
     db.tickets.update_one({"_id": ticket_key}, {"$set": {"status": body.status, "updated_at": _now()}})
     notify("Your ticket \"%s\" is now %s." % (ticket["category"], body.status), ticket["created_by"])
-    return _public(db.tickets.find_one({"_id": ticket_key}))
+    return _public_ticket(db.tickets.find_one({"_id": ticket_key}))
 
 
 def _notification_query(user):

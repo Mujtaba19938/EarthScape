@@ -6,14 +6,15 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-from . import config
+from . import config, locks
 from .db import db
 from .notifications import notify
 
 sys.path.insert(0, str(config.ROOT_DIR / "hadoop"))
 import run_pipeline  # noqa: E402
 
-_job_lock = threading.Lock()
+JOB_LOCK = "hadoop_job"
+JOB_LOCK_SECONDS = 3 * 3600
 
 
 def _get_json(url):
@@ -83,12 +84,12 @@ def _run_job_and_reload(spec, username):
     except Exception as error:
         notify("Job %s failed: %s" % (name, error))
     finally:
-        _job_lock.release()
+        locks.release(JOB_LOCK)
 
 
 def start_job(spec, username):
     """Starts a job in the background. Returns False if one is already running."""
-    if not _job_lock.acquire(blocking=False):
+    if not locks.acquire(JOB_LOCK, JOB_LOCK_SECONDS):
         return False
     threading.Thread(target=_run_job_and_reload, args=(spec, username), daemon=True).start()
     return True

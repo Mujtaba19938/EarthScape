@@ -4,17 +4,16 @@ import subprocess
 import threading
 from pathlib import Path
 
-from . import config
+from . import config, locks
 from .notifications import notify
 
 ML_DIR = config.ROOT_DIR / "ml"
 TRAINING_TIMEOUT_SECONDS = 1800
-
-_lock = threading.Lock()
+LOCK = "ml_training"
 
 
 def is_running():
-    return _lock.locked()
+    return locks.is_held(LOCK)
 
 
 def _environment():
@@ -41,12 +40,12 @@ def _run_training(username):
     except (OSError, subprocess.SubprocessError) as error:
         notify("Model training failed: %s" % error)
     finally:
-        _lock.release()
+        locks.release(LOCK)
 
 
 def start_training(username):
     """Starts training in the background. Returns False if it is already running."""
-    if not _lock.acquire(blocking=False):
+    if not locks.acquire(LOCK, TRAINING_TIMEOUT_SECONDS + 60):
         return False
     threading.Thread(target=_run_training, args=(username,), daemon=True).start()
     return True

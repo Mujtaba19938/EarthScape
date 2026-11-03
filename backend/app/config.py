@@ -42,3 +42,12 @@ SMTP_PASSWORD = setting("SMTP_PASSWORD")
 SMTP_FROM = setting("SMTP_FROM")
 SMTP_TLS = setting("SMTP_TLS", "true").lower() == "true"
 ALERT_EMAIL_TO = setting("ALERT_EMAIL_TO")
+ENCRYPTION_KEY = setting("ENCRYPTION_KEY")
+INSTANCE_NAME = setting("INSTANCE_NAME", "backend")
+BACKUP_DIR = setting("BACKUP_DIR", str(ROOT_DIR / "backups"))
+BACKUP_KEEP = int(setting("BACKUP_KEEP", "7"))
+MONGO_TOOLS_DIR = setting("MONGO_TOOLS_DIR", r"C:\Program Files\MongoDB\Tools\100\bin")
+MONITOR_TARGETS = setting(
+    "MONITOR_TARGETS",
+    "backend-8000=http://127.0.0.1:8000/api/health,backend-8001=http://127.0.0.1:8001/api/health,"
+    "site=https://localhost/api/health")

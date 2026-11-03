@@ -10,9 +10,10 @@ os.environ["JWT_SECRET"] = "test-secret-only-used-by-the-test-suite-0123456789"
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 
-from app import ml_client  # noqa: E402
+from app import locks, ml_client  # noqa: E402
 from app.db import client as mongo_client  # noqa: E402
 from app.db import db  # noqa: E402
+from app.field_crypto import email_fields  # noqa: E402
 from app.main import app  # noqa: E402
 from app.security import hash_password  # noqa: E402
 
@@ -37,9 +38,9 @@ def client():
     assert db.name == "earthscape_test"
     mongo_client.drop_database("earthscape_test")
     db.users.insert_many([
-        {"name": "Admin", "email": ADMIN[0], "role": "Admin", "active": True,
+        {"name": "Admin", **email_fields(ADMIN[0]), "role": "Admin", "active": True,
          "password_hash": hash_password(ADMIN[1])},
-        {"name": "Analyst", "email": ANALYST[0], "role": "Analyst", "active": True,
+        {"name": "Analyst", **email_fields(ANALYST[0]), "role": "Analyst", "active": True,
          "password_hash": hash_password(ANALYST[1])},
     ])
     db.ml_runs.insert_many([run_document("old", 1), run_document("new", 2)])
@@ -97,7 +98,7 @@ def test_admin_retrain_starts_once_and_a_second_is_refused(client):
         assert client.post("/api/ml/retrain", headers=headers).status_code == 202
         assert client.post("/api/ml/retrain", headers=headers).status_code == 409
         assert client.get("/api/ml/summary", headers=headers).json()["retraining"] is True
-    ml_client._lock.release()
+    locks.release(ml_client.LOCK)
     release.assert_called_once_with("Admin")
 
 
@@ -106,7 +107,7 @@ def finished_training(returncode, stderr=""):
 
 
 def test_training_uses_this_database_and_reports_success(client):
-    ml_client._lock.acquire()
+    locks.acquire(ml_client.LOCK, 60)
     with mock.patch.object(ml_client.subprocess, "run", return_value=finished_training(0)) as run, \
             mock.patch.object(ml_client, "notify") as notify:
         ml_client._run_training("Admin")
@@ -116,7 +117,7 @@ def test_training_uses_this_database_and_reports_success(client):
 
 
 def test_failed_training_reports_the_error_and_frees_the_lock(client):
-    ml_client._lock.acquire()
+    locks.acquire(ml_client.LOCK, 60)
     with mock.patch.object(ml_client.subprocess, "run", return_value=finished_training(1, "Traceback\nValueError: bad")), \
             mock.patch.object(ml_client, "notify") as notify:
         ml_client._run_training("Admin")
@@ -125,7 +126,7 @@ def test_failed_training_reports_the_error_and_frees_the_lock(client):
 
 
 def test_missing_python_reports_the_error_and_frees_the_lock(client):
-    ml_client._lock.acquire()
+    locks.acquire(ml_client.LOCK, 60)
     with mock.patch.object(ml_client.subprocess, "run", side_effect=FileNotFoundError("no python")), \
             mock.patch.object(ml_client, "notify") as notify:
         ml_client._run_training("Admin")

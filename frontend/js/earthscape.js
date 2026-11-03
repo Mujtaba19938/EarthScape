@@ -26,6 +26,7 @@ const NAV = [
   ['Administration'],
   ['rbac', 'users', 'Users & Roles'],
   ['support', 'help-circle', 'Feedback & Support'],
+  ['status', 'shield-check', 'System Status'],
   ['architecture', 'code', 'System Architecture'],
   ['settings', 'settings', 'Account Settings'],
 ];
@@ -581,6 +582,44 @@ async function renderSupport() {
   updateRefreshTime();
 }
 
+function uptimeText(window) {
+  return window ? window.percent + '% (' + formatNumber(window.checks) + (window.checks === 1 ? ' check)' : ' checks)') : 'No checks yet';
+}
+
+async function renderStatus() {
+  const [status, notice] = await Promise.all([request('/status'), loadMaintenance()]);
+  $('status-instance').textContent = 'This page was answered by ' + status.instance + '.';
+  $('status-components').innerHTML = status.components.map((component) => (
+    '<div class="card p-5 space-y-1"><div class="flex justify-between gap-2"><h4 class="font-extrabold text-sm">' + esc(component.name) + '</h4><span class="tag ' + (component.ok ? 'tag-green">OK' : 'tag-red">Needs attention') + '</span></div><p class="text-[11px] text-slate-500">' + esc(component.detail) + '</p></div>'
+  )).join('');
+  $('status-uptime-note').textContent = 'The goal is ' + status.goal_percent + '%. These figures only cover the time the health monitor was running on this one machine, so they show how the demo behaved and can\'t prove 99% availability in real use.';
+  $('status-targets').innerHTML = table(['Checked', 'Now', 'Response', 'Last 24 hours', 'Last 7 days'], status.targets.map((target) => [
+    '<strong class="text-[#040404]">' + esc(target.target) + '</strong>',
+    '<span class="tag ' + (target.latest.ok ? 'tag-green">Up' : 'tag-red">Down') + '</span>',
+    esc(target.latest.ms) + ' ms', esc(uptimeText(target.day)), esc(uptimeText(target.week)),
+  ]), 'The health monitor hasn\'t run yet.');
+  $('status-backups').innerHTML = table(['Finished', 'Result', 'Size', 'Rows restored in check', 'Took'], status.backups.map((backup) => [
+    esc(formatDate(backup.finished_at)),
+    '<span class="tag ' + (backup.ok ? 'tag-green">OK' : 'tag-red">Failed') + '</span>' + (backup.hdfs_failed && backup.hdfs_failed.length ? ' <span class="tag tag-gold">HDFS partly missed</span>' : ''),
+    esc(formatBytes(backup.size_bytes)), esc(formatNumber(backup.rows_verified)), esc(backup.seconds) + ' s',
+  ]), 'No backups yet.');
+  const runs = status.pipeline_runs.map((run) => [run.job, run.seconds, run.finished_at])
+    .concat(status.ml_runs.filter((run) => run.seconds !== undefined).map((run) => ['Model training', run.seconds, run.trained_at]));
+  if (status.last_poll) runs.push(['Live data check', status.last_poll.seconds, status.last_poll.started_at]);
+  $('status-runs').innerHTML = table(['Task', 'Took', 'When'], runs.map((run) => [esc(run[0]), esc(run[1]) + ' s', esc(formatDate(run[2]))]), 'No recorded runs yet.');
+  $('maintenance-message').value = notice.message;
+  $('maintenance-active').checked = notice.active;
+  updateRefreshTime();
+}
+
+async function loadMaintenance() {
+  const notice = await request('/maintenance');
+  const show = notice.active && notice.message;
+  $('maintenance-banner').textContent = show ? notice.message : '';
+  $('maintenance-banner').classList.toggle('hidden', !show);
+  return notice;
+}
+
 function renderSettings() {
   $('settings-name').value = state.user.name;
   $('settings-title').value = state.user.title;
@@ -590,7 +629,7 @@ function renderSettings() {
 const RENDERERS = {
   landing: renderLanding, dashboard: renderDashboard, analytics: renderAnalytics, monitoring: renderMonitoring,
   data: renderData, hadoop: renderHadoop, ml: renderMl, alerts: renderAlerts, reports: renderReports, rbac: renderUsers,
-  support: renderSupport, settings: renderSettings,
+  support: renderSupport, status: renderStatus, settings: renderSettings,
 };
 
 function setPage(page) {
@@ -861,6 +900,11 @@ function bindEvents() {
     }
   });
 
+  onSubmit('maintenance-form', async () => {
+    await request('/maintenance', { method: 'PUT', json: { active: $('maintenance-active').checked, message: $('maintenance-message').value } });
+    await loadMaintenance();
+    toast('Notice saved');
+  });
   onSubmit('rule-form', async (form) => {
     await request('/alert-rules', { method: 'POST', json: {
       name: $('rule-name').value,
@@ -928,6 +972,7 @@ async function start() {
 }
 
 async function refreshAlertSignals() {
+  await loadMaintenance();
   await loadNotifications();
   updateAlertBadge(await request('/alerts'));
 }

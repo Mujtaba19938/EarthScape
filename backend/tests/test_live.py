@@ -14,6 +14,7 @@ from fastapi.testclient import TestClient  # noqa: E402
 from app import alert_checks, config, emailer, hadoop_client, live  # noqa: E402
 from app.db import client as mongo_client  # noqa: E402
 from app.db import db  # noqa: E402
+from app.field_crypto import email_fields  # noqa: E402
 from app.main import app  # noqa: E402
 from app.security import hash_password  # noqa: E402
 
@@ -26,9 +27,9 @@ def client():
     assert db.name == "earthscape_test"
     mongo_client.drop_database("earthscape_test")
     db.users.insert_many([
-        {"name": "Admin", "email": ADMIN[0], "role": "Admin", "active": True,
+        {"name": "Admin", **email_fields(ADMIN[0]), "role": "Admin", "active": True,
          "password_hash": hash_password(ADMIN[1])},
-        {"name": "Analyst", "email": ANALYST[0], "role": "Analyst", "active": True,
+        {"name": "Analyst", **email_fields(ANALYST[0]), "role": "Analyst", "active": True,
          "password_hash": hash_password(ANALYST[1])},
     ])
     with TestClient(app) as test_client:

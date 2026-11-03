@@ -8,6 +8,8 @@ import secrets
 import sys
 from pathlib import Path
 
+from cryptography.fernet import Fernet
+
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from app import config  # noqa: E402
@@ -27,6 +29,7 @@ def env_values():
         "SEED_ADMIN_PASSWORD": secrets.token_urlsafe(16),
         "SEED_ANALYST_EMAIL": "analyst@earthscape.test",
         "SEED_ANALYST_PASSWORD": secrets.token_urlsafe(16),
+        "ENCRYPTION_KEY": Fernet.generate_key().decode("ascii"),
     }
     if config.ENV_FILE.exists():
         for line in config.ENV_FILE.read_text(encoding="utf-8").splitlines():
@@ -41,8 +44,10 @@ def env_values():
 def main():
     values = env_values()
     config.JWT_SECRET = values["JWT_SECRET"]
+    config.ENCRYPTION_KEY = values["ENCRYPTION_KEY"]
 
     from app.db import db, ensure_indexes
+    from app.field_crypto import email_fields, email_lookup
     from app.security import hash_password
 
     ensure_indexes()
@@ -53,11 +58,11 @@ def main():
          values["SEED_ANALYST_PASSWORD"], "Analyst"),
     ]
     for name, title, email, password, role in people:
-        if db.users.find_one({"email": email}):
+        if db.users.find_one({"email_lookup": email_lookup(email)}):
             print("Already exists:", email)
             continue
         db.users.insert_one({
-            "name": name, "title": title, "email": email, "role": role, "active": True,
+            "name": name, "title": title, **email_fields(email), "role": role, "active": True,
             "password_hash": hash_password(password),
             "created_at": datetime.datetime.now(datetime.timezone.utc),
         })
