@@ -9,3 +9,6 @@ ml/saved_models/
 backups/
 logs/
 deploy/apache/certs/
+dist/
+video/
+~$*

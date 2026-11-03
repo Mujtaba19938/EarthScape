@@ -4,7 +4,10 @@ $root = Split-Path -Parent $PSScriptRoot
 $folder = Join-Path $root 'deploy\apache\certs'
 New-Item -ItemType Directory -Force $folder | Out-Null
 $openssl = (Get-Command openssl -ErrorAction SilentlyContinue).Source
-if (-not $openssl) { $openssl = 'C:\Program Files\Git\usr\bin\openssl.exe' }
+if (-not $openssl) {
+    # Apache for Windows and Git for Windows both include a copy.
+    $openssl = @('C:\Apache24\bin\openssl.exe', 'C:\Program Files\Git\usr\bin\openssl.exe') | Where-Object { Test-Path $_ } | Select-Object -First 1
+}
 & $openssl req -x509 -newkey rsa:2048 -nodes -days 825 -subj '/CN=localhost' `
     -addext 'subjectAltName=DNS:localhost,IP:127.0.0.1' `
     -keyout (Join-Path $folder 'earthscape.key') -out (Join-Path $folder 'earthscape.crt')

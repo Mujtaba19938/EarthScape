@@ -8,17 +8,14 @@
     // Leave before anything renders if nobody is signed in.
     if (!sessionStorage.getItem('es_token')) location.replace('login.html');
   </script>
-  <link href="css/harvestra.webflow.shared.css" rel="stylesheet" type="text/css" />
-  <link href="https://fonts.googleapis.com" rel="preconnect" />
-  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet" />
-  <script src="https://cdn.tailwindcss.com/3.4.16"></script>
-  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.js"></script>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link href="css/fonts.css" rel="stylesheet" />
+  <link href="css/dashboard.css" rel="stylesheet" />
+  <script src="vendor/lucide.min.js"></script>
+  <script src="vendor/chart.umd.js"></script>
   <style>
     body, html, input, button, select, textarea, table, td, th { font-family: "Instrument Sans", -apple-system, BlinkMacSystemFont, sans-serif !important; -webkit-font-smoothing: antialiased; }
     h1, h2, h3, h4, h5, h6 { font-family: "Instrument Sans", sans-serif !important; letter-spacing: -0.025em; }
-    * { visibility: visible !important; }
     .pill { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: 99px; font-weight: 600; transition: all .2s; cursor: pointer; font-size: 12px; padding: 8px 16px; border: 1px solid transparent; }
     .pill:hover { transform: translateY(-1px); }
     .pill:disabled { opacity: .5; cursor: not-allowed; transform: none; }
