@@ -1,0 +1,62 @@
+Photos come from Unsplash (https://unsplash.com/license) and videos from Pexels (https://www.pexels.com/license/).
+
+photo-1  NASA  https://unsplash.com/photos/earth-with-clouds-above-the-african-continent-vhSz50AaFAs
+photo-3  NASA  https://unsplash.com/photos/photo-of-outer-space-Q1p7bh3SHj8
+photo-5  NASA  https://unsplash.com/photos/view-of-earth-and-satellite-yZygONrUBe8
+photo-7  Mara F  https://unsplash.com/photos/view-of-earth-from-space-at-night-tZdFQvqJuQQ
+photo-10  Javier Miranda  https://unsplash.com/photos/a-planet-in-space-AlJ9TQqeCV0
+photo-15  Sophia Simoes  https://unsplash.com/photos/snow-covered-mountain-under-cloudy-sky-during-daytime-WDbJNWeKvUo
+photo-17  Dave Meckler  https://unsplash.com/photos/icebergs-floating-in-a-calm-blue-ocean-under-clear-sky-0ltzud5qqYc
+photo-18  Adriana Lorena Benavides Estrada  https://unsplash.com/photos/white-and-blue-ice-on-body-of-water-during-daytime-afyJnOzcCm4
+photo-23  Annie Spratt  https://unsplash.com/photos/iceberg-reflected-in-arctic-water-N46IkbWUvMU
+photo-30  Dadee Aissa  https://unsplash.com/photos/cumulus-clouds-Pe1Ol9oLc4o
+photo-32  Max LaRochelle  https://unsplash.com/photos/lightning-strike-at-night-uu-Jw5SunYI
+photo-34  Tom Barrett  https://unsplash.com/photos/clouds-during-golden-hour-hgGplX3PFBg
+photo-35  Anandu Vinod  https://unsplash.com/photos/cloudy-sky-pbxwxwfI0B4
+photo-36  Justin Wolff  https://unsplash.com/photos/a-dramatic-lightning-strike-illuminates-stormy-clouds-HhV8vUbxJdM
+photo-40  Brandon Morgan  https://unsplash.com/photos/lightning-bolt-in-dark-storm-3qucB7U2l7I
+photo-41  Mary Brennan  https://unsplash.com/photos/bright-lightning-strikes-illuminate-a-city-at-night-CJSCGyDC4YY
+photo-43  Michelle McEwen  https://unsplash.com/photos/lightning-bolts-in-dark-night-sky-sCrqMG2f6qo
+photo-44  Gunay Topaloglu  https://unsplash.com/photos/multiple-lightning-strikes-illuminate-the-dark-night-sky-over-water-T__F4LJ_GS8
+photo-47  Johannes Plenio  https://unsplash.com/photos/photo-of-island-and-thunder-E-Zuyev2XWo
+photo-48  Abhinav Chitikela  https://unsplash.com/photos/a-solar-panel-mounted-to-the-side-of-a-building-OtW3XS4Yjd0
+photo-53  Kelvin Yan  https://unsplash.com/photos/white-concrete-building-WWl6xaSHFIo
+photo-54  Vladislav Anchuk  https://unsplash.com/photos/weather-station-on-a-grassy-mountain-peak-dWHdH-wixQQ
+photo-56  David Stroia  https://unsplash.com/photos/two-radar-domes-on-towers-on-a-hill-HEQ_DiBaV5k
+photo-63  https://unsplash.com/photos/white-electic-windmill-pONBhDyOFoM
+photo-79  https://unsplash.com/photos/smoke-billows-from-a-chimney-against-a-hazy-sunset-dLXMJnyyU5E
+photo-80  https://unsplash.com/photos/cars-parked-on-parking-lot-under-white-clouds-and-blue-sky-during-daytime-wArzmoxD--Q
+photo-86  https://unsplash.com/photos/city-with-high-rise-building-covered-with-fogs-IWpd8KixceA
+photo-94  https://unsplash.com/photos/a-foggy-city-skyline-with-the-sun-in-the-distance-Reuk1nmutFI
+photo-135  https://unsplash.com/photos/cracked-brown-soil-HxxmKwvUbgI
+photo-155  https://unsplash.com/photos/wildfire-burning-across-a-dark-landscape-at-night-7dRIc4eEzxA
+photo-178  https://unsplash.com/photos/modern-data-center-with-rows-of-white-server-cabinets-fImCPTZ026U
+photo-179  https://unsplash.com/photos/a-long-hallway-with-glass-doors-leading-to-another-room-s0XabTAKvak
+photo-180  https://unsplash.com/photos/server-room-with-network-cabinets-aWslrFhs1w4
+photo-181  https://unsplash.com/photos/a-rack-of-servers-in-a-server-room-2JJ3wBHu4_0
+photo-182  https://unsplash.com/photos/cable-network-M5tzZtFCOfs
+photo-183  https://unsplash.com/photos/a-bunch-of-blue-wires-connected-to-each-other-PSpf_XgOM5w
+photo-184  https://unsplash.com/photos/close-up-of-server-cooling-fans-in-a-vibrant-data-center-iZe21DzHnUg
+photo-185  https://unsplash.com/photos/technician-working-on-server-equipment-with-tools-ufT32_VFS-I
+photo-187  https://unsplash.com/photos/server-racks-in-data-center-klWUhr-wPJ8
+photo-189  https://unsplash.com/photos/black-and-silver-laptop-computer-tR0jvlsmCuQ
+photo-190  https://unsplash.com/photos/fingers-interacting-with-a-stock-market-graph-on-a-tablet-lnuOh9vs8v0
+photo-191  https://unsplash.com/photos/person-using-macbook-pro-pypeCEaJeZY
+photo-192  https://unsplash.com/photos/a-computer-screen-with-a-bunch-of-data-on-it-bMWHu8wU1Vk
+photo-193  https://unsplash.com/photos/person-using-macbook-pro-on-black-table-eveI7MOcSmw
+photo-195  https://unsplash.com/photos/graphs-of-performance-analytics-on-a-laptop-screen-JKUTrJ4vK00
+photo-196  https://unsplash.com/photos/woman-working-on-laptop-with-charts-and-graphs-KNQUEQwTCY4
+photo-197  https://unsplash.com/photos/turned-on-monitoring-screen-qwtCeJ5cLYs
+photo-200  https://unsplash.com/photos/display-monitor-turning-on-Fi-GJaLRGKc
+photo-201  https://unsplash.com/photos/monitor-showing-java-programming-OqtafYT5kTw
+photo-208  https://unsplash.com/photos/abstract-blue-waves-of-glowing-particles-qY-XlCf9Zs4
+photo-212  https://unsplash.com/photos/padlock-on-laptop-with-light-trails-C5pXRFEjq3w
+photo-214  https://unsplash.com/photos/teal-led-panel-EUsVwEOsblE
+photo-216  https://unsplash.com/photos/aerial-view-of-a-city-street-at-night-hpKMQlCwBc8
+photo-248  https://unsplash.com/photos/people-sitting-down-near-table-with-assorted-laptop-computers-SYTO3xs06fU
+photo-272  https://unsplash.com/photos/brown-mountain-under-white-clouds-during-daytime-nLqha2mP4ig
+
+video-earth-sunrise.mp4  Pexels  https://www.pexels.com/video/the-sun-illuminating-earth-s-surface-1851190/
+video-storm-clouds.mp4  Pexels  https://www.pexels.com/video/a-dark-storm-cloud-is-seen-in-the-sky-17311357/
+video-rotating-earth.mp4  Pexels  https://www.pexels.com/video/planet-earth-revolving-854518/
+video-moving-sky.mp4  Pexels  https://www.pexels.com/video/dramatic-sky-over-residential-district-10591266/
