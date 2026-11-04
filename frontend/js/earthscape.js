@@ -1,6 +1,17 @@
 // EarthScape dashboard. All data comes from the API; the server enforces every role check.
 const TOKEN_KEY = 'es_token';
 const ZONES = ['64N-90N', '44N-64N', '24N-44N', 'EQU-24N', '24S-EQU', '44S-24S', '64S-44S', '90S-64S'];
+// Each zone is a band of latitude around the world, so these name places inside it. The data is the band's average.
+const ZONE_PLACES = {
+  '64N-90N': 'Greenland, Northern Alaska, Northern Russia',
+  '44N-64N': 'London, Moscow, Vancouver',
+  '24N-44N': 'Karachi, Tokyo, New York',
+  'EQU-24N': 'Lagos, Mumbai, Bangkok',
+  '24S-EQU': 'Jakarta, Nairobi, São Paulo',
+  '44S-24S': 'Sydney, Cape Town, Buenos Aires',
+  '64S-44S': 'Southern Chile, Southern Argentina, Falkland Islands',
+  '90S-64S': 'Antarctica',
+};
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const YEAR_COLORS = ['#94a3b8', '#1a814a', '#040404', '#c0a78c', '#0284c7'];
 const LIVE_LOCATIONS = ['Karachi', 'Delhi', 'Beijing', 'Tokyo', 'Jakarta', 'Sydney', 'Cairo', 'Lagos', 'Nairobi', 'London', 'New York', 'Sao Paulo'];
@@ -198,7 +209,7 @@ async function renderAnalytics() {
   const variable = $('analytics-variable').value;
   const label = $('analytics-variable').selectedOptions[0].textContent;
   const zoneLabel = $('analytics-zone').selectedOptions[0].textContent;
-  $('analytics-title').textContent = label + ' - ' + zoneLabel;
+  $('analytics-title').textContent = label + ' - ' + zoneLabel + (zone === 'Glob' ? '' : ' (' + zone + ' band)');
   const empty = $('analytics-empty');
   const canvas = $('chart-analytics');
 
@@ -219,7 +230,7 @@ async function renderAnalytics() {
       pointRadius: 0, tension: 0.2, borderWidth: 2,
     }], '°C');
   } else if (zone === 'Glob') {
-    showMessage('This variable is only available by latitude zone. Choose a zone above.');
+    showMessage('This variable is only available by latitude band. Choose a place above.');
   } else {
     const years = await request('/climate/monthly?zone=' + encodeURIComponent(zone) + '&variable=' + variable);
     const yearKeys = Object.keys(years).sort();
@@ -241,7 +252,7 @@ async function renderAnalytics() {
   $('zones-table').innerHTML = table(
     ['Zone', 'Anomaly', 'Avg daily high', 'Avg daily low', 'Precipitation', 'Readings'],
     summary.zones.map((row) => [
-      '<strong class="text-[#040404]">' + esc(row.zone) + '</strong>',
+      '<strong class="text-[#040404]">' + esc(ZONE_PLACES[row.zone] || row.zone) + '</strong> <span class="text-slate-400">(' + esc(row.zone) + ')</span>',
       row.anomaly === null ? 'n/a' : esc(formatSigned(row.anomaly, ' °C')) + ' <span class="text-slate-400">(' + esc(row.anomaly_year) + ')</span>',
       row.tmax === null ? 'n/a' : esc(row.tmax) + ' °C',
       row.tmin === null ? 'n/a' : esc(row.tmin) + ' °C',
@@ -383,7 +394,7 @@ async function showJobDetails(id) {
 }
 
 function seriesLabel(series) {
-  return series === 'Glob' ? 'Global' : series;
+  return series === 'Glob' ? 'Global' : (ZONE_PLACES[series] || series) + ' (' + series + ' band)';
 }
 
 function percent(share, decimals) {
@@ -951,7 +962,7 @@ function bindEvents() {
 
 async function start() {
   buildSidebar();
-  $('analytics-zone').innerHTML = '<option value="Glob">Global</option>' + ZONES.map((zone) => '<option>' + zone + '</option>').join('');
+  $('analytics-zone').innerHTML = '<option value="Glob">Global</option>' + ZONES.map((zone) => '<option value="' + zone + '">' + esc(ZONE_PLACES[zone]) + '</option>').join('');
   $('ml-series').innerHTML = $('analytics-zone').innerHTML;
   $('live-location').innerHTML = LIVE_LOCATIONS.map((name) => '<option>' + name + '</option>').join('');
   $('live-metric').innerHTML = LIVE_METRICS.map(([key, label]) => '<option value="' + key + '">' + label + '</option>').join('');

@@ -155,7 +155,7 @@
 
       <section id="view-analytics" class="page-view hidden space-y-6">
         <div class="flex flex-wrap justify-between items-center gap-4 card p-5">
-          <div><h2 class="text-xl font-extrabold">Climate analytics</h2><p class="text-xs text-slate-500">Choose a region and a variable. Every value comes from the pipeline.</p></div>
+          <div><h2 class="text-xl font-extrabold">Climate analytics</h2><p class="text-xs text-slate-500">Choose a region and a variable. Every value comes from the pipeline.</p><p class="text-xs text-slate-500">Each place option is a band of latitude around the world. Values are that band's average, not those places alone.</p></div>
           <div class="flex flex-wrap gap-3">
             <select id="analytics-zone" aria-label="Region" class="field w-auto"></select>
             <select id="analytics-variable" aria-label="Variable" class="field w-auto">
@@ -287,7 +287,7 @@
         <div id="ml-stats" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4"></div>
         <div class="card p-6 space-y-4">
           <div class="flex flex-wrap gap-3 justify-between items-center">
-            <div><h3 class="font-bold">Temperature anomaly forecast</h3><p class="text-xs text-slate-500">°C compared with the 1951-1980 average. NASA GISTEMP history.</p></div>
+            <div><h3 class="font-bold">Temperature anomaly forecast</h3><p class="text-xs text-slate-500">°C compared with the 1951-1980 average. NASA GISTEMP history. Each place option is a band of latitude around the world.</p></div>
             <div class="flex flex-wrap gap-2 items-center">
               <select id="ml-series" aria-label="Region" class="field w-auto"></select>
               <div id="ml-horizons" class="flex gap-2"></div>
