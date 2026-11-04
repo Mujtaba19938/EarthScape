@@ -298,3 +298,12 @@ def test_mongodb_is_backed_up_even_when_hdfs_is_down(client, tmp_path):
     row = db.backups.find_one()
     assert row["ok"] is True and row["hdfs_failed"] == backup.HDFS_PATHS
     assert "weren't copied" in db.notifications.find_one()["text"]
+
+
+def test_hdfs_commands_use_the_launcher_that_reports_failures():
+    pipeline = hadoop_client.run_pipeline
+    with mock.patch.object(pipeline.subprocess, "run") as run:
+        pipeline.hdfs("-get", "/climate/processed", "target")
+        assert run.call_args[0][0].startswith("cmd /c hadoop fs -get")
+        pipeline.read_job_output("data_quality")
+        assert run.call_args[0][0].startswith("cmd /c hadoop fs -cat")

@@ -54,7 +54,8 @@ def run(args):
 
 
 def hdfs(*args):
-    run(["hdfs", "dfs"] + list(args))
+    # Not "hdfs dfs": on Windows hdfs.cmd exits with 0 even when the command failed.
+    run(["hadoop", "fs"] + list(args))
 
 
 def put(local, target_dir):
@@ -125,7 +126,7 @@ def jobs():
 
 
 def read_job_output(name):
-    command = command_line(["hdfs", "dfs", "-cat", "/climate/processed/%s/part-*" % name])
+    command = command_line(["hadoop", "fs", "-cat", "/climate/processed/%s/part-*" % name])
     text = subprocess.run(command, check=True, stdout=subprocess.PIPE,
                           encoding="utf-8").stdout
     return [line.split(",") for line in text.splitlines() if line]
