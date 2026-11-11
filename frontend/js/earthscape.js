@@ -13,7 +13,28 @@ const ZONE_PLACES = {
   '90S-64S': 'Antarctica',
 };
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const YEAR_COLORS = ['#94a3b8', '#1a814a', '#040404', '#c0a78c', '#0284c7'];
+const INK = '#171717';
+const ACCENT = '#1a814a';
+const RAMP = ['#cfcfcf', '#a3a3a3', '#767676', '#4a4a4a', '#171717'];
+
+// The lead series takes the accent. The rest run light to dark in their own order, so earlier years
+// and lower emissions paths are lighter, and one line always leads.
+function seriesColors(count, lead) {
+  const others = Array.from({ length: count }, (_, index) => index).filter((index) => index !== lead);
+  const colors = [];
+  others.forEach((index, position) => {
+    const step = others.length === 1 ? RAMP.length - 1 : Math.round(position * (RAMP.length - 1) / (others.length - 1));
+    colors[index] = RAMP[step];
+  });
+  if (lead >= 0 && lead < count) colors[lead] = ACCENT;
+  return colors;
+}
+
+if (window.Chart) {
+  Chart.defaults.font.family = '"Instrument Sans", sans-serif';
+  Chart.defaults.font.size = 12;
+  Chart.defaults.color = '#6f6f6f';
+}
 const LIVE_LOCATIONS = ['Karachi', 'Lahore', 'Islamabad', 'Peshawar', 'Quetta', 'Faisalabad', 'Multan', 'Hyderabad', 'Sukkur', 'Sialkot', 'Gilgit', 'Gwadar'];
 const LIVE_METRICS = [
   ['temperature_c', 'Temperature (°C)'], ['humidity_pct', 'Humidity (%)'], ['wind_kmh', 'Wind (km/h)'], ['precipitation_mm', 'Precipitation (mm)'],
@@ -24,10 +45,10 @@ const ML_HORIZONS = [2030, 2040, 2050];
 const ML_CHART_START = 1950;
 
 const NAV = [
-  ['landing', 'globe', 'Agency landing'],
+  ['landing', 'globe', 'Home'],
   ['dashboard', 'bar-chart-2', 'Executive dashboard'],
   ['analytics', 'activity', 'Climate analytics'],
-  ['monitoring', 'wifi', 'Sensor monitor'],
+  ['monitoring', 'wifi', 'Live monitor'],
   ['data', 'database', 'Data explorer and upload'],
   ['Big data infrastructure'],
   ['hadoop', 'server', 'Hadoop and HDFS cluster'],
@@ -58,7 +79,7 @@ function isAdmin() {
 
 function toast(message, isError) {
   const element = document.createElement('div');
-  element.className = 'px-4 py-3 rounded-full shadow-2xl border border-[#2b2b2b] font-medium text-xs bg-[#040404] ' + (isError ? 'text-rose-300' : 'text-[#f6d987]');
+  element.className = 'toast' + (isError ? ' error' : '');
   element.textContent = message;
   $('toast-container').appendChild(element);
   setTimeout(() => element.remove(), 4000);
@@ -138,7 +159,7 @@ function table(headers, rows, emptyMessage) {
 }
 
 function statCard(label, value, note) {
-  return '<div class="card p-5 space-y-1"><span class="stat-label">' + esc(label) + '</span><p class="stat-value">' + esc(value) + '</p><p class="text-[11px] text-slate-500">' + esc(note) + '</p></div>';
+  return '<div class="card p-5 space-y-1"><span class="stat-label">' + esc(label) + '</span><p class="stat-value">' + esc(value) + '</p><p class="text-xs text-slate-500">' + esc(note) + '</p></div>';
 }
 
 function drawLineChart(name, canvasId, labels, datasets, yLabel) {
@@ -151,10 +172,16 @@ function drawLineChart(name, canvasId, labels, datasets, yLabel) {
       maintainAspectRatio: false,
       spanGaps: false,
       interaction: { mode: 'index', intersect: false },
-      plugins: { legend: { display: datasets.length > 1, labels: { filter: (item, data) => !data.datasets[item.datasetIndex].hideFromLegend } } },
+      plugins: {
+        legend: { display: datasets.length > 1, align: 'start', labels: { boxWidth: 8, boxHeight: 8, usePointStyle: true, pointStyle: 'rectRounded', padding: 16,
+          filter: (item, data) => !data.datasets[item.datasetIndex].hideFromLegend, sort: (a, b) => a.datasetIndex - b.datasetIndex } },
+        tooltip: { backgroundColor: '#19191b', titleColor: '#ededed', bodyColor: '#a1a1a6', padding: 12, cornerRadius: 8, boxPadding: 4,
+          bodyFont: { family: 'ui-monospace, Consolas, monospace' } },
+      },
       scales: {
-        x: { grid: { display: false } },
-        y: { grid: { color: '#f0f0f0' }, title: { display: Boolean(yLabel), text: yLabel } },
+        x: { grid: { display: false }, border: { color: 'rgba(23,23,23,.14)' }, ticks: { maxRotation: 0, autoSkipPadding: 16, font: { family: 'ui-monospace, Consolas, monospace' } } },
+        y: { grid: { color: 'rgba(23,23,23,.06)' }, border: { display: false }, ticks: { font: { family: 'ui-monospace, Consolas, monospace' } },
+          title: { display: Boolean(yLabel), text: yLabel } },
       },
     },
   });
@@ -193,11 +220,12 @@ async function renderDashboard() {
       cluster.hdfs_online ? cluster.live_datanodes + ' DataNode, ' + formatNumber(cluster.active_nodes) + ' YARN node' : 'Start HDFS and YARN'),
   ].join('');
   drawLineChart('global', 'chart-global', series.map((row) => row.year), [{
-    label: 'Anomaly (°C)', data: series.map((row) => row.anomaly), borderColor: '#1a814a',
-    backgroundColor: 'rgba(26,129,74,.1)', fill: true, pointRadius: 0, tension: 0.2, borderWidth: 2,
+    label: 'Anomaly (°C)', data: series.map((row) => row.anomaly), borderColor: INK, borderWidth: 1.5, tension: 0.2,
+    pointRadius: series.map((_, index) => (index === series.length - 1 ? 4 : 0)), pointHoverRadius: 4,
+    pointBackgroundColor: ACCENT, pointBorderColor: ACCENT, pointBorderWidth: 0,
   }], '°C');
   $('dashboard-anomalies').innerHTML = anomalies.rows.map((row) => (
-    '<div class="p-3 bg-[#f9f9f9] rounded-2xl border border-[#ebebeb] text-xs"><div class="flex justify-between font-bold"><span>' + esc(row.station) + ' ' + esc(row.element) + '</span><span class="text-rose-600 font-mono">' + esc(row.value_c) + ' °C</span></div><p class="text-[11px] text-slate-500">' + esc(formatCompactDate(row.date)) + ', usually ' + esc(row.mean_c) + ' °C (z = ' + esc(row.z_score) + ')</p></div>'
+    '<div class="list-item"><div class="flex justify-between font-medium"><span>' + esc(row.station) + ' ' + esc(row.element) + '</span><span class="text-rose-600 font-mono">' + esc(row.value_c) + ' °C</span></div><p class="text-xs text-slate-500">' + esc(formatCompactDate(row.date)) + ', usually ' + esc(row.mean_c) + ' °C (z = ' + esc(row.z_score) + ')</p></div>'
   )).join('') || '<div class="empty">No data yet.</div>';
   $('dashboard-jobs').innerHTML = jobsTable(jobs.jobs.slice(0, 5), jobs.yarn_online, false);
   updateSidebar(cluster);
@@ -226,8 +254,8 @@ async function renderAnalytics() {
   if (variable === 'anomaly') {
     const series = await request('/climate/zonal?zone=' + encodeURIComponent(zone));
     drawLineChart('analytics', 'chart-analytics', series.map((row) => row.year), [{
-      label: label, data: series.map((row) => row.value), borderColor: '#040404',
-      pointRadius: 0, tension: 0.2, borderWidth: 2,
+      label: label, data: series.map((row) => row.value), borderColor: INK,
+      pointRadius: 0, tension: 0.2, borderWidth: 1.5,
     }], '°C');
   } else if (zone === 'Glob') {
     showMessage('This variable is only available by latitude band. Choose a place above.');
@@ -237,12 +265,12 @@ async function renderAnalytics() {
     if (!yearKeys.length) {
       showMessage('The grid has no points in this zone. Weather station variables cover every zone.');
     } else {
+      const colors = seriesColors(yearKeys.length, yearKeys.length - 1);
       drawLineChart('analytics', 'chart-analytics', MONTHS, yearKeys.map((year, index) => ({
         label: year,
         data: MONTHS.map((_, month) => years[year][month + 1] === undefined ? null : years[year][month + 1]),
-        borderColor: YEAR_COLORS[index % YEAR_COLORS.length],
-        backgroundColor: YEAR_COLORS[index % YEAR_COLORS.length],
-        tension: 0.2, borderWidth: 2, pointRadius: 3,
+        borderColor: colors[index], backgroundColor: colors[index],
+        tension: 0.2, borderWidth: index === yearKeys.length - 1 ? 2 : 1.5, pointRadius: 2,
       })), '');
     }
   }
@@ -252,7 +280,7 @@ async function renderAnalytics() {
   $('zones-table').innerHTML = table(
     ['Zone', 'Anomaly', 'Avg daily high', 'Avg daily low', 'Precipitation', 'Readings'],
     summary.zones.map((row) => [
-      '<strong class="text-[#040404]">' + esc(ZONE_PLACES[row.zone] || row.zone) + '</strong> <span class="text-slate-400">(' + esc(row.zone) + ')</span>',
+      '<strong class="text-ink">' + esc(ZONE_PLACES[row.zone] || row.zone) + '</strong> <span class="text-slate-400">(' + esc(row.zone) + ')</span>',
       row.anomaly === null ? 'n/a' : esc(formatSigned(row.anomaly, ' °C')) + ' <span class="text-slate-400">(' + esc(row.anomaly_year) + ')</span>',
       row.tmax === null ? 'n/a' : esc(row.tmax) + ' °C',
       row.tmin === null ? 'n/a' : esc(row.tmin) + ' °C',
@@ -300,8 +328,8 @@ async function renderMonitoring() {
     ? (batch.ok ? 'Last HDFS batch: ' + batch.rows + ' readings at ' + formatDate(batch.finished_at) + '.' :'The last HDFS batch failed and will be retried.')
     : 'No HDFS batch yet.') + ' ' + status.waiting_for_hdfs + ' readings waiting for the next batch.';
   $('live-grid').innerHTML = live.readings.map((row) => (
-    '<div class="card p-5 space-y-2"><div class="flex justify-between gap-2 items-start"><h4 class="font-extrabold text-sm">' + esc(row.location) + '</h4>' + aqiTag(row.us_aqi) + '</div>'
-    + '<p class="text-[10px] text-slate-500 font-mono">' + esc(formatDate(row.observed_at)) + '</p>'
+    '<div class="card p-5 space-y-2"><div class="flex justify-between gap-2 items-start"><h4 class="font-medium text-sm">' + esc(row.location) + '</h4>' + aqiTag(row.us_aqi) + '</div>'
+    + '<p class="live text-slate-500">' + esc(formatDate(row.observed_at)) + '</p>'
     + liveValue('Temperature', row.temperature_c, '°C') + liveValue('Humidity', row.humidity_pct, '%')
     + liveValue('Wind', row.wind_kmh, 'km/h') + liveValue('Precipitation', row.precipitation_mm, 'mm')
     + liveValue('PM2.5', row.pm25, 'µg/m³') + liveValue('PM10', row.pm10, 'µg/m³')
@@ -315,7 +343,7 @@ async function renderMonitoring() {
     const rows = Object.values(sensor.pollutants).map((row) => (
       '<div class="flex justify-between text-xs font-mono"><span>' + esc(row.parameter.toUpperCase()) + ' <span class="text-slate-400">(' + esc(MONTHS[row.month - 1]) + ')</span></span><strong>' + esc(Number(row.mean).toPrecision(3)) + ' ' + esc(row.units) + '</strong></div>'
     )).join('');
-    return '<div class="card p-5 space-y-2"><h4 class="font-extrabold text-sm">' + esc(sensor.name) + '</h4><p class="text-[10px] text-slate-500 font-mono">Lat ' + esc(Number(sensor.lat).toFixed(2)) + ', Lon ' + esc(Number(sensor.lon).toFixed(2)) + '</p>' + rows + '</div>';
+    return '<div class="card p-5 space-y-2"><h4 class="font-medium text-sm">' + esc(sensor.name) + '</h4><p class="text-xs text-slate-500 font-mono">Lat ' + esc(Number(sensor.lat).toFixed(2)) + ', Lon ' + esc(Number(sensor.lon).toFixed(2)) + '</p>' + rows + '</div>';
   }).join('') || '<div class="empty">No sensor data yet. Run the pipeline first.</div>';
   updateRefreshTime();
 }
@@ -324,9 +352,9 @@ async function renderData() {
   const [datasets, quality] = await Promise.all([request('/datasets'), request('/quality')]);
   $('datasets-count').textContent = datasets.length + ' datasets';
   $('datasets-table').innerHTML = table(['Name', 'Format', 'Size', 'Source', 'HDFS path'], datasets.map((row) => [
-    '<strong class="text-[#040404]">' + esc(row.name) + '</strong>' + (row.uploaded ? ' <span class="tag tag-gold">Uploaded</span>' : ''),
+    '<strong class="text-ink">' + esc(row.name) + '</strong>' + (row.uploaded ? ' <span class="tag tag-gold">Uploaded</span>' : ''),
     '<span class="tag tag-grey">' + esc(row.format) + '</span>',
-    esc(formatBytes(row.size_bytes)), esc(row.source), '<span class="font-mono text-[11px]">' + esc(row.path) + '</span>',
+    esc(formatBytes(row.size_bytes)), esc(row.source), '<span class="font-mono text-xs">' + esc(row.path) + '</span>',
   ]), 'No datasets yet.');
   $('quality-table').innerHTML = table(['Year', 'Measurement', 'Valid', 'Failed checks', 'Missing', 'Pass rate'], quality.map((row) => [
     esc(row.year), esc(row.element), esc(formatNumber(row.valid)), esc(formatNumber(row.failed_qc)), esc(formatNumber(row.missing)),
@@ -342,8 +370,8 @@ function jobsTable(jobs, online, withActions) {
     const running = job.state === 'RUNNING' || job.state === 'ACCEPTED';
     const cls = failed ? 'tag-red' : running ? 'tag-blue' : 'tag-green';
     const cells = [
-      '<strong class="text-[#040404]">' + esc(job.name) + '</strong>',
-      '<span class="font-mono text-[11px]">' + esc(job.id) + '</span>',
+      '<strong class="text-ink">' + esc(job.name) + '</strong>',
+      '<span class="font-mono text-xs">' + esc(job.id) + '</span>',
       '<span class="tag ' + cls + '">' + esc(job.state) + '</span>',
       esc(running ? Math.round(job.progress) + '%' : job.final_status),
       esc(Math.round(job.elapsed_ms / 1000)) + ' s',
@@ -408,7 +436,7 @@ function drawForecast() {
   const last = history[history.length - 1];
   const blanks = history.slice(0, -1).map(() => null);
   drawLineChart('mlForecast', 'chart-ml-forecast', history.map((row) => row.year).concat(future.map((row) => row.year)), [
-    { label: 'Measured', data: history.map((row) => row.value), borderColor: '#040404', backgroundColor: '#040404', pointRadius: 0, tension: 0.2, borderWidth: 2 },
+    { label: 'Measured', data: history.map((row) => row.value), borderColor: INK, backgroundColor: INK, pointRadius: 0, tension: 0.2, borderWidth: 1.5 },
     { label: 'Forecast', data: blanks.concat([last.value], future.map((row) => row.forecast)), borderColor: '#1a814a', backgroundColor: '#1a814a', borderDash: [6, 4], pointRadius: 0, borderWidth: 2 },
     { label: '95% range, upper', data: blanks.concat([last.value], future.map((row) => row.upper)), borderWidth: 0, pointRadius: 0, backgroundColor: 'rgba(26,129,74,.15)', fill: '+1' },
     { label: '95% range, lower', data: blanks.concat([last.value], future.map((row) => row.lower)), borderWidth: 0, pointRadius: 0, hideFromLegend: true },
@@ -430,13 +458,12 @@ async function renderForecast() {
     + forecast.test_period + ', held back from that choice, it ' + (forecast.beats_baseline ? 'beat' : "didn't beat") + ' simply repeating the last value (error '
     + forecast.test_rmse.toFixed(3) + ' against ' + forecast.baseline_test_rmse.toFixed(3) + ' °C), and ' + percent(forecast.test_coverage) + ' of those years fell inside its 95% range. One decade is a small test.';
   $('ml-comparison').innerHTML = table(['Method', 'Error on past data', 'Error on ' + forecast.test_period, 'Average miss'], forecast.comparison.map((row) => [
-    '<strong class="text-[#040404]">' + esc(row.label) + '</strong>' + (row.method === forecast.chosen_method ? ' <span class="tag tag-green">Chosen</span>' : ''),
+    '<strong class="text-ink">' + esc(row.label) + '</strong>' + (row.method === forecast.chosen_method ? ' <span class="tag tag-green">Chosen</span>' : ''),
     esc(row.backtest_rmse.toFixed(3)) + ' °C', esc(row.test_rmse.toFixed(3)) + ' °C', esc(formatSigned(row.test_bias, ' °C')),
   ]), 'No results yet.');
 }
 
 const ASK_EXAMPLES = ['What will the weather be in Karachi in 2027?', 'Are there any chances of a storm in the near future?', 'Could a cyclone hit Gwadar in 2028?', 'Weather in Lahore tomorrow', 'How hot was Multan in June 2023?', 'How much warmer will Pakistan be in 2030?', 'How hot will Pakistan be in 2050 with high emissions?','How often do floods hit Pakistan?'];
-const ASK_COLORS = ['#1a814a', '#040404'];
 
 function showAnswer(result) {
   $('ask-result').classList.remove('hidden');
@@ -450,8 +477,14 @@ function showAnswer(result) {
     state.charts.ask = null;
   }
   if (result.chart) {
+    const answer = result.answer.toLowerCase();
+    const named = result.chart.series.findIndex((series) => answer.includes(series.label.toLowerCase()));
+    const lead = named < 0 ? 0 : named;
+    const colors = seriesColors(result.chart.series.length, lead);
+    const dots = result.chart.labels.length <= 24 ? 3 : 0;
     drawLineChart('ask', 'chart-ask', result.chart.labels, result.chart.series.map((series, index) => ({
-      label: series.label, data: series.values, borderColor: ASK_COLORS[index], backgroundColor: ASK_COLORS[index], tension: 0.2, borderWidth: 2, pointRadius: 3,
+      label: series.label, data: series.values, borderColor: colors[index], backgroundColor: colors[index], tension: 0.2,
+      borderWidth: index === lead ? 2 : 1.5, pointRadius: dots, order: index === lead ? 0 : 1,
     })), result.chart.unit);
   }
 }
@@ -507,11 +540,11 @@ async function renderMl() {
     esc(row.date), esc(row.location), esc(row.parameter.toUpperCase()), esc(row.mean) + ' ' + esc(row.units), esc(row.max) + ' ' + esc(row.units), esc(row.z_mean),
   ]), 'No unusual days flagged.');
   $('ml-correlations').innerHTML = table(['Compared', 'Data', 'Pairs', 'Pearson', 'Spearman', 'p-value', 'How to read it'], correlations.map((row) => [
-    '<strong class="text-[#040404]">' + esc(row.left) + '</strong><br />' + esc(row.right), esc(row.kind), esc(row.n), esc(row.pearson), esc(row.spearman),
+    '<strong class="text-ink">' + esc(row.left) + '</strong><br />' + esc(row.right), esc(row.kind), esc(row.n), esc(row.pearson), esc(row.spearman),
     esc(row.pearson_p) + (row.pearson_p >= 0.05 ? ' <span class="tag tag-grey">Not significant</span>' : ''), esc(row.note),
   ]), 'No correlations yet.');
   $('ml-history').innerHTML = table(['Version', 'Trained', 'By', 'Global error', 'Baseline error', 'Regions beating baseline', 'False alarms', 'Spikes found (10 spreads)'], summary.history.map((run) => [
-    '<span class="font-mono text-[11px]">' + esc(run.version) + '</span>', esc(formatDate(run.trained_at)), esc(run.triggered_by),
+    '<span class="font-mono text-xs">' + esc(run.version) + '</span>', esc(formatDate(run.trained_at)), esc(run.triggered_by),
     esc(run.global_test_rmse) + ' °C', esc(run.global_baseline_rmse) + ' °C', esc(run.series_beating_baseline) + ' of ' + esc(run.series_count),
     esc(percent(run.false_alarm_rate, 2)), esc(percent(run.recall_by_spike_size['10'])),
   ]), 'No runs yet.');
@@ -543,7 +576,7 @@ async function renderAlerts() {
   $('alerts-status').classList.toggle('text-rose-600', live.status.stale);
   $('alerts-table').innerHTML = table(['Severity', 'Title', 'Measured', 'Started', 'Status', 'Email', ''], alerts.map((alert) => [
     severityTag(alert.severity), esc(alert.title), esc(alert.value), esc(formatDate(alert.created_at)),
-    esc(alert.status) + (alert.updated_by ? ' <span class="text-[11px] text-slate-400">(' + esc(alert.updated_by) + ')</span>' : ''),
+    esc(alert.status) + (alert.updated_by ? ' <span class="text-xs text-slate-400">(' + esc(alert.updated_by) + ')</span>' : ''),
     esc(alert.email_status || ''),
     (alert.status === 'Active' ? '<button class="pill pill-gold" data-action="alert-status" data-id="' + esc(alert.id) + '" data-status="Acknowledged">Acknowledge</button> ' : '')
     + (alert.status !== 'Resolved' ? '<button class="pill pill-green" data-action="alert-status" data-id="' + esc(alert.id) + '" data-status="Resolved">Resolve</button>' : ''),
@@ -605,7 +638,7 @@ async function renderUsers() {
     const status = user.pending ? '<span class="tag tag-gold">Waiting for approval</span>'
       : '<span class="tag ' + (active ? 'tag-green' : 'tag-red') + '">' + (active ? 'Active' : 'Disabled') + '</span>';
     const cells = [
-      '<strong class="text-[#040404]">' + esc(user.name) + '</strong><br /><span class="text-[11px]">' + esc(user.title) + '</span>',
+      '<strong class="text-ink">' + esc(user.name) + '</strong><br /><span class="text-xs">' + esc(user.title) + '</span>',
       esc(user.email),
       '<span class="tag ' + (user.role === 'Admin' ? 'tag-green' : 'tag-blue') + '">' + esc(user.role) + '</span>',
       status,
@@ -614,7 +647,7 @@ async function renderUsers() {
       cells.push('<button class="pill pill-green" data-action="toggle-active" data-id="' + esc(user.id) + '" data-active="true">Approve</button> '
         + '<button class="pill pill-light" data-action="toggle-active" data-id="' + esc(user.id) + '" data-active="false">Decline</button>');
     } else if (isAdmin()) {
-      cells.push(user.id === state.user.id ? '<span class="text-[11px] text-slate-400">You</span>'
+      cells.push(user.id === state.user.id ? '<span class="text-xs text-slate-400">You</span>'
         : '<button class="pill pill-light" data-action="toggle-role" data-id="' + esc(user.id) + '" data-role="' + (user.role === 'Admin' ? 'Analyst' : 'Admin') + '">Make ' + (user.role === 'Admin' ? 'Analyst' : 'Admin') + '</button> '
         + '<button class="pill pill-light" data-action="toggle-active" data-id="' + esc(user.id) + '" data-active="' + (!active) + '">' + (active ? 'Disable' : 'Enable') + '</button>');
     }
@@ -642,11 +675,11 @@ async function renderStatus() {
   const [status, notice] = await Promise.all([request('/status'), loadMaintenance()]);
   $('status-instance').textContent = 'This page was answered by ' + status.instance + '.';
   $('status-components').innerHTML = status.components.map((component) => (
-    '<div class="card p-5 space-y-1"><div class="flex justify-between gap-2"><h4 class="font-extrabold text-sm">' + esc(component.name) + '</h4><span class="tag ' + (component.ok ? 'tag-green">OK' : 'tag-red">Needs attention') + '</span></div><p class="text-[11px] text-slate-500">' + esc(component.detail) + '</p></div>'
+    '<div class="card p-5 space-y-1"><div class="flex justify-between gap-2"><h4 class="font-medium text-sm">' + esc(component.name) + '</h4><span class="tag ' + (component.ok ? 'tag-green">OK' : 'tag-red">Needs attention') + '</span></div><p class="text-xs text-slate-500">' + esc(component.detail) + '</p></div>'
   )).join('');
   $('status-uptime-note').textContent = 'The goal is ' + status.goal_percent + '%. These figures only cover the time the health monitor was running on this one machine, so they show how the demo behaved and can\'t prove 99% availability in real use.';
   $('status-targets').innerHTML = table(['Checked', 'Now', 'Response', 'Last 24 hours', 'Last 7 days'], status.targets.map((target) => [
-    '<strong class="text-[#040404]">' + esc(target.target) + '</strong>',
+    '<strong class="text-ink">' + esc(target.target) + '</strong>',
     '<span class="tag ' + (target.latest.ok ? 'tag-green">Up' : 'tag-red">Down') + '</span>',
     esc(target.latest.ms) + ' ms', esc(uptimeText(target.day)), esc(uptimeText(target.week)),
   ]), 'The health monitor hasn\'t run yet.');
@@ -724,7 +757,7 @@ function setSidebar(open) {
 function buildSidebar() {
   $('sidebar-nav').innerHTML = NAV.map((item) => {
     if (item.length === 1) return '<div class="sidebar-heading">' + esc(item[0]) + '</div>';
-    const badge = item[0] === 'alerts' ? '<span id="sidebar-alerts-badge" class="sidebar-label hidden bg-[#f6d987] text-[#040404] font-bold px-2 py-0.5 rounded-full text-[9px]"></span>' : '';
+    const badge = item[0] === 'alerts' ? '<span id="sidebar-alerts-badge" class="sidebar-label hidden count"></span>' : '';
     return '<a href="#" title="' + esc(item[2]) + '" data-nav="' + item[0] + '" class="sidebar-nav-item"><span class="flex items-center gap-3 truncate"><i data-lucide="' + item[1] + '" class="w-4 h-4 flex-shrink-0"></i><span class="sidebar-label truncate">' + esc(item[2]) + '</span></span>' + badge + '</a>';
   }).join('');
 }
@@ -747,8 +780,8 @@ async function loadNotifications() {
   badge.classList.toggle('hidden', unread === 0);
   badge.classList.toggle('flex', unread > 0);
   $('notif-list').innerHTML = notifications.map((item) => (
-    '<div class="p-3.5 ' + (item.read ? '' : 'bg-[#141414]') + '"><p class="text-slate-200 font-medium">' + esc(item.text) + '</p><span class="text-[10px] text-slate-500">' + esc(formatDate(item.created_at)) + '</span></div>'
-  )).join('') || '<div class="p-4 text-center text-slate-500">No notifications.</div>';
+    '<div class="notif-item' + (item.read ? '' : ' unread') + '"><p>' + esc(item.text) + '</p><span class="font-mono text-xs">' + esc(formatDate(item.created_at)) + '</span></div>'
+  )).join('') || '<div class="notif-item" style="text-align:center">No notifications</div>';
 }
 
 // --- Global search ---
@@ -769,8 +802,8 @@ async function runSearch(query) {
   if (!state.searchIndex) state.searchIndex = await buildSearchIndex();
   const matches = state.searchIndex.filter((item) => item.text.toLowerCase().includes(query.toLowerCase())).slice(0, 12);
   results.innerHTML = matches.map((item) => (
-    '<button class="w-full text-left p-2 hover:bg-[#1f1f1f] rounded-xl flex justify-between gap-2" data-nav="' + item.page + '"><span class="truncate">' + esc(item.text) + '</span><span class="text-[10px] text-[#f6d987] shrink-0">' + esc(item.group) + '</span></button>'
-  )).join('') || '<p class="text-slate-400 text-center py-2">No matches.</p>';
+    '<button class="dropdown-row text-sm flex justify-between gap-2" data-nav="' + item.page + '"><span class="truncate">' + esc(item.text) + '</span><span class="text-xs shrink-0" style="color:var(--dt3)">' + esc(item.group) + '</span></button>'
+  )).join('') || '<p class="text-sm text-center py-2" style="color:var(--dt3)">No matches</p>';
   results.classList.remove('hidden');
 }
 
