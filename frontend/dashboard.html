@@ -166,6 +166,13 @@
     .live::before { content: ""; flex: none; width: 6px; height: 6px; border-radius: 3px; background: var(--accent-on-dark); box-shadow: 0 0 0 3px rgba(95,191,138,.18); }
     main .live::before { background: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
 
+    /* The window stays put: header on top, sidebar on the left, and only the content scrolls.
+       Without a fixed height the body grew with the content and the sidebar scrolled away. */
+    html, body { height: 100%; }
+    body { overflow: hidden; }
+    body > .flex-1 { min-height: 0; }
+    #sidebar-nav { min-height: 0; }
+
     /* Layout: fluid content, capped wide, 24 between blocks. */
     main { padding: 24px; }
     @media (min-width: 1024px) { main { padding: 32px; } }
