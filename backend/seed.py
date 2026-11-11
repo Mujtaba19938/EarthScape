@@ -1,7 +1,8 @@
 """First-time setup: writes backend/.env and creates one Admin and one Analyst.
 
-Generated passwords and the token secret go into backend/.env, which git ignores.
-Existing users are left as they are, so re-running never resets a password.
+The token secret and encryption key go into backend/.env, which git ignores. Passwords are
+never saved: a new account's password is printed once, so copy it then. Existing users are left
+as they are, so re-running never resets a password.
 """
 import datetime
 import secrets
@@ -14,6 +15,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from app import config  # noqa: E402
 
+PASSWORD_KEYS = ("SEED_ADMIN_PASSWORD", "SEED_ANALYST_PASSWORD")
 DEFAULT_RULES = [
     ("Unhealthy air", "live_aqi", 150, "High"),
     ("Very high PM2.5", "air_pm25", 125, "Critical"),
@@ -26,9 +28,7 @@ def env_values():
     values = {
         "JWT_SECRET": secrets.token_urlsafe(48),
         "SEED_ADMIN_EMAIL": "admin@earthscape.test",
-        "SEED_ADMIN_PASSWORD": secrets.token_urlsafe(16),
         "SEED_ANALYST_EMAIL": "analyst@earthscape.test",
-        "SEED_ANALYST_PASSWORD": secrets.token_urlsafe(16),
         "ENCRYPTION_KEY": Fernet.generate_key().decode("ascii"),
     }
     if config.ENV_FILE.exists():
@@ -36,6 +36,9 @@ def env_values():
             if "=" in line and not line.lstrip().startswith("#"):
                 key, value = line.split("=", 1)
                 values[key.strip()] = value.strip()
+    # Older setups saved the first passwords here; they are removed and never written again.
+    for key in PASSWORD_KEYS:
+        values.pop(key, None)
     lines = ["%s=%s" % item for item in values.items()]
     config.ENV_FILE.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return values
@@ -52,21 +55,20 @@ def main():
 
     ensure_indexes()
     people = [
-        ("Administrator", "System Administrator", values["SEED_ADMIN_EMAIL"],
-         values["SEED_ADMIN_PASSWORD"], "Admin"),
-        ("Climate Analyst", "Climate Data Analyst", values["SEED_ANALYST_EMAIL"],
-         values["SEED_ANALYST_PASSWORD"], "Analyst"),
+        ("Administrator", "System Administrator", values["SEED_ADMIN_EMAIL"], "Admin"),
+        ("Climate Analyst", "Climate Data Analyst", values["SEED_ANALYST_EMAIL"], "Analyst"),
     ]
-    for name, title, email, password, role in people:
+    for name, title, email, role in people:
         if db.users.find_one({"email_lookup": email_lookup(email)}):
             print("Already exists:", email)
             continue
+        password = secrets.token_urlsafe(16)
         db.users.insert_one({
             "name": name, "title": title, **email_fields(email), "role": role, "active": True,
             "password_hash": hash_password(password),
             "created_at": datetime.datetime.now(datetime.timezone.utc),
         })
-        print("Created:", email)
+        print("Created %s with password %s (shown only now: copy it)" % (email, password))
     if db.alert_rules.count_documents({}) == 0:
         now = datetime.datetime.now(datetime.timezone.utc)
         db.alert_rules.insert_many([
@@ -74,7 +76,6 @@ def main():
              "created_by": "Setup", "created_at": now}
             for name, metric, threshold, severity in DEFAULT_RULES])
         print("Created", len(DEFAULT_RULES), "alert rules")
-    print("Sign-in details are in", config.ENV_FILE)
 
 
 if __name__ == "__main__":

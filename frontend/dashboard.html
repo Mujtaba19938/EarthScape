@@ -47,6 +47,75 @@
     .sidebar-nav-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-radius: 99px; font-weight: 500; color: #cbd5e1; transition: all .2s; }
     .sidebar-nav-item:hover { background: #141414; color: #fff; }
     .sidebar-nav-item.active { background: #1a1a1a; color: #f6d987; font-weight: 700; }
+
+    /* Restyle following the stageshow rules: five inks and one accent (green), sentence case,
+       surfaces separated by fill rather than borders, one number big and the rest quieter. */
+    :root { --ink: #111412; --ink-2: #3d4440; --ink-3: #69716c; --ink-4: #9aa19c; --line: #eceeec; --ground: #f4f5f4; --accent: #1a814a; --accent-soft: #e6f2eb; --accent-on-dark: #8fd4ac; }
+    html, body, main { background: var(--ground) !important; }
+    body { color: var(--ink); }
+    .card { border: 0; border-radius: 16px; box-shadow: 0 1px 2px rgba(17,20,18,.04), 0 8px 24px -12px rgba(17,20,18,.10); }
+    .card h2, .card h3 { color: var(--ink); letter-spacing: -0.015em; }
+    .text-slate-500 { color: var(--ink-3) !important; }
+    .text-slate-400 { color: var(--ink-4) !important; }
+    header .text-slate-400, aside .text-slate-400 { color: #8b928d !important; }
+    .text-\[10px\] { font-size: 11px !important; line-height: 1.35; }
+    .text-\[11px\] { line-height: 1.4; }
+
+    /* One accent: the gold becomes the green, lightened where it sits on black. */
+    .text-\[\#f6d987\] { color: var(--accent-on-dark) !important; }
+    .border-\[\#f6d987\] { border-color: var(--accent-on-dark) !important; }
+    .focus\:border-\[\#f6d987\]:focus { border-color: var(--accent-on-dark) !important; }
+    .bg-\[\#f6d987\] { background: var(--accent-on-dark) !important; }
+    #maintenance-banner { background: var(--accent-soft) !important; color: var(--ink) !important; }
+    .pill { border-radius: 10px; padding: 9px 16px; font-size: 13px; }
+    .pill:hover { transform: none; }
+    .pill-gold { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .pill-gold:hover { background: #14663b; }
+    .pill-light { border-color: #dfe2df; }
+    .tag { font-size: 11px; font-weight: 600; padding: 3px 10px; text-transform: none; }
+    .tag-gold { background: #fdf1cf; color: #6b5310; }
+    .tag-green { background: var(--accent-soft); color: var(--accent); }
+    .sidebar-nav-item { border-radius: 10px; padding: 9px 12px; font-size: 13px; }
+    .sidebar-nav-item.active { background: #1b1d1c; color: #fff; font-weight: 600; box-shadow: inset 3px 0 0 var(--accent-on-dark); }
+    .sidebar-nav-item.active svg { color: var(--accent-on-dark); }
+    .sidebar-heading { padding: 16px 12px 6px; font-size: 11px; font-weight: 500; color: #8b928d; }
+
+    /* Sentence case; hierarchy comes from size and one weight step, not capitals. */
+    .stat-label { text-transform: none; letter-spacing: 0; font-size: 13px; font-weight: 500; color: var(--ink-3); }
+    .stat-value { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; margin-top: 4px; }
+    .data-table { font-size: 13px; color: var(--ink-2); }
+    .data-table thead { background: transparent; color: var(--ink-3); text-transform: none; font-size: 12px; font-weight: 600; }
+    .data-table thead tr { border-bottom: 1px solid var(--line); }
+    .data-table th, .data-table td { padding: 11px 12px; }
+    .data-table tbody tr { border-top: 1px solid var(--line); }
+    .data-table tbody tr:first-child { border-top: 0; }
+    .data-table tbody tr:hover { background: #fafbfa; }
+    .field { background: #fff; border-color: #dfe2df; border-radius: 10px; font-size: 13px; }
+    .field:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+    /* A row of stats is one object, not a stack of equal boxes: one strip with dividers,
+       and the first figure, the headline, is the big one. */
+    #landing-stats, #dashboard-stats { gap: 0 !important; background: #fff; border-radius: 16px; overflow: hidden;
+      box-shadow: 0 1px 2px rgba(17,20,18,.04), 0 8px 24px -12px rgba(17,20,18,.10); }
+    #landing-stats > .card, #dashboard-stats > .card { border-radius: 0; box-shadow: none; background: transparent; padding: 20px 22px; border-top: 1px solid var(--line); }
+    #landing-stats > .card:first-child, #dashboard-stats > .card:first-child { border-top: 0; }
+    #landing-stats > .card:first-child .stat-value, #dashboard-stats > .card:first-child .stat-value { font-size: 32px; color: var(--accent); }
+    @media (min-width: 640px) {
+      #landing-stats > .card, #dashboard-stats > .card { border-top: 0; border-left: 1px solid var(--line); }
+      #landing-stats > .card:nth-child(2n+1), #dashboard-stats > .card:nth-child(2n+1) { border-left: 0; }
+      #landing-stats > .card:nth-child(n+3), #dashboard-stats > .card:nth-child(n+3) { border-top: 1px solid var(--line); }
+    }
+    @media (min-width: 1024px) {
+      #landing-stats > .card { border-top: 0 !important; border-left: 1px solid var(--line) !important; }
+      #landing-stats > .card:first-child { border-left: 0 !important; }
+    }
+    @media (min-width: 1280px) {
+      #dashboard-stats > .card { border-top: 0 !important; border-left: 1px solid var(--line) !important; }
+      #dashboard-stats > .card:first-child { border-left: 0 !important; }
+    }
+
+    /* The landing panel: a plain dark surface, no gradient or glow. */
+    #view-landing > div:first-child { background: #0e100f !important; border: 0 !important; box-shadow: none !important; border-radius: 20px !important; }
   </style>
 </head>
 <body class="hide-admin min-h-full bg-[#f6f7f6] text-[#040404] flex flex-col antialiased">
@@ -59,8 +128,8 @@
       <button data-nav="landing" class="flex items-center space-x-2.5 text-left">
         <span class="w-8 h-8 rounded-full bg-[#1a814a] flex items-center justify-center"><i data-lucide="globe" class="w-4 h-4 text-white"></i></span>
         <span class="hidden sm:block">
-          <span class="font-extrabold tracking-tight text-lg block leading-none">EARTHSCAPE</span>
-          <span class="text-[10px] text-[#f6d987] font-semibold tracking-widest uppercase block mt-0.5">Climate Intelligence</span>
+          <span class="font-bold tracking-tight text-base block leading-none">EarthScape</span>
+          <span class="text-[11px] text-slate-400 font-medium block mt-1">Climate intelligence</span>
         </span>
       </button>
     </div>
@@ -121,7 +190,7 @@
     <main class="flex-1 min-w-0 overflow-y-auto bg-[#f6f7f6] p-5 lg:p-8">
       <section id="view-landing" class="page-view space-y-6">
         <div class="bg-gradient-to-br from-[#0c1f15] via-[#040404] to-[#121c16] text-white rounded-[28px] p-8 lg:p-12 shadow-2xl border border-[#1a3325] space-y-5">
-          <h1 class="text-3xl lg:text-5xl font-extrabold tracking-tight leading-[1.1] text-white">Understand Our Planet. <br /><span class="text-[#f6d987]">Predict Our Future.</span></h1>
+          <h1 class="text-3xl lg:text-5xl font-extrabold tracking-tight leading-[1.1] text-white">Understand our planet. <br /><span class="text-[#f6d987]">Predict our future.</span></h1>
           <p class="text-slate-300 text-sm max-w-2xl">EarthScape processes weather station records, satellite-derived measurements and air-quality sensor readings with Apache Hadoop, and turns them into insight for climate decisions.</p>
           <div class="flex flex-wrap gap-3">
             <button data-nav="dashboard" class="pill pill-gold">Explore climate dashboard</button>
@@ -226,7 +295,7 @@
       <section id="view-hadoop" class="page-view hidden space-y-6">
         <div id="cluster-stats" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4"></div>
         <div class="bg-[#040404] text-white p-7 rounded-[24px] space-y-4">
-          <h3 class="font-bold text-sm text-[#f6d987] uppercase tracking-wider">MapReduce pipeline</h3>
+          <h3 class="font-bold text-sm text-[#f6d987]">MapReduce pipeline</h3>
           <div class="grid grid-cols-1 sm:grid-cols-5 gap-3 text-center text-xs">
             <div class="p-3.5 rounded-2xl border border-[#262626] bg-[#121212]"><p class="font-bold">1. Input</p><p class="text-[10px] text-slate-400">Raw CSV in HDFS</p></div>
             <div class="p-3.5 rounded-2xl border border-[#262626] bg-[#121212]"><p class="font-bold">2. Split</p><p class="text-[10px] text-slate-400">128 MB HDFS blocks</p></div>
@@ -283,6 +352,20 @@
         <div class="card p-5 flex flex-wrap gap-3 justify-between items-center">
           <div><h2 class="text-xl font-extrabold">ML models &amp; forecasts</h2><p id="ml-run-note" class="text-xs text-slate-500"></p></div>
           <button id="btn-retrain" class="admin-only pill pill-dark disabled:opacity-50">Retrain models</button>
+        </div>
+        <div class="card p-6 space-y-4">
+          <div><h3 class="font-bold">Ask about the weather</h3><p class="text-xs text-slate-500">Ask about a Pakistani city, a future year, or storms. Answers come from saved data and models, and say how far to trust them.</p></div>
+          <form id="ask-form" class="flex flex-wrap gap-3 items-center">
+            <input id="ask-input" class="field flex-1" style="min-width:220px" maxlength="300" aria-label="Your question" placeholder="What will the weather be in Karachi in 2027?" />
+            <button id="ask-submit" type="submit" class="pill pill-dark disabled:opacity-50">Ask</button>
+          </form>
+          <div id="ask-examples" class="flex flex-wrap gap-2"></div>
+          <div id="ask-result" class="space-y-3 hidden">
+            <p id="ask-answer" class="font-medium"></p>
+            <div id="ask-chart-wrap" class="h-80 relative hidden"><canvas id="chart-ask"></canvas></div>
+            <div id="ask-table" class="overflow-x-auto"></div>
+            <div id="ask-notes" class="space-y-1"></div>
+          </div>
         </div>
         <div id="ml-stats" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4"></div>
         <div class="card p-6 space-y-4">

@@ -46,5 +46,26 @@ def record_failure(email, address):
             db.login_failures.update_one({"_id": key}, {"$inc": {"count": 1}})
 
 
+MAX_SIGNUPS_PER_ADDRESS = 5
+SIGNUP_WINDOW_MINUTES = 60
+
+
+def signup_blocked(address):
+    """One machine may ask for a few accounts an hour, so the Admins' list can't be flooded."""
+    row = db.login_failures.find_one({"_id": "signup:%s" % address})
+    return bool(row and row["expires_at"] > _now() and row["count"] >= MAX_SIGNUPS_PER_ADDRESS)
+
+
+def record_signup(address):
+    now = _now()
+    key = "signup:%s" % address
+    db.login_failures.delete_one({"_id": key, "expires_at": {"$lte": now}})
+    try:
+        db.login_failures.update_one({"_id": key}, {"$inc": {"count": 1},
+                                     "$setOnInsert": {"expires_at": now + datetime.timedelta(minutes=SIGNUP_WINDOW_MINUTES)}}, upsert=True)
+    except DuplicateKeyError:
+        db.login_failures.update_one({"_id": key}, {"$inc": {"count": 1}})
+
+
 def clear_account(email, address):
     db.login_failures.delete_one({"_id": _limits(email, address)[0][0]})

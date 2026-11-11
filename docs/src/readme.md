@@ -29,7 +29,7 @@ backend\.venv\Scripts\python.exe ops\load_demo_data.py
 backend\.venv\Scripts\python.exe backend\serve.py --port 8000
 ```
 
-Open http://localhost:8000 and choose **Dashboard**, which opens the sign-in page. The first step of setup generates the Admin and Analyst sign-in details, and saves them in `backend\.env`.
+Open http://localhost:8000 and choose **Dashboard**, which opens the sign-in page. The first step of setup creates the Admin and Analyst accounts and prints their passwords once, so copy them then; they aren't saved anywhere. Anyone else can choose **Create an account** on the sign-in page and wait for an Admin to approve it.
 
 This shows real results from the pipeline without needing Hadoop. Section 7 of the Project Report covers HTTPS, load balancing, Hadoop and the full pipeline.
 

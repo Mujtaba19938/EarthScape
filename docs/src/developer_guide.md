@@ -150,12 +150,12 @@ Climate data, names and roles aren't encrypted. HSTS is left off because the cer
 
 ## 5.4 Settings
 
-Set in `backend/.env` or as environment variables. `seed.py` generates the keys and the first users' details.
+Set in `backend/.env` or as environment variables. `seed.py` generates the keys and the first users, and prints each new password once.
 
 | Setting | Purpose |
 | --- | --- |
 | `JWT_SECRET`, `ENCRYPTION_KEY` | Signing and encryption keys. Keep a safe copy: backups can't be read without `ENCRYPTION_KEY` |
-| `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, `SEED_ANALYST_*` | First users' details |
+| `SEED_ADMIN_EMAIL`, `SEED_ANALYST_EMAIL` | First users' email addresses. Their passwords are printed once by `seed.py` and never saved |
 | `MONGO_URI`, `MONGO_DB` | Database connection |
 | `YARN_URL`, `NAMENODE_URL` | Hadoop web addresses |
 | `ML_PYTHON` | Python used for training |

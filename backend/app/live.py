@@ -17,12 +17,8 @@ from . import alert_checks, config, emailer, hadoop_client
 from .db import db
 from .notifications import notify
 
-LOCATIONS = [
-    ("Karachi", 24.86, 67.01), ("Delhi", 28.61, 77.21), ("Beijing", 39.90, 116.40), ("Tokyo", 35.68, 139.69),
-    ("Jakarta", -6.21, 106.85), ("Sydney", -33.87, 151.21), ("Cairo", 30.04, 31.24), ("Lagos", 6.52, 3.38),
-    ("Nairobi", -1.29, 36.82), ("London", 51.51, -0.13), ("New York", 40.71, -74.01), ("Sao Paulo", -23.55, -46.63),
-]
-LOCATION_NAMES = [location[0] for location in LOCATIONS]
+LOCATIONS = config.LIVE_LOCATIONS
+LOCATION_NAMES = config.LIVE_LOCATION_NAMES
 WEATHER_URL = "https://api.open-meteo.com/v1/forecast"
 AIR_URL = "https://air-quality-api.open-meteo.com/v1/air-quality"
 WEATHER_FIELDS = {"temperature_2m": "temperature_c", "relative_humidity_2m": "humidity_pct",

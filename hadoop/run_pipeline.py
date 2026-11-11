@@ -1,6 +1,7 @@
 """Runs the EarthScape batch pipeline: raw files -> HDFS -> MapReduce -> MongoDB.
 
-Usage: python run_pipeline.py [load] [jobs] [mongo]   (no arguments runs all three)
+Usage: python run_pipeline.py [load|imf] [jobs] [mongo] [job name ...]   (no steps runs all three)
+"imf" loads only the IMF climate indicator files and the CMIP6 projections. Naming jobs runs and reloads just those.
 Run from Anaconda's Python, which has pymongo. HDFS and YARN must already be running.
 Set STREAMING_PYTHON if Python lives elsewhere: its path must not contain spaces.
 """
@@ -25,6 +26,14 @@ MONGO_URI = os.environ.get("MONGO_URI", "mongodb://localhost:27017")
 MONGO_DB = "earthscape"
 
 GHCN_INPUT = "/climate/raw/ghcn_daily/year_*"
+IMF_FILES = ["climate_disasters.csv", "temperature_change.csv", "forest_carbon.csv"]
+IMF_INPUT = "/climatechange/input"
+CMIP6_FILE = os.path.join(RAW, "cmip6", "pakistan_cmip6.csv")
+CMIP6_INPUT = "/climatechange/cmip6"
+# Jobs whose output goes under /climatechange instead of /climate/processed.
+OUTPUT_DIRS = {"country_indicators": "/climatechange/output/country_indicators",
+               "cmip6_projections": "/climatechange/output/cmip6_projections"}
+STEPS = ("load", "imf", "jobs", "mongo")
 
 # name, input, needs the station list, reducers, CSV columns of the output
 JOB_SPECS = [
@@ -39,7 +48,15 @@ JOB_SPECS = [
     ("air_quality_monthly", "/climate/raw/openaq", False, 1,
      ["location_id", "location", "lat", "lon", "parameter", "units", "year", "month",
       "mean", "max", "readings", "rejected"]),
+    ("country_indicators", IMF_INPUT, False, 1,
+     ["iso3", "country", "indicator", "unit", "year", "value"]),
+    ("cmip6_projections", CMIP6_INPUT, False, 1,
+     ["iso3", "measure", "scenario", "percentile", "year", "value", "change"]),
 ]
+
+
+def output_dir(name):
+    return OUTPUT_DIRS.get(name, "/climate/processed/" + name)
 
 
 def command_line(args):
@@ -84,6 +101,16 @@ def load():
     for filename in sorted(os.listdir(os.path.join(RAW, "openaq"))):
         if filename.endswith(".csv"):
             put(os.path.join(RAW, "openaq", filename), "/climate/raw/openaq")
+    load_imf()
+
+
+def load_imf():
+    """The IMF files, saved by data/import_imf_data.py."""
+    hdfs("-mkdir", "-p", "/climatechange/output")
+    for filename in IMF_FILES:
+        put(os.path.join(RAW, "imf", filename), IMF_INPUT)
+    # Kept apart from the IMF files, which the country_indicators job reads as one folder.
+    put(CMIP6_FILE, CMIP6_INPUT)
 
 
 def as_uri(path):
@@ -95,7 +122,7 @@ def run_job(name, job_input, needs_stations, reducers):
     files = [as_uri(os.path.join(JOBS, script))]
     if needs_stations:
         files.append(as_uri(STATIONS))
-    output = "/climate/processed/" + name
+    output = output_dir(name)
     hdfs("-rm", "-r", "-f", "-skipTrash", output)
     started = time.time()
     run([
@@ -116,9 +143,9 @@ def timing(name, seconds):
             "finished_at": datetime.datetime.utcnow()}
 
 
-def jobs():
+def jobs(specs=JOB_SPECS):
     timings = []
-    for name, job_input, needs_stations, reducers, _ in JOB_SPECS:
+    for name, job_input, needs_stations, reducers, _ in specs:
         seconds = run_job(name, job_input, needs_stations, reducers)
         print("%s finished in %.0f s" % (name, seconds))
         timings.append(timing(name, seconds))
@@ -126,7 +153,7 @@ def jobs():
 
 
 def read_job_output(name):
-    command = command_line(["hadoop", "fs", "-cat", "/climate/processed/%s/part-*" % name])
+    command = command_line(["hadoop", "fs", "-cat", output_dir(name) + "/part-*"])
     text = subprocess.run(command, check=True, stdout=subprocess.PIPE,
                           encoding="utf-8").stdout
     return [line.split(",") for line in text.splitlines() if line]
@@ -174,6 +201,8 @@ def load_job_output(db, spec):
     replace_collection(db, name, documents)
     db.station_anomalies.create_index([("station", 1), ("date", 1)])
     db.regional_monthly.create_index([("zone", 1), ("year", 1), ("month", 1)])
+    db.country_indicators.create_index([("iso3", 1), ("indicator", 1), ("year", 1)])
+    db.cmip6_projections.create_index([("iso3", 1), ("measure", 1), ("scenario", 1), ("year", 1)])
 
 
 def record_timings(db, timings):
@@ -181,11 +210,11 @@ def record_timings(db, timings):
         db.pipeline_runs.insert_many(timings)
 
 
-def to_mongo(timings):
+def to_mongo(timings, specs=JOB_SPECS):
     from pymongo import MongoClient
 
     db = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)[MONGO_DB]
-    for spec in JOB_SPECS:
+    for spec in specs:
         load_job_output(db, spec)
     replace_collection(db, "gistemp_global", read_gistemp("GLB.Ts+dSST.csv"))
     replace_collection(db, "gistemp_zonal", read_gistemp("ZonAnn.Ts+dSST.csv"))
@@ -194,14 +223,21 @@ def to_mongo(timings):
 
 
 def main():
-    steps = sys.argv[1:] or ["load", "jobs", "mongo"]
+    names = [arg for arg in sys.argv[1:] if arg not in STEPS]
+    unknown = [name for name in names if name not in [spec[0] for spec in JOB_SPECS]]
+    if unknown:
+        sys.exit("Unknown step or job: " + ", ".join(unknown))
+    steps = [arg for arg in sys.argv[1:] if arg in STEPS] or ["load", "jobs", "mongo"]
+    specs = [spec for spec in JOB_SPECS if spec[0] in names] if names else JOB_SPECS
     timings = []
     if "load" in steps:
         load()
+    elif "imf" in steps:
+        load_imf()
     if "jobs" in steps:
-        timings = jobs()
+        timings = jobs(specs)
     if "mongo" in steps:
-        to_mongo(timings)
+        to_mongo(timings, specs)
 
 
 if __name__ == "__main__":

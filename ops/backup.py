@@ -21,7 +21,7 @@ from app import config, field_crypto, hadoop_client  # noqa: E402
 from app.db import client, db, ensure_indexes  # noqa: E402
 from app.notifications import notify  # noqa: E402
 
-HDFS_PATHS = ["/climate/processed", "/climate/raw/live", "/climate/raw/uploads"]
+HDFS_PATHS = ["/climate/processed", "/climate/raw/live", "/climate/raw/uploads", "/climatechange/output"]
 FOLDER_PATTERN = re.compile(r"^\d{8}-\d{6}$")
 CHECK_DB = "earthscape_restorecheck"
 ALLOWED_COUNT_DIFFERENCE = 0.01

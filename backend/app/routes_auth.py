@@ -11,6 +11,7 @@ from pymongo.errors import DuplicateKeyError
 from . import login_limit
 from .db import db
 from .field_crypto import decrypt, email_fields, email_lookup
+from .notifications import notify
 from .security import (ROLES, bearer, create_token, current_user, hash_password, require_admin,
                        revoke_token, verify_password)
 
@@ -23,6 +24,8 @@ _DUMMY_HASH = hash_password("not-a-real-password")
 class Login(BaseModel):
     email: str = Field(max_length=254)
     password: str = Field(max_length=128)
+    # The sign-in page has an Analyst and an Admin tab; each only lets its own role in.
+    role: str | None = None
 
 
 class ProfileUpdate(BaseModel):
@@ -43,6 +46,18 @@ class NewUser(BaseModel):
     password: str = Field(min_length=10, max_length=128)
 
 
+class SignUp(BaseModel):
+    name: str = Field(min_length=1, max_length=100)
+    title: str = Field(default="", max_length=100)
+    email: str = Field(max_length=254)
+    password: str = Field(min_length=10, max_length=128)
+
+
+SIGNUP_ROLE = "Analyst"
+SIGNUP_MESSAGE = "Thanks. An Admin will review your request, and you can sign in once it's approved."
+PENDING_MESSAGE = "Your account is waiting for an Admin to approve it."
+
+
 class UserUpdate(BaseModel):
     role: str | None = None
     active: bool | None = None
@@ -56,6 +71,7 @@ def public_user(user):
         "email": decrypt(user["email_enc"]),
         "role": user["role"],
         "active": user.get("active", True),
+        "pending": user.get("pending", False),
     }
 
 
@@ -69,11 +85,44 @@ def login(body: Login, request: Request):
     user = db.users.find_one({"email_lookup": email_lookup(email)})
     hashed = user["password_hash"] if user else _DUMMY_HASH
     valid = verify_password(body.password, hashed)
+    if user and valid and user.get("pending"):
+        # Only someone who knows the password learns the account is waiting.
+        raise HTTPException(status_code=403, detail=PENDING_MESSAGE)
     if not user or not valid or not user.get("active", True):
         login_limit.record_failure(email, address)
         raise HTTPException(status_code=401, detail="Incorrect email or password.")
+    if body.role and body.role != user["role"]:
+        # Only someone who knows the password learns which tab to use.
+        raise HTTPException(status_code=403, detail="This is an %s account. Use the %s sign-in instead." % (user["role"], user["role"]))
     login_limit.clear_account(email, address)
     return {"token": create_token(user["_id"]), "user": public_user(user)}
+
+
+@router.post("/auth/signup", status_code=202)
+def signup(body: SignUp, request: Request):
+    """Asks for an Analyst account. It stays off until an Admin approves it."""
+    email = body.email.strip().lower()
+    if not EMAIL_PATTERN.match(email):
+        raise HTTPException(status_code=422, detail="Enter a valid email address.")
+    address = request.client.host if request.client else "unknown"
+    if login_limit.signup_blocked(address):
+        raise HTTPException(status_code=429, detail="Too many sign-up requests from here. Please try again later.",
+                            headers={"Retry-After": str(login_limit.SIGNUP_WINDOW_MINUTES * 60)})
+    login_limit.record_signup(address)
+    name = body.name.strip()
+    document = {
+        "name": name, "title": body.title.strip(), **email_fields(email), "role": SIGNUP_ROLE,
+        "active": False, "pending": True, "password_hash": hash_password(body.password),
+        "created_at": datetime.datetime.now(datetime.timezone.utc),
+    }
+    try:
+        db.users.insert_one(document)
+    except DuplicateKeyError:
+        # Same answer as a new request, so the page can't be used to find out who has an account.
+        return {"message": SIGNUP_MESSAGE}
+    for admin in db.users.find({"role": "Admin", "active": True}, {"_id": 1}):
+        notify("%s asked for an Analyst account. Approve it in Users and roles." % name, str(admin["_id"]))
+    return {"message": SIGNUP_MESSAGE}
 
 
 @router.post("/auth/logout")
@@ -142,6 +191,8 @@ def update_user(user_id: str, body: UserUpdate, admin=Depends(require_admin)):
         changes["role"] = body.role
     if body.active is not None:
         changes["active"] = body.active
+        # Turning a request on approves it; turning it off again just disables the account.
+        changes["pending"] = False
     if changes:
         db.users.update_one({"_id": target["_id"]}, {"$set": changes})
     return public_user(db.users.find_one({"_id": target["_id"]}))

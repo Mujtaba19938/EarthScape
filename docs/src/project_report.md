@@ -287,7 +287,7 @@ backend\.venv\Scripts\python.exe ops\load_demo_data.py
 backend\.venv\Scripts\python.exe backend\serve.py --port 8000
 ```
 
-Open `http://localhost:8000`. The sign-in details are in `backend\.env`.
+Open `http://localhost:8000`. Sign in with the Admin password that setup printed, or choose **Create an account** to ask for an Analyst account, which an Admin approves in Users and roles.
 
 ## 7.3 HTTPS and load balancing
 

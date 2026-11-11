@@ -2,14 +2,19 @@
 import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel, Field
 
-from . import ml_client
+from . import ask, ml_client
 from .db import db
 from .security import current_user, require_admin
 
 router = APIRouter(prefix="/api/ml")
 
 BASELINE = "persistence"
+
+
+class Question(BaseModel):
+    question: str = Field(min_length=2, max_length=300)
 
 
 def _scores(score):
@@ -63,6 +68,11 @@ def anomalies(limit: int = Query(50, ge=1, le=500), _user=Depends(current_user))
 @router.get("/correlations")
 def correlations(_user=Depends(current_user)):
     return list(db.ml_correlations.find({}, {"_id": 0}))
+
+
+@router.post("/ask")
+def ask_question(body: Question, _user=Depends(current_user)):
+    return ask.answer_question(body.question)
 
 
 @router.post("/retrain", status_code=202)

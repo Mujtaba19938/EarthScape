@@ -49,7 +49,7 @@ def sign_in(client, credentials):
     return {"Authorization": "Bearer " + response.json()["token"]}
 
 
-def reading(location="Delhi", pm25=10.0, time=None, **values):
+def reading(location="Lahore", pm25=10.0, time=None, **values):
     observed = time or datetime.datetime(2026, 1, 1, 12, tzinfo=datetime.timezone.utc)
     return dict({"location": location, "lat": 1.0, "lon": 2.0, "observed_at": observed, "air_observed_at": observed,
                  "temperature_c": 20.0, "humidity_pct": 50, "precipitation_mm": 0.0, "wind_kmh": 5.0,
@@ -117,9 +117,9 @@ def test_value_above_the_limit_fires_one_alert_and_tells_everyone():
     assert poll_returning(reading(pm25=60))["alerts_fired"] == 1
     alert = db.alerts.find_one()
     assert alert["status"] == "Active"
-    assert alert["subject"] == "Delhi"
+    assert alert["subject"] == "Lahore"
     assert "60" in alert["value"] and "50" in alert["value"]
-    assert "Dirty air: Delhi" in db.notifications.find_one()["text"]
+    assert "Dirty air: Lahore" in db.notifications.find_one()["text"]
 
 
 def test_value_at_the_limit_does_not_fire():
@@ -138,7 +138,7 @@ def test_alert_does_not_repeat_while_the_value_stays_high_but_updates():
 
 def test_each_location_gets_its_own_alert():
     add_rule()
-    assert poll_returning(reading(pm25=60), reading("Tokyo", pm25=60))["alerts_fired"] == 2
+    assert poll_returning(reading(pm25=60), reading("Karachi", pm25=60))["alerts_fired"] == 2
 
 
 def test_alert_resolves_itself_when_the_value_drops_then_can_fire_again():
@@ -229,7 +229,7 @@ def test_email_is_marked_not_set_up_without_settings():
 def test_email_message_is_addressed_and_uses_the_login():
     fake = mock.MagicMock()
     fake.__enter__.return_value = fake
-    alert = {"severity": "High", "title": "Dirty air: Delhi", "value": "60 µg/m³ (limit 50)"}
+    alert = {"severity": "High", "title": "Dirty air: Lahore", "value": "60 µg/m³ (limit 50)"}
     with mock.patch.object(config, "SMTP_HOST", "mail.example"), mock.patch.object(config, "SMTP_PORT", 587), \
             mock.patch.object(config, "SMTP_TLS", True), mock.patch.object(config, "SMTP_USER", "me"), \
             mock.patch.object(config, "SMTP_PASSWORD", "pw"), mock.patch.object(config, "SMTP_FROM", "from@example.org"), \
@@ -240,7 +240,7 @@ def test_email_message_is_addressed_and_uses_the_login():
     fake.login.assert_called_once_with("me", "pw")
     message = fake.send_message.call_args.args[0]
     assert message["To"] == "a@example.org, b@example.org"
-    assert "Dirty air: Delhi" in message.get_content()
+    assert "Dirty air: Lahore" in message.get_content()
 
 
 def test_archive_writes_new_readings_once():
@@ -257,7 +257,7 @@ def test_archive_writes_new_readings_once():
     assert batch["ok"] is True and batch["rows"] == 1
     assert uploaded[0][0] == "/climate/raw/live"
     assert uploaded[0][1].startswith("location,lat,lon,observed_at")
-    assert "Delhi" in uploaded[0][1]
+    assert "Lahore" in uploaded[0][1]
     assert db.live_readings.count_documents({"archived": True}) == 1
 
 
@@ -297,7 +297,7 @@ def test_status_is_stale_when_the_collector_has_stopped(client):
 def test_history_only_serves_known_locations(client):
     headers = sign_in(client, ANALYST)
     assert client.get("/api/live/history?location=Atlantis", headers=headers).status_code == 404
-    assert client.get("/api/live/history?location=Delhi", headers=headers).json() == []
+    assert client.get("/api/live/history?location=Lahore", headers=headers).json() == []
 
 
 def test_analyst_cannot_trigger_a_check(client):
@@ -330,3 +330,14 @@ def test_new_metrics_can_be_used_in_rules(client):
     assert client.post("/api/alert-rules", json=body, headers=headers).status_code == 201
     assert "live_temperature" in client.get("/api/alert-metrics", headers=headers).json()["metrics"]
     assert set(alert_checks.ALERT_METRICS) == set(alert_checks.METRICS)
+
+
+def test_a_city_no_longer_monitored_leaves_the_monitor_and_clears_its_alerts():
+    rule_id = add_rule()
+    db.live_readings.insert_one(dict(reading("Atlantis", pm25=60), archived=True))
+    db.alerts.insert_one({"rule_id": str(rule_id), "metric": "air_pm25", "subject": "Atlantis", "status": "Active", "cleared": False})
+    record = poll_returning(reading(pm25=10))
+    assert record["alerts_cleared"] == 1
+    assert db.alerts.find_one({"subject": "Atlantis"})["status"] == "Resolved"
+    assert [row["location"] for row in live.alert_checks.latest_readings()] == ["Lahore"]
+    assert db.live_readings.count_documents({"location": "Atlantis"}) == 1

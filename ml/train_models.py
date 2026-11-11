@@ -24,6 +24,9 @@ from scipy import stats
 from sklearn.ensemble import IsolationForest
 from statsmodels.tsa.holtwinters import Holt
 
+import city_outlook
+import country_outlook
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OPENAQ_DIR = os.path.join(ROOT, "data", "raw", "openaq")
 MODEL_DIR = os.path.join(ROOT, "ml", "saved_models")
@@ -344,7 +347,7 @@ def export_for_r(db, path):
 
 # --- Saving ---
 
-def save_run(db, version, forecasts, anomaly_rows, anomaly_summary, correlation_rows, triggered_by, seconds):
+def save_run(db, version, forecasts, anomaly_rows, anomaly_summary, correlation_rows, triggered_by, seconds, city_summary=None, country_summary=None):
     """Replaces the current results and adds a permanent record of this run's scores."""
     trained_at = datetime.datetime.utcnow()
     for name, documents in (("ml_forecasts", forecasts), ("ml_anomalies", anomaly_rows), ("ml_correlations", correlation_rows)):
@@ -354,7 +357,7 @@ def save_run(db, version, forecasts, anomaly_rows, anomaly_summary, correlation_
     db.ml_runs.insert_one({
         "version": version, "trained_at": trained_at, "triggered_by": triggered_by, "seconds": seconds,
         "forecast_scores": [{key: forecast[key] for key in FORECAST_SCORE_FIELDS} for forecast in forecasts],
-        "anomaly": anomaly_summary,
+        "anomaly": anomaly_summary, "city_outlook": city_summary, "country_outlook": country_summary,
     })
 
 
@@ -372,13 +375,27 @@ def main():
     print("Anomaly model:", anomaly_summary)
     correlation_rows = correlations(db)
     print("Correlations:", len(correlation_rows))
+    city_summary = None
+    if city_outlook.has_data():
+        city_collections, city_summary = city_outlook.build()
+        city_outlook.save(db, version, city_collections)
+        print("City outlooks:", city_summary)
+    else:
+        print("City outlooks skipped: run data/fetch_city_data.py first")
+    country_summary = None
+    if country_outlook.has_data(db):
+        country_collections, country_summary = country_outlook.build(db)
+        country_outlook.save(db, version, country_collections)
+        print("Country outlook:", country_summary)
+    else:
+        print("Country outlook skipped: run the country_indicators job first")
 
     folder = os.path.join(MODEL_DIR, version)
     os.makedirs(folder, exist_ok=True)
     joblib.dump(model, os.path.join(folder, "isolation_forest.joblib"))
     export_for_r(db, os.path.join(ROOT, "ml", "co2_temperature.csv"))
     seconds = round((datetime.datetime.utcnow() - started).total_seconds(), 1)
-    save_run(db, version, forecasts, anomaly_rows, anomaly_summary, correlation_rows, arguments.triggered_by, seconds)
+    save_run(db, version, forecasts, anomaly_rows, anomaly_summary, correlation_rows, arguments.triggered_by, seconds, city_summary, country_summary)
     print("Saved version", version)
 
 

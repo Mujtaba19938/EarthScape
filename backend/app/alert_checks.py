@@ -3,6 +3,7 @@ import datetime
 
 from pymongo.errors import DuplicateKeyError
 
+from . import config
 from .db import db
 from .notifications import notify
 
@@ -10,8 +11,9 @@ MAX_NAMES_IN_NOTIFICATION = 3
 
 
 def latest_readings():
-    """The newest live reading for each location."""
+    """The newest live reading for each location still being monitored."""
     rows = db.live_readings.aggregate([
+        {"$match": {"location": {"$in": config.LIVE_LOCATION_NAMES}}},
         {"$sort": {"observed_at": -1}},
         {"$group": {"_id": "$location", "reading": {"$first": "$$ROOT"}}},
         {"$replaceRoot": {"newRoot": "$reading"}},
@@ -56,6 +58,7 @@ METRICS = {
     "station_temperature_z": ("Station temperature z-score, highest stored", "z", _highest_station_z),
 }
 ALERT_METRICS = {key: metric[0] for key, metric in METRICS.items()}
+LIVE_METRICS = [key for key in METRICS if key.startswith(("air_", "live_"))]
 
 
 def _now():
@@ -105,6 +108,8 @@ def check_rules():
     now = _now()
     rules = list(db.alert_rules.find())
     cleared = _clear({"rule_id": {"$nin": [str(rule["_id"]) for rule in rules]}}, "Rule deleted", now)
+    # A city that's no longer polled would otherwise keep its alert open forever.
+    cleared += _clear({"metric": {"$in": LIVE_METRICS}, "subject": {"$nin": config.LIVE_LOCATION_NAMES}}, "City no longer monitored", now)
     values_by_metric = {}
     fired = []
     for rule in rules:

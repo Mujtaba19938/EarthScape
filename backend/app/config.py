@@ -35,6 +35,12 @@ MAX_UPLOAD_BYTES = int(setting("MAX_UPLOAD_BYTES", str(1024 ** 3)))
 ML_PYTHON = setting("ML_PYTHON", str(Path.home() / "anaconda3" / "python.exe"))
 LIVE_POLL_MINUTES = int(setting("LIVE_POLL_MINUTES", "15"))
 LIVE_BATCH_MINUTES = int(setting("LIVE_BATCH_MINUTES", "60"))
+LIVE_LOCATIONS = [
+    ("Karachi", 24.86, 67.01), ("Lahore", 31.55, 74.34), ("Islamabad", 33.68, 73.05), ("Peshawar", 34.02, 71.52),
+    ("Quetta", 30.18, 66.98), ("Faisalabad", 31.45, 73.14), ("Multan", 30.16, 71.52), ("Hyderabad", 25.40, 68.36),
+    ("Sukkur", 27.71, 68.86), ("Sialkot", 32.49, 74.52), ("Gilgit", 35.92, 74.31), ("Gwadar", 25.13, 62.32),
+]
+LIVE_LOCATION_NAMES = [location[0] for location in LIVE_LOCATIONS]
 SMTP_HOST = setting("SMTP_HOST")
 SMTP_PORT = int(setting("SMTP_PORT", "587"))
 SMTP_USER = setting("SMTP_USER")

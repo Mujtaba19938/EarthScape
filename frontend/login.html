@@ -53,6 +53,19 @@
     #submit:disabled { opacity: .6; cursor: wait; }
     #error { margin-top: 16px; padding: 10px 12px; font-size: 13px; color: #9f1239; background: #ffe4e6; border-radius: 12px; }
     #error[hidden], #maintenance[hidden] { display: none; }
+    .tabs { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin: 0 0 24px; padding: 4px; background: #f0f2f0; border-radius: 14px; }
+    /* One white pill slides between the two tabs instead of each tab switching its own fill. */
+    .tabs::before { content: ""; position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 6px); background: #fff; border-radius: 10px;
+      box-shadow: 0 1px 2px rgba(4,4,4,.08), 0 2px 8px -2px rgba(4,4,4,.08); transition: transform .38s cubic-bezier(.3, .7, .2, 1); }
+    .tabs[data-role="Admin"]::before { transform: translateX(calc(100% + 4px)); }
+    .tabs:not(.ready)::before { transition: none; }
+    .tab { position: relative; height: 40px; font: inherit; font-size: 14px; font-weight: 600; color: #5f6660; background: none; border: 0; border-radius: 10px; cursor: pointer; transition: color .25s; }
+    .tab:hover { color: #040404; }
+    .tab[aria-selected="true"] { color: #040404; }
+    .tab:focus-visible { outline: 2px solid #1a814a; outline-offset: 1px; }
+    .lead[hidden] { display: none; }
+    .lead a { color: #1a814a; font-weight: 600; text-decoration: none; }
+    .lead a:hover { text-decoration: underline; }
     #maintenance { margin-bottom: 20px; padding: 10px 12px; font-size: 13px; font-weight: 600; background: #f6d987; border-radius: 12px; }
 
     @media (max-width: 820px) {
@@ -65,7 +78,7 @@
       h1 { font-size: 32px; }
       .lead { margin-bottom: 24px; }
     }
-    @media (prefers-reduced-motion: reduce) { .caption, .dot::before { transition: none; } }
+    @media (prefers-reduced-motion: reduce) { .caption, .dot::before, .tabs::before, .tab { transition: none; } }
   </style>
 </head>
 <body>
@@ -111,8 +124,13 @@
       </div>
     </aside>
     <main class="panel">
-      <h1>Sign in</h1>
-      <p class="lead">Need an account? Ask your administrator.</p>
+      <h1 id="heading">Sign in</h1>
+      <p id="lead-analyst" class="lead">New to EarthScape? <a href="signup.html">Create an account</a></p>
+      <p id="lead-admin" class="lead" hidden>For people who manage users, data and the cluster.</p>
+      <div class="tabs" data-role="Analyst" role="tablist" aria-label="Who is signing in">
+        <button id="tab-analyst" class="tab" type="button" role="tab" aria-selected="true" aria-controls="login-form" data-role="Analyst">Analyst</button>
+        <button id="tab-admin" class="tab" type="button" role="tab" aria-selected="false" aria-controls="login-form" data-role="Admin" tabindex="-1">Admin</button>
+      </div>
       <div id="maintenance" role="status" hidden></div>
       <form id="login-form">
         <div class="field">
@@ -129,7 +147,7 @@
             </button>
           </div>
         </div>
-        <button id="submit" type="submit">Sign in</button>
+        <button id="submit" type="submit">Sign in as Analyst</button>
         <div id="error" role="alert" hidden></div>
       </form>
     </main>
@@ -148,6 +166,36 @@
       box.textContent = notice.message;
       box.hidden = !(notice.active && notice.message);
     }).catch(() => {});
+
+    // Two tabs share one form; the chosen role goes with the sign-in, and the server checks it.
+    const tabs = [...document.querySelectorAll('.tab')];
+    let role = 'Analyst';
+    const chooseRole = (chosen, focus) => {
+      role = chosen;
+      tabs.forEach((tab) => {
+        const on = tab.dataset.role === chosen;
+        tab.setAttribute('aria-selected', String(on));
+        tab.tabIndex = on ? 0 : -1;
+        if (on && focus) tab.focus();
+      });
+      document.querySelector('.tabs').dataset.role = chosen;
+      const admin = chosen === 'Admin';
+      document.getElementById('heading').textContent = admin ? 'Admin sign in' : 'Sign in';
+      document.getElementById('lead-analyst').hidden = admin;
+      document.getElementById('lead-admin').hidden = !admin;
+      submit.textContent = 'Sign in as ' + chosen;
+      errorBox.hidden = true;
+      history.replaceState(null, '', admin ? '#admin' : location.pathname);
+    };
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => chooseRole(tab.dataset.role, false));
+      tab.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') chooseRole(tab.dataset.role === 'Admin' ? 'Analyst' : 'Admin', true);
+      });
+    });
+    if (location.hash === '#admin') chooseRole('Admin', false);
+    // Slide only when someone switches, not when the page opens on the Admin tab.
+    requestAnimationFrame(() => requestAnimationFrame(() => document.querySelector('.tabs').classList.add('ready')));
 
     togglePassword.addEventListener('click', () => {
       const showing = password.type === 'text';
@@ -180,6 +228,7 @@
           body: JSON.stringify({
             email: document.getElementById('email').value,
             password: password.value,
+            role,
           }),
         });
         const body = await response.json();

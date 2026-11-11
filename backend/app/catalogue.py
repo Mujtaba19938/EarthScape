@@ -1,4 +1,5 @@
 """The datasets the pipeline loads into HDFS, and the data available as reports."""
+from .config import LIVE_LOCATION_NAMES
 
 DATASETS = [
     {"id": "GHCN-DAILY", "name": "NOAA GHCN-Daily weather station records (2020, 2023)",
@@ -15,6 +16,14 @@ DATASETS = [
      "format": "CSV", "source": "OpenAQ", "path": "/climate/raw/openaq"},
     {"id": "LIVE", "name": "Live weather and air quality estimates (12 cities, hourly batches)",
      "format": "CSV", "source": "Open-Meteo models", "path": "/climate/raw/live"},
+    {"id": "IMF-DISASTERS", "name": "Climate-related disasters by country (1980-2024)",
+     "format": "CSV", "source": "IMF Climate Change Indicators (EM-DAT)", "path": "/climatechange/input"},
+    {"id": "IMF-TEMPERATURE", "name": "Temperature change by country against 1951-1980 (1961-2023)",
+     "format": "CSV", "source": "IMF Climate Change Indicators (FAO)", "path": "/climatechange/input"},
+    {"id": "IMF-FOREST", "name": "Forest area and forest carbon by country (1992-2023)",
+     "format": "CSV", "source": "IMF Climate Change Indicators (FAO)", "path": "/climatechange/input"},
+    {"id": "CMIP6-PAK", "name": "CMIP6 climate model projections for Pakistan (2015-2100, 4 scenarios)",
+     "format": "CSV", "source": "World Bank Climate Change Knowledge Portal", "path": "/climatechange/cmip6"},
 ]
 
 # Some OpenAQ readings at the end of the files fall into January 2024.
@@ -51,10 +60,19 @@ REPORTS = {
                     "mean", "max", "readings", "rejected"],
         "sort": [("location", 1), ("parameter", 1), ("month", 1)], "geo": True},
     "live_readings": {
-        "title": "Live weather and air quality estimates", "collection": "live_readings", "query": {},
+        "title": "Live weather and air quality estimates", "collection": "live_readings",
+        "query": {"location": {"$in": LIVE_LOCATION_NAMES}},
         "columns": ["location", "lat", "lon", "observed_at", "temperature_c", "humidity_pct", "precipitation_mm",
                     "wind_kmh", "pm25", "pm10", "no2", "o3", "us_aqi"],
         "sort": [("observed_at", 1), ("location", 1)], "geo": True},
+    "country_indicators": {
+        "title": "Pakistan climate indicators (IMF)", "collection": "country_indicators", "query": {"iso3": "PAK"},
+        "columns": ["iso3", "country", "indicator", "unit", "year", "value"],
+        "sort": [("indicator", 1), ("year", 1)]},
+    "cmip6_projections": {
+        "title": "Pakistan climate projections (CMIP6)", "collection": "cmip6_projections", "query": {"iso3": "PAK"},
+        "columns": ["measure", "scenario", "percentile", "year", "value", "change"],
+        "sort": [("measure", 1), ("scenario", 1), ("percentile", 1), ("year", 1)]},
 }
 
 # Signatures of binary formats, so a renamed file can't be registered as climate data.

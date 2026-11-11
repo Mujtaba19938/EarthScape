@@ -12,6 +12,13 @@
       "runtimeExecutable": "backend\\.venv\\Scripts\\python.exe",
       "runtimeArgs": ["backend\\serve.py", "--port", "8001"],
       "port": 8001
+    },
+    {
+      "name": "earthscape-preview",
+      "runtimeExecutable": "backend\\.venv\\Scripts\\python.exe",
+      "runtimeArgs": ["backend\\serve.py", "--port", "8002"],
+      "port": 8002,
+      "autoPort": false
     }
   ]
 }

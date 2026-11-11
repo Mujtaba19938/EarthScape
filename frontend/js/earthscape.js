@@ -5,7 +5,7 @@ const ZONES = ['64N-90N', '44N-64N', '24N-44N', 'EQU-24N', '24S-EQU', '44S-24S',
 const ZONE_PLACES = {
   '64N-90N': 'Greenland, Northern Alaska, Northern Russia',
   '44N-64N': 'London, Moscow, Vancouver',
-  '24N-44N': 'Karachi, Tokyo, New York',
+  '24N-44N': 'Karachi, Lahore, Islamabad',
   'EQU-24N': 'Lagos, Mumbai, Bangkok',
   '24S-EQU': 'Jakarta, Nairobi, São Paulo',
   '44S-24S': 'Sydney, Cape Town, Buenos Aires',
@@ -14,7 +14,7 @@ const ZONE_PLACES = {
 };
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const YEAR_COLORS = ['#94a3b8', '#1a814a', '#040404', '#c0a78c', '#0284c7'];
-const LIVE_LOCATIONS = ['Karachi', 'Delhi', 'Beijing', 'Tokyo', 'Jakarta', 'Sydney', 'Cairo', 'Lagos', 'Nairobi', 'London', 'New York', 'Sao Paulo'];
+const LIVE_LOCATIONS = ['Karachi', 'Lahore', 'Islamabad', 'Peshawar', 'Quetta', 'Faisalabad', 'Multan', 'Hyderabad', 'Sukkur', 'Sialkot', 'Gilgit', 'Gwadar'];
 const LIVE_METRICS = [
   ['temperature_c', 'Temperature (°C)'], ['humidity_pct', 'Humidity (%)'], ['wind_kmh', 'Wind (km/h)'], ['precipitation_mm', 'Precipitation (mm)'],
   ['pm25', 'PM2.5 (µg/m³)'], ['pm10', 'PM10 (µg/m³)'], ['no2', 'NO₂ (µg/m³)'], ['o3', 'Ozone (µg/m³)'], ['us_aqi', 'US AQI'],
@@ -24,22 +24,22 @@ const ML_HORIZONS = [2030, 2040, 2050];
 const ML_CHART_START = 1950;
 
 const NAV = [
-  ['landing', 'globe', 'Agency Landing'],
-  ['dashboard', 'bar-chart-2', 'Executive Dashboard'],
-  ['analytics', 'activity', 'Climate Analytics'],
-  ['monitoring', 'wifi', 'Sensor Monitor'],
-  ['data', 'database', 'Data Explorer & Upload'],
-  ['Big Data Infrastructure'],
-  ['hadoop', 'server', 'Hadoop & HDFS Cluster'],
-  ['ml', 'cpu', 'ML Models & Forecasts'],
-  ['alerts', 'alert-triangle', 'Alert Management'],
-  ['reports', 'file-text', 'Reports & Export'],
+  ['landing', 'globe', 'Agency landing'],
+  ['dashboard', 'bar-chart-2', 'Executive dashboard'],
+  ['analytics', 'activity', 'Climate analytics'],
+  ['monitoring', 'wifi', 'Sensor monitor'],
+  ['data', 'database', 'Data explorer and upload'],
+  ['Big data infrastructure'],
+  ['hadoop', 'server', 'Hadoop and HDFS cluster'],
+  ['ml', 'cpu', 'ML models and forecasts'],
+  ['alerts', 'alert-triangle', 'Alert management'],
+  ['reports', 'file-text', 'Reports and export'],
   ['Administration'],
-  ['rbac', 'users', 'Users & Roles'],
-  ['support', 'help-circle', 'Feedback & Support'],
-  ['status', 'shield-check', 'System Status'],
-  ['architecture', 'code', 'System Architecture'],
-  ['settings', 'settings', 'Account Settings'],
+  ['rbac', 'users', 'Users and roles'],
+  ['support', 'help-circle', 'Feedback and support'],
+  ['status', 'shield-check', 'System status'],
+  ['architecture', 'code', 'System architecture'],
+  ['settings', 'settings', 'Account settings'],
 ];
 
 const state = { page: 'landing', user: null, charts: {}, searchIndex: null, jobPoll: null, mlForecast: null, mlHorizon: 2050 };
@@ -435,6 +435,40 @@ async function renderForecast() {
   ]), 'No results yet.');
 }
 
+const ASK_EXAMPLES = ['What will the weather be in Karachi in 2027?', 'Are there any chances of a storm in the near future?', 'Could a cyclone hit Gwadar in 2028?', 'Weather in Lahore tomorrow', 'How hot was Multan in June 2023?', 'How much warmer will Pakistan be in 2030?', 'How hot will Pakistan be in 2050 with high emissions?','How often do floods hit Pakistan?'];
+const ASK_COLORS = ['#1a814a', '#040404'];
+
+function showAnswer(result) {
+  $('ask-result').classList.remove('hidden');
+  $('ask-answer').textContent = result.answer;
+  $('ask-table').innerHTML = result.rows.length ? table(result.columns, result.rows.map((row) => row.map((cell) => esc(cell))), '') : '';
+  const notes = result.notes.concat(result.sources.length ? ['Source: ' + result.sources.join(', ') + '.'] : []);
+  $('ask-notes').innerHTML = notes.map((note) => '<p class="text-xs text-slate-500">' + esc(note) + '</p>').join('');
+  $('ask-chart-wrap').classList.toggle('hidden', !result.chart);
+  if (state.charts.ask) {
+    state.charts.ask.destroy();
+    state.charts.ask = null;
+  }
+  if (result.chart) {
+    drawLineChart('ask', 'chart-ask', result.chart.labels, result.chart.series.map((series, index) => ({
+      label: series.label, data: series.values, borderColor: ASK_COLORS[index], backgroundColor: ASK_COLORS[index], tension: 0.2, borderWidth: 2, pointRadius: 3,
+    })), result.chart.unit);
+  }
+}
+
+async function askQuestion(question) {
+  const text = question.trim();
+  if (text.length < 2) return;
+  $('ask-submit').disabled = true;
+  $('ask-submit').textContent = 'Checking...';
+  try {
+    showAnswer(await request('/ml/ask', { method: 'POST', json: { question: text } }));
+  } finally {
+    $('ask-submit').disabled = false;
+    $('ask-submit').textContent = 'Ask';
+  }
+}
+
 function renderMlEmpty() {
   ['ml-stats', 'ml-forecast-table', 'ml-comparison', 'ml-anomalies', 'ml-correlations', 'ml-history', 'ml-horizons'].forEach((id) => { $(id).innerHTML = ''; });
   $('ml-verdict').textContent = '';
@@ -564,15 +598,22 @@ async function downloadReport() {
 
 async function renderUsers() {
   const users = await request('/users');
+  // Requests from the sign-up page come first, so an Admin sees them.
+  users.sort((a, b) => Number(b.pending) - Number(a.pending));
   $('users-table').innerHTML = table(['User', 'Email', 'Role', 'Status'].concat(isAdmin() ? [''] : []), users.map((user) => {
     const active = user.active;
+    const status = user.pending ? '<span class="tag tag-gold">Waiting for approval</span>'
+      : '<span class="tag ' + (active ? 'tag-green' : 'tag-red') + '">' + (active ? 'Active' : 'Disabled') + '</span>';
     const cells = [
       '<strong class="text-[#040404]">' + esc(user.name) + '</strong><br /><span class="text-[11px]">' + esc(user.title) + '</span>',
       esc(user.email),
       '<span class="tag ' + (user.role === 'Admin' ? 'tag-green' : 'tag-blue') + '">' + esc(user.role) + '</span>',
-      '<span class="tag ' + (active ? 'tag-green' : 'tag-red') + '">' + (active ? 'Active' : 'Disabled') + '</span>',
+      status,
     ];
-    if (isAdmin()) {
+    if (isAdmin() && user.pending) {
+      cells.push('<button class="pill pill-green" data-action="toggle-active" data-id="' + esc(user.id) + '" data-active="true">Approve</button> '
+        + '<button class="pill pill-light" data-action="toggle-active" data-id="' + esc(user.id) + '" data-active="false">Decline</button>');
+    } else if (isAdmin()) {
       cells.push(user.id === state.user.id ? '<span class="text-[11px] text-slate-400">You</span>'
         : '<button class="pill pill-light" data-action="toggle-role" data-id="' + esc(user.id) + '" data-role="' + (user.role === 'Admin' ? 'Analyst' : 'Admin') + '">Make ' + (user.role === 'Admin' ? 'Analyst' : 'Admin') + '</button> '
         + '<button class="pill pill-light" data-action="toggle-active" data-id="' + esc(user.id) + '" data-active="' + (!active) + '">' + (active ? 'Disable' : 'Enable') + '</button>');
@@ -682,7 +723,7 @@ function setSidebar(open) {
 
 function buildSidebar() {
   $('sidebar-nav').innerHTML = NAV.map((item) => {
-    if (item.length === 1) return '<div class="sidebar-heading pt-3 pb-1 px-3.5 text-[9px] uppercase tracking-widest font-semibold text-[#bfa78e]">' + esc(item[0]) + '</div>';
+    if (item.length === 1) return '<div class="sidebar-heading">' + esc(item[0]) + '</div>';
     const badge = item[0] === 'alerts' ? '<span id="sidebar-alerts-badge" class="sidebar-label hidden bg-[#f6d987] text-[#040404] font-bold px-2 py-0.5 rounded-full text-[9px]"></span>' : '';
     return '<a href="#" title="' + esc(item[2]) + '" data-nav="' + item[0] + '" class="sidebar-nav-item"><span class="flex items-center gap-3 truncate"><i data-lucide="' + item[1] + '" class="w-4 h-4 flex-shrink-0"></i><span class="sidebar-label truncate">' + esc(item[2]) + '</span></span>' + badge + '</a>';
   }).join('');
@@ -691,7 +732,7 @@ function buildSidebar() {
 function showUser() {
   const user = state.user;
   document.body.classList.toggle('hide-admin', !isAdmin());
-  $('role-tag').textContent = user.role.toUpperCase();
+  $('role-tag').textContent = user.role;
   $('user-name').textContent = user.name;
   $('user-title').textContent = user.title;
   $('user-email').textContent = user.email;
@@ -891,6 +932,17 @@ function bindEvents() {
     }
   }));
   $('ml-series').addEventListener('change', () => attempt(renderForecast));
+  $('ask-form').addEventListener('submit', (event) => {
+    event.preventDefault();
+    attempt(() => askQuestion($('ask-input').value));
+  });
+  $('ask-examples').innerHTML = ASK_EXAMPLES.map((text) => '<button type="button" class="pill text-xs" data-question="' + esc(text) + '">' + esc(text) + '</button>').join('');
+  $('ask-examples').addEventListener('click', (event) => {
+    const button = event.target.closest('[data-question]');
+    if (!button) return;
+    $('ask-input').value = button.dataset.question;
+    attempt(() => askQuestion(button.dataset.question));
+  });
   $('btn-retrain').addEventListener('click', () => attempt(async () => {
     const before = await request('/ml/summary');
     await request('/ml/retrain', { method: 'POST' });
