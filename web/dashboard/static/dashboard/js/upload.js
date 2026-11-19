@@ -12,6 +12,8 @@ if (form && window.XMLHttpRequest && window.FormData) {
     event.preventDefault();
     const request = new XMLHttpRequest();
     request.open('POST', form.action);
+    // JSON reply, not a redirect
+    request.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
     // Progress bar
     request.upload.onprogress = (step) => {
       if (!step.lengthComputable) return;
@@ -20,7 +22,11 @@ if (form && window.XMLHttpRequest && window.FormData) {
       label.textContent = percent < 100 ? 'Uploading ' + percent + '%' : 'Storing in HDFS...';
     };
     // Show the result
-    request.onload = () => { location.href = request.responseURL || location.href; };
+    request.onload = () => {
+      let next = location.href;
+      try { next = JSON.parse(request.responseText).next || next; } catch (error) { next = request.responseURL || next; }
+      location.href = next;
+    };
     request.onerror = () => { location.reload(); };
     button.classList.add('hidden');
     progress.classList.remove('hidden');

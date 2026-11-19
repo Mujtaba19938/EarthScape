@@ -2,6 +2,7 @@
 from django.contrib import messages
 from django.http import Http404, HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 from pymongo.errors import PyMongoError
 
@@ -125,17 +126,25 @@ def upload(request):
     uploaded = request.FILES.get("file")
     if not uploaded:
         messages.error(request, "Choose a file to upload.")
-        return redirect("dashboard:data")
+        return upload_done(request)
 
     admin = current_user(request)
     try:
         name = data.upload_dataset(uploaded, admin)
     except data.UploadError as error:
         messages.error(request, str(error))
-        return redirect("dashboard:data")
+        return upload_done(request)
 
     notify("%s uploaded dataset %s." % (admin["name"], name))
     messages.success(request, "%s stored in HDFS." % name)
+    return upload_done(request)
+
+
+def upload_done(request):
+    """Message kept for reload."""
+    # A redirect here would be followed, and the message used up, by upload.js itself
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return JsonResponse({"next": reverse("dashboard:data")})
     return redirect("dashboard:data")
 
 

@@ -170,6 +170,16 @@ class UploadTests(MongoTestCase):
             self.assertIn("HDFS couldn't store", self.follow_messages(self.upload("a.csv", b"a,b\n1,2\n"))[0])
         self.assertEqual(db.datasets.count_documents({}), 0)
 
+    def test_background_upload_keeps_the_message_for_the_reload(self):
+        # upload.js posts by XHR; a redirect would use up the message before the reload
+        self.sign_in(ADMIN)
+        with mock.patch.object(cluster, "put_file"):
+            response = self.client.post("/dashboard/data/upload/", {"file": SimpleUploadedFile("fake.nc", b"not netcdf")},
+                                        HTTP_X_REQUESTED_WITH="XMLHttpRequest")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"next": "/dashboard/data/"})
+        self.assertIn("don't match", self.messages_in(self.client.get("/dashboard/data/"))[0])
+
 
 class HadoopTests(MongoTestCase):
 
