@@ -1,0 +1,98 @@
+{% extends "dashboard/base.html" %}
+{% load dash %}
+{% block title %}System status{% endblock %}
+
+{% block content %}
+  <div class="card p-5"><h2 class="text-xl font-medium">System status</h2><p class="text-xs text-slate-500">This page was answered by {{ status.instance }}.</p></div>
+
+  {# Components #}
+  <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+    {% for component in status.components %}
+      <div class="card p-5 space-y-1">
+        <div class="flex justify-between gap-2"><h4 class="font-medium text-sm">{{ component.name }}</h4><span class="tag {% if component.ok %}tag-green">OK{% else %}tag-red">Needs attention{% endif %}</span></div>
+        <p class="text-xs text-slate-500">{{ component.detail }}</p>
+      </div>
+    {% endfor %}
+  </div>
+
+  {# Uptime #}
+  <div class="card p-6 space-y-3">
+    <h3 class="font-medium">Measured availability</h3>
+    <p class="text-xs text-slate-500">The goal is {{ status.goal_percent }}%. These figures only cover the time the health monitor was running on this one machine, so they show how the demo behaved and can't prove 99% availability in real use.</p>
+    <div class="overflow-x-auto">
+      {% if status.targets %}
+        <table class="data-table">
+          <thead><tr><th>Checked</th><th>Now</th><th>Response</th><th>Last 24 hours</th><th>Last 7 days</th></tr></thead>
+          <tbody>
+            {% for target in status.targets %}
+              <tr><td><strong class="text-ink">{{ target.target }}</strong></td>
+                <td><span class="tag {% if target.latest.ok %}tag-green">Up{% else %}tag-red">Down{% endif %}</span></td>
+                <td>{{ target.latest.ms }} ms</td><td>{{ target.day }}</td><td>{{ target.week }}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}<div class="empty">The health monitor hasn't run yet.</div>{% endif %}
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+    {# Backups #}
+    <div class="card p-6 space-y-3">
+      <h3 class="font-medium">Backups</h3>
+      <div class="overflow-x-auto">
+        {% if status.backups %}
+          <table class="data-table">
+            <thead><tr><th>Finished</th><th>Result</th><th>Size</th><th>Rows restored in check</th><th>Took</th></tr></thead>
+            <tbody>
+              {% for backup in status.backups %}
+                <tr><td>{{ backup.finished_at|when }}</td>
+                  <td><span class="tag {% if backup.ok %}tag-green">OK{% else %}tag-red">Failed{% endif %}</span>{% if backup.hdfs_failed %} <span class="tag tag-gold">HDFS partly missed</span>{% endif %}</td>
+                  <td>{{ backup.size_text }}</td><td>{{ backup.rows_verified|number }}</td><td>{{ backup.seconds }} s</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}<div class="empty">No backups yet.</div>{% endif %}
+      </div>
+    </div>
+
+    {# Run times #}
+    <div class="card p-6 space-y-3">
+      <h3 class="font-medium">Recent run times</h3>
+      <div class="overflow-x-auto">
+        {% if status.runs %}
+          <table class="data-table">
+            <thead><tr><th>Task</th><th>Took</th><th>When</th></tr></thead>
+            <tbody>{% for task, seconds, moment in status.runs %}<tr><td>{{ task }}</td><td>{{ seconds }} s</td><td>{{ moment|when }}</td></tr>{% endfor %}</tbody>
+          </table>
+        {% else %}<div class="empty">No recorded runs yet.</div>{% endif %}
+      </div>
+    </div>
+  </div>
+
+  {# Maintenance notice #}
+  {% if user.is_admin %}
+    <form class="card p-6 space-y-3 flex flex-col" method="post" action="{% url 'dashboard:maintenance' %}">
+      {% csrf_token %}
+      <h3 class="font-medium">Maintenance notice</h3>
+      <p class="text-xs text-slate-500">Shows a banner to everyone, including on the sign-in page. It doesn't stop anyone using the system.</p>
+      <label class="label" for="maintenance-message">Message</label>
+      <input id="maintenance-message" name="message" class="field" maxlength="300" value="{{ maintenance.message }}" />
+      <label class="flex items-center gap-2 text-xs font-medium"><input name="active" type="checkbox"{% if maintenance.active %} checked{% endif %} /> Show the notice</label>
+      <button type="submit" class="pill pill-dark self-start">Save notice</button>
+    </form>
+  {% endif %}
+
+  {# Security notes #}
+  <div class="card p-6 space-y-3">
+    <h3 class="font-medium">Security and standards</h3>
+    <ul class="list-disc pl-5 space-y-1 text-xs text-slate-600">
+      <li>Passwords are stored as bcrypt hashes and can't be read back.</li>
+      <li>Emails and support ticket text are encrypted in the database with AES (Fernet). Names, roles and climate data aren't.</li>
+      <li>Every form carries a CSRF token, and the sign-in session cookie can't be read by page scripts.</li>
+      <li>Connections through Apache use TLS 1.2 or newer. The local certificate is self-signed, so browsers show a warning.</li>
+      <li>Repeated failed sign-ins are blocked for 15 minutes.</li>
+      <li>Dates use ISO 8601, and map exports use GeoJSON (RFC 7946).</li>
+    </ul>
+    <p class="text-xs text-slate-500">These follow common practice, such as the OWASP guidance on password storage. The system hasn't been independently audited or certified against any standard.</p>
+  </div>
+{% endblock %}

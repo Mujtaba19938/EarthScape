@@ -1,0 +1,40 @@
+{% extends 'website/base.html' %}
+{% block title %}Changelogs - EarthScape{% endblock %}
+{% block description %}EarthScape Climate Agency turns public climate data into clear insight, with Hadoop processing, live monitoring, machine learning forecasts and alerts.{% endblock %}
+
+{% block content %}
+{# Changelog #}
+<section class="section-global_hero">
+  <div class="section-padding padding-hero_158x60">
+    <div class="container">
+      <div class="section_blog-inner">
+        <div class="margin-bottom margin-16">
+          <div class="title-tag">
+            <div class="body-text-14">Changelog</div>
+          </div>
+        </div>
+        <h1 class="heading-custom-h2 stagger-after-load">Changelog</h1>
+        <div class="global_title-bottom-info global">
+          <p class="title-discription">Documentation of EarthScape releases.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{# 1.0 First release #}
+<section class="section_utilities_main">
+  <div class="section-padding _0x180">
+    <div class="container">
+      <div class="utilities_main_inner">
+        <div class="utilities_main_content">
+          <div id="Media" class="utilities_single_block changelog">
+            <div>04.11.2026</div>
+            <h2 class="utilities_section_block-title">1.0 First release</h2>
+            <p>Initial <a href="{% url 'website:home' %}" class="utilities-link">EarthScape </a>release, with the data pipeline, dashboards, forecasts, alerts and documentation.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

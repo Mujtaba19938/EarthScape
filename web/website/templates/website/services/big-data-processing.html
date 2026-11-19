@@ -1,0 +1,121 @@
+{% extends 'website/base.html' %}
+{% load static %}
+{% block title %}Big Data Processing - EarthScape{% endblock %}
+{% block description %}Hadoop stores and processes the climate records.{% endblock %}
+
+{% block content %}
+{# Big Data Processing #}
+<section class="section_collection-details-hero">
+  <img src="{% static 'website/media/photo-179-1920x1500.jpg' %}" loading="lazy" alt="" class="image-default">
+  <div class="hero_overlay service-details-hero">
+    <div class="ui-layout-blockcontainer container ui-container">
+      <div class="section-padding">
+        <div class="details-hero_info">
+          <div class="page-navigator-wrap">
+            <a href="#" class="link-white breadcrumbs">Home</a>
+            <div>/</div>
+            <a href="#" class="link-white breadcrumbs">Service</a>
+            <div>/</div>
+            <a href="{% url 'website:service' 'big-data-processing' %}" aria-current="page" class="link-white breadcrumbs is-current">Service Details</a>
+          </div>
+          <h2>Big Data Processing</h2>
+          <div>Apache Hadoop stores the climate records in HDFS, and MapReduce jobs turn them into results.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<main class="main-wrapper">
+  {# About the big data processing service #}
+  <section class="section-service_details">
+    <div class="section-padding _180x0">
+      <div class="ui-layout-blockcontainer container ui-container">
+        <div class="section_title-wrap variant-center-title-without-discription">
+          <div class="margin-bottom margin-16">
+            <div class="title-tag">
+              <div class="body-text-14">About Service</div>
+            </div>
+          </div>
+          <h2 class="heading-custom-h3">About the big data processing service</h2>
+          <div class="global_title-bottom-info">
+            <p class="title-discription">Big Data Processing is the base of the platform. Files are loaded into HDFS, processed by MapReduce on YARN, and the results are copied to MongoDB.</p>
+          </div>
+        </div>
+        <div class="section-inner service_details">
+          <div class="left-service-images">
+            <img src="{% static 'website/media/photo-192-800x530.jpg' %}" loading="lazy" alt="" class="service-image-about is_first">
+            <img src="{% static 'website/media/photo-191-800x530.jpg' %}" loading="lazy" alt="" class="service-image-about is_secnd">
+            <img src="{% static 'website/media/photo-200-800x530.jpg' %}" loading="lazy" alt="" class="service-image-about is_third">
+          </div>
+          <div class="about_service-details-right">
+            <div class="program-item">
+              <h3 class="heading-custom-h5">01</h3>
+              <div class="program-rich ui-richtext">
+                <h4>Store in HDFS</h4>
+                <p>Raw files are organised in folders by source and year, including 2.5 GB of NOAA station records for 2020 and 2023.</p>
+              </div>
+            </div>
+            <div class="program-item">
+              <h3 class="heading-custom-h5">02</h3>
+              <div class="program-rich ui-richtext">
+                <h4>Process with MapReduce</h4>
+                <p>Five Hadoop Streaming jobs written in Python work out data quality, regional patterns, unusual readings, satellite zones and air quality.</p>
+              </div>
+            </div>
+            <div class="program-item last-item">
+              <h3 class="heading-custom-h5">03</h3>
+              <div class="program-rich ui-richtext">
+                <h4>Handle Bad Data</h4>
+                <p>Malformed rows, missing values and failed quality flags are skipped and counted, so one bad row never stops a job.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  {# Honest numbers you can check #}
+  <section class="section_about-our_mission">
+    <div class="section-padding _180x180">
+      <div class="ui-layout-blockcontainer container ui-container">
+        <div class="section-inner mission">
+          <div class="mission-right">
+            <div class="margin-bottom margin-16">
+              <div class="section_title-wrap">
+                <div class="margin-bottom margin-16">
+                  <div class="title-tag">
+                    <div class="body-text-14">How We Work</div>
+                  </div>
+                </div>
+                <h2 class="heading-custom-h3">Honest numbers you can check</h2>
+                <div class="global_title-bottom-info">
+                  <p class="title-discription">The Hadoop &amp; HDFS Cluster page shows storage, YARN status and recent jobs, with how long each one took. </p>
+                </div>
+              </div>
+            </div>
+            <p>The cluster runs on one node, so tasks run in parallel on one machine rather than across several. Administrators can start a job from the dashboard.</p>
+          </div>
+          <div class="mission-left">
+            <img src="{% static 'website/media/photo-197-562x718.jpg' %}" loading="lazy" alt="our" class="image-default">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  {# 2.5 GB #}
+  <section class="section-service-details">
+    <div class="section-padding">
+      <div class="ui-layout-blockcontainer container ui-container">
+        <div class="section-inner service_cost">
+          <h2 class="heading-custom-h1">2.5 GB</h2>
+          <div class="max-width _400">
+            <div class="heading-custom-h4">Station records stored in HDFS</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <img src="{% static 'website/media/photo-35-1920x1500.jpg' %}" loading="eager" alt="background" class="background_image">
+  </section>
+  {% include 'website/sections/shared/service_related.html' %}
+</main>
+{% endblock %}

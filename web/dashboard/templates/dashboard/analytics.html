@@ -1,0 +1,61 @@
+{% extends "dashboard/base.html" %}
+{% load static dash %}
+{% block title %}Climate analytics{% endblock %}
+
+{% block content %}
+  {# Filters #}
+  <form class="flex flex-wrap justify-between items-center gap-4 card p-5" method="get">
+    <div>
+      <h2 class="text-xl font-medium">Climate analytics</h2>
+      <p class="text-xs text-slate-500">Choose a region and a variable. Every value comes from the pipeline.</p>
+      <p class="text-xs text-slate-500">Each place option is a band of latitude around the world. Values are that band's average, not those places alone.</p>
+    </div>
+    <div class="flex flex-wrap gap-3">
+      <select name="zone" aria-label="Region" class="field w-auto" data-autosubmit>
+        {% for key, label in zones %}<option value="{{ key }}"{% if key == zone %} selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+      <select name="variable" aria-label="Variable" class="field w-auto" data-autosubmit>
+        {% for key, label in variables %}<option value="{{ key }}"{% if key == variable %} selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+      <noscript><button class="pill pill-dark" type="submit">Show</button></noscript>
+    </div>
+  </form>
+
+  {# Chart #}
+  <div class="card p-6 space-y-4">
+    <h3 class="font-medium">{{ title }}</h3>
+    {% if chart %}
+      {% include "dashboard/_chart.html" with chart_id="chart-analytics" data_id="chart-analytics-data" %}
+    {% else %}
+      <div class="empty">{{ message }}</div>
+    {% endif %}
+  </div>
+
+  {# Zones table #}
+  <div class="card p-6 space-y-3">
+    <h3 class="font-medium">Latitude zones (station averages for {{ summary_year }})</h3>
+    <div class="overflow-x-auto">
+      <table class="data-table">
+        <thead><tr><th>Zone</th><th>Anomaly</th><th>Avg daily high</th><th>Avg daily low</th><th>Precipitation</th><th>Readings</th></tr></thead>
+        <tbody>
+          {% for row in summary %}
+            <tr>
+              <td><strong class="text-ink">{{ row.place }}</strong> <span class="text-slate-400">({{ row.zone }})</span></td>
+              <td>{% if row.anomaly is None %}n/a{% else %}{{ row.anomaly|signed:" °C" }} <span class="text-slate-400">({{ row.anomaly_year }})</span>{% endif %}</td>
+              <td>{{ row.tmax|unit:"°C" }}</td>
+              <td>{{ row.tmin|unit:"°C" }}</td>
+              <td>{{ row.prcp|unit:"mm/day" }}</td>
+              <td>{{ row.readings|number }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p class="text-xs text-slate-500">Zones with few readings are less reliable. Station coverage is uneven, and very low in the far south.</p>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{% static 'vendor/chart.umd.js' %}"></script>
+  <script src="{% static 'dashboard/js/charts.js' %}"></script>
+{% endblock %}

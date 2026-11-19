@@ -1,9 +1,9 @@
 """Backs up MongoDB and the HDFS data that can't be downloaded again, then proves the backup restores.
 
-Usage: backend\\.venv\\Scripts\\python.exe ops\\backup.py
+Usage: web\\.venv\\Scripts\\python.exe ops\\backup.py
 
 The downloaded raw datasets aren't copied, because data/download_data.sh can fetch them again.
-backend/.env isn't copied either: keep ENCRYPTION_KEY somewhere safe, or restored emails and
+web/.env isn't copied either: keep ENCRYPTION_KEY somewhere safe, or restored emails and
 tickets can't be read.
 """
 import datetime
@@ -15,11 +15,12 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT / "backend"))
+sys.path.insert(0, str(ROOT / "web"))
 
-from app import config, field_crypto, hadoop_client  # noqa: E402
-from app.db import client, db, ensure_indexes  # noqa: E402
-from app.notifications import notify  # noqa: E402
+from dashboard import cluster as hadoop_client  # noqa: E402
+from earthscape import config  # noqa: E402
+from earthscape import crypto as field_crypto  # noqa: E402
+from earthscape.db import client, db, ensure_indexes, notify  # noqa: E402
 
 HDFS_PATHS = ["/climate/processed", "/climate/raw/live", "/climate/raw/uploads", "/climatechange/output"]
 FOLDER_PATTERN = re.compile(r"^\d{8}-\d{6}$")

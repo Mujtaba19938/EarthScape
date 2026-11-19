@@ -1,0 +1,54 @@
+{% extends 'website/base.html' %}
+{% load static %}
+{% block title %}Administrator - EarthScape{% endblock %}
+{% block description %}Administrators have everything an analyst has, and they also run the platform: its users, data, jobs and models.{% endblock %}
+
+{% block content %}
+{# Administrator #}
+<section class="section_product_hero">
+  <div class="section-padding padding-hero_158x140">
+    <div class="container">
+      <h1 class="heading-custom-h2">Administrator</h1>
+      <div class="section-inner product-hero">
+        <div class="product_hero-content">
+          <div class="margin-bottom margin-24">
+            <h2 class="heading-custom-h3">Features List</h2>
+          </div>
+          <div class="margin-bottom margin-16">
+            <p class="product_hero_short-details body-text-18px">Administrators have everything an analyst has, and they also run the platform: its users, data, jobs and models.</p>
+          </div>
+          <ul role="list" class="product_feature_list">
+            <li class="product_feature_list-item"><img src="{% static 'website/icons/check.svg' %}" loading="lazy" alt="check" class="check-of_feature"><div>Manage users and roles</div></li>
+            <li class="product_feature_list-item"><img src="{% static 'website/icons/check.svg' %}" loading="lazy" alt="check" class="check-of_feature"><div>Set alert rules</div></li>
+            <li class="product_feature_list-item"><img src="{% static 'website/icons/check.svg' %}" loading="lazy" alt="check" class="check-of_feature"><div>Upload data and run jobs</div></li>
+            <li class="product_feature_list-item"><img src="{% static 'website/icons/check.svg' %}" loading="lazy" alt="check" class="check-of_feature"><div>Retrain models</div></li>
+          </ul>
+        </div>
+        <div class="product-pricing-block">
+          <div class="margin-bottom margin-16">
+            <p>Need a different level of access? Tell us which role you need and why, and an administrator can set up your account.</p>
+          </div>
+          <h2 class="heading-custom-h5">Request Access</h2>
+          <div class="margin-y _24x24">
+            <div class="price_main heading-custom-h3">
+              <div>
+              </div>
+              <div>Admin</div>
+              <div>
+              </div>
+            </div>
+          </div>
+          <div class="ui-form">
+            <form class="price_details-form" method="post" action="{% url 'website:newsletter' %}">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.path }}">
+              <select id="plan-type" name="plan-type" aria-label="select-plan" class="select_paln ui-select"><option value="">Select a role...</option><option value="Analyst">Analyst</option><option value="Administrator">Administrator</option></select>
+              <input type="submit" class="button-tertiary is_plan ui-button" value="Request Access">
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,42 @@
+{# What else do we offer? #}
+<section class="section-service-related">
+  <div class="section-padding _180x180">
+    <div class="ui-layout-blockcontainer container ui-container">
+      <div class="related-card-title-wrap">
+        <div class="section_title-wrap">
+          <div class="margin-bottom margin-16">
+            <div class="title-tag">
+              <div class="body-text-14">Our Services</div>
+            </div>
+          </div>
+          <h2 class="heading-custom-h3">What else do we offer?</h2>
+          <div class="global_title-bottom-info">
+          </div>
+        </div>
+        <div class="animation-wrap">
+          <a aria-label="link" href="#" class="button-global ui-inline-block">
+            <div class="button-text-wrap">
+              <div class="button-texts is_default">Contact us</div>
+              <div class="button-texts is_absolute">Contact us</div>
+            </div>
+            <div class="button-arrow-wrap">
+              <div class="button-arrow-clip">
+                <svg xmlns="http://www.w3.org/2000/svg" width="100%" viewbox="0 0 21 20" fill="none" class="button-arrow is_default"><path d="M6.4364 14.1663L14.7697 5.83301" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"></path><path d="M6.4364 5.83301H14.7697V14.1663" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="100%" viewbox="0 0 21 20" fill="none" class="button-arrow is_absolute"><path d="M6.4364 14.1663L14.7697 5.83301" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"></path><path d="M6.4364 5.83301H14.7697V14.1663" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+              </div>
+            </div>
+          </a>
+        </div>
+      </div>
+      <div class="section-inner related-service">
+        <div class="collection_lilst_wrap-service ui-dyn-list">
+          <div role="list" class="collection_lilst-service ui-dyn-items">
+            {% include 'website/cards/service_card_related.html' with card_slug="climate-analytics" image="website/media/photo-17-1920x1343.jpg" title="Climate Analytics" summary="Explore climate trends by region and variable." tag="Analysis" %}
+            {% include 'website/cards/service_card_related.html' with card_slug="climate-forecasts" image="website/media/photo-30-1920x1500.jpg" title="Climate Forecasts" summary="Machine learning trained on real climate data." tag="Climate Data" %}
+            {% include 'website/cards/service_card_related.html' with card_slug="live-monitoring" image="website/media/photo-54-1920x1500.jpg" title="Live Monitoring" summary="New readings from 12 cities every 15 minutes." tag="Climate Data" %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

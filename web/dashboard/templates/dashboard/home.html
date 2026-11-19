@@ -1,0 +1,15 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+  {# Welcome panel #}
+  <div class="landing-panel space-y-6">
+    <h1>From raw climate records to evidence for decisions</h1>
+    <p>EarthScape processes weather station records, satellite-derived measurements and air-quality sensor readings with Apache Hadoop, and turns them into insight for climate decisions.</p>
+    <div class="flex flex-wrap gap-3">
+      <a href="{% url 'dashboard:overview' %}" class="pill pill-green">Open the dashboard</a>
+      <a href="{% url 'dashboard:architecture' %}" class="pill pill-light">System architecture</a>
+    </div>
+  </div>
+  {% include "dashboard/_stats.html" with strip_id="landing-stats" strip_cols="grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" %}
+{% endblock %}

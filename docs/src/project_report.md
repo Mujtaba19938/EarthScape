@@ -78,7 +78,7 @@ Status key: **Met** means it was built and tested. **Partly** means it works wit
 
 ## 3.1 Architecture
 
-The system has three layers. Storage and processing are Hadoop. Results and application data are in MongoDB. The presentation layer is a FastAPI backend and a browser dashboard behind Apache.
+The system has three layers. Storage and processing are Hadoop. Results and application data are in MongoDB. The presentation layer is a Django web application (website, sign-in and dashboard) behind Apache.
 
 ![System architecture](docs/diagrams/architecture.png)
 
@@ -218,7 +218,7 @@ These show the mechanisms work. They don't show 99% uptime over time, or that th
 | `test_data/upload_cases/` | A valid CSV, and a text file named `.nc` that must be refused |
 | `test_data/demo_results.archive.gz` | Pipeline and model results, with no user accounts |
 | `data/raw/` in the zip | Small source files: GISTEMP, CO₂, NASA POWER, OpenAQ |
-| Fixtures in `backend/tests/` | Generated test users, readings and rules in a separate test database |
+| Test helpers in `web/earthscape/testing.py` | Generated test users, readings and rules in a separate test database |
 
 The full GHCN-Daily files are too large for the zip, and `data/download_data.sh` downloads them.
 
@@ -226,13 +226,15 @@ The full GHCN-Daily files are too large for the zip, and `data/download_data.sh`
 
 | Suite | Covers | Result |
 | --- | --- | --- |
-| `backend/tests/test_api.py` | Sign-in, roles, data routes, reports | All pass |
-| `backend/tests/test_live.py` | Collector, alert rules, email sending (simulated mail server) | All pass |
-| `backend/tests/test_ml.py` | Model routes, retraining | All pass |
-| `backend/tests/test_resilience.py` | Encryption, locks, sign-in limits, backups, monitoring, status | All pass |
+| `web/accounts/tests.py` | Sign-in, sign-in limits, sign-up, users and roles, encryption, setup | All pass |
+| `web/website/tests.py` | Public pages, contact form, newsletter, missing pages | All pass |
+| `web/dashboard/tests/test_pages.py` | Dashboard pages, data routes, reports | All pass |
+| `web/dashboard/tests/test_live.py` | Collector, alert rules, email sending (simulated mail server) | All pass |
+| `web/dashboard/tests/test_ml.py`, `test_ask.py` | Model pages, retraining, the Ask panel | All pass |
+| `web/dashboard/tests/test_ops.py` | Locks, backups, monitoring, status | All pass |
 | `ml/test_train_models.py` | Forecast methods, anomaly detection, correlation | All pass |
 
-In total, 109 backend tests and 14 model tests pass.
+Run the web tests with `web\.venv\Scripts\python.exe web\manage.py test`. In total, 163 web tests and the model tests pass.
 
 ## 6.3 Test cases
 
@@ -280,11 +282,11 @@ See `ReadMe.doc` for the shortest route. The full steps are below.
 Run these in PowerShell, from the project folder. Use a folder path without spaces.
 
 ```
-py -3.13 -m venv backend\.venv
-backend\.venv\Scripts\python.exe -m pip install -r backend\requirements.txt
-backend\.venv\Scripts\python.exe backend\seed.py
-backend\.venv\Scripts\python.exe ops\load_demo_data.py
-backend\.venv\Scripts\python.exe backend\serve.py --port 8000
+py -3.13 -m venv web\.venv
+web\.venv\Scripts\python.exe -m pip install -r web\requirements.txt
+web\.venv\Scripts\python.exe web\manage.py seed
+web\.venv\Scripts\python.exe ops\load_demo_data.py
+web\.venv\Scripts\python.exe web\serve.py --port 8000
 ```
 
 Open `http://localhost:8000`. Sign in with the Admin password that setup printed, or choose **Create an account** to ask for an Analyst account, which an Admin approves in Users and roles.

@@ -1,0 +1,40 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Dashboard{% endblock %} - EarthScape</title>
+  <link rel="icon" href="{% static 'favicon.svg' %}" type="image/svg+xml" />
+  <link href="{% static 'css/fonts.css' %}" rel="stylesheet" />
+  <link href="{% static 'dashboard/tailwind.css' %}" rel="stylesheet" />
+  <link href="{% static 'dashboard/dashboard.css' %}" rel="stylesheet" />
+</head>
+<body class="min-h-full flex flex-col"{% if refresh_seconds %} data-refresh="{{ refresh_seconds }}"{% endif %}>
+  {# Messages #}
+  <div class="toast-stack" aria-live="polite">
+    {% for message in messages %}<div class="toast{% if message.level_tag == 'error' %} error{% endif %}" data-toast>{{ message }}</div>{% endfor %}
+    {% for error in form_errors %}<div class="toast error" data-toast>{{ error }}</div>{% endfor %}
+  </div>
+
+  {% if maintenance.active and maintenance.message %}
+    <div id="maintenance-banner" role="status" class="text-center px-4 py-2">{{ maintenance.message }}</div>
+  {% endif %}
+
+  {% include "dashboard/_header.html" %}
+
+  <div class="flex flex-1 relative overflow-hidden">
+    {% include "dashboard/_sidebar.html" %}
+    <main class="flex-1 min-w-0 overflow-y-auto">
+      <section class="page-view space-y-6">
+        {% block content %}{% endblock %}
+      </section>
+    </main>
+  </div>
+
+  {% block modals %}{% endblock %}
+
+  <script src="{% static 'vendor/lucide.min.js' %}"></script>
+  <script src="{% static 'dashboard/js/menus.js' %}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

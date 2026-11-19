@@ -1,0 +1,14 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Job {{ job.id }}{% endblock %}
+
+{% block content %}
+  {# One YARN job #}
+  <div class="dropdown w-full max-w-3xl overflow-hidden flex flex-col" style="border-radius:16px">
+    <div class="dropdown-head flex justify-between items-center gap-4">
+      <span class="font-mono text-sm break-all">{{ job.name }} / {{ job.id }}</span>
+      <a href="{% url 'dashboard:hadoop' %}" class="icon-button" aria-label="Back to the cluster"><i data-lucide="x" class="w-4 h-4"></i></a>
+    </div>
+    <div class="log p-4 whitespace-pre-wrap break-words">{% for line in job.lines %}{{ line }}
+{% endfor %}</div>
+  </div>
+{% endblock %}

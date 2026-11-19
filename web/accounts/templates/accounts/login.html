@@ -1,0 +1,42 @@
+{% extends "accounts/base_auth.html" %}
+{% block title %}Sign in{% endblock %}
+
+{% block panel %}
+  {# Heading per tab #}
+  {% if role == "Admin" %}
+    <h1>Admin sign in</h1>
+    <p class="lead">For people who manage users, data and the cluster.</p>
+  {% else %}
+    <h1>Sign in</h1>
+    <p class="lead">New to EarthScape? <a href="{% url 'accounts:signup' %}">Create an account</a></p>
+  {% endif %}
+
+  {# Role tabs #}
+  <nav class="tabs ready" data-role="{{ role }}" aria-label="Who is signing in">
+    <a class="tab" href="{% url 'accounts:login' %}{% if next %}?next={{ next|urlencode }}{% endif %}" {% if role == "Analyst" %}aria-current="page"{% endif %}>Analyst</a>
+    <a class="tab" href="{% url 'accounts:login' %}?role=admin{% if next %}&amp;next={{ next|urlencode }}{% endif %}" {% if role == "Admin" %}aria-current="page"{% endif %}>Admin</a>
+  </nav>
+
+  {% if maintenance.active and maintenance.message %}<div id="maintenance" role="status">{{ maintenance.message }}</div>{% endif %}
+
+  <form method="post" action="{% url 'accounts:login' %}{% if role == 'Admin' %}?role=admin{% endif %}">
+    {% csrf_token %}
+    <input type="hidden" name="role" value="{{ role }}" />
+    <input type="hidden" name="next" value="{{ next }}" />
+    <div class="field">
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" autocomplete="username" maxlength="254" value="{{ form_data.email|default:'' }}" required autofocus />
+    </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <div class="password">
+        <input id="password" name="password" type="password" autocomplete="current-password" maxlength="128" required />
+        <button class="toggle" type="button" data-toggle-password="password" aria-label="Show password" aria-pressed="false">
+          {% include "accounts/_eye.html" %}
+        </button>
+      </div>
+    </div>
+    <button id="submit" type="submit">Sign in as {{ role }}</button>
+    {% if form_errors %}<div id="error" role="alert">{% for error in form_errors %}{{ error }}{% if not forloop.last %}<br />{% endif %}{% endfor %}</div>{% endif %}
+  </form>
+{% endblock %}

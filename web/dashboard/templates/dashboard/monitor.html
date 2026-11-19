@@ -1,0 +1,74 @@
+{% extends "dashboard/base.html" %}
+{% load static dash %}
+{% block title %}Live monitor{% endblock %}
+
+{% block content %}
+  {# Collector status #}
+  <div class="card p-5 flex flex-wrap gap-3 justify-between items-center">
+    <div class="space-y-1">
+      <h2 class="text-xl font-medium">Live monitor</h2>
+      <p class="text-xs text-slate-500">Current weather and air quality for 12 cities. These are model estimates from <a class="underline" href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>, not readings from sensors.</p>
+      <p class="text-xs font-medium {% if status.stale %}text-rose-600{% else %}text-slate-700{% endif %}">{{ status_text }}</p>
+      <p class="text-xs text-slate-500">{{ batch_text }}</p>
+    </div>
+    {% if user.is_admin %}
+      <form method="post" action="{% url 'dashboard:poll' %}">
+        {% csrf_token %}
+        <button type="submit" class="pill pill-dark disabled:opacity-50" data-busy="Checking...">Check now</button>
+      </form>
+    {% endif %}
+  </div>
+
+  {# City cards #}
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+    {% for card in cards %}
+      <div class="card p-5 space-y-2">
+        <div class="flex justify-between gap-2 items-start"><h4 class="font-medium text-sm">{{ card.location }}</h4><span class="tag {{ card.aqi.cls }}">{{ card.aqi.text }}</span></div>
+        <p class="live text-slate-500">{{ card.observed_at|when }}</p>
+        {% for label, value in card.values %}
+          <div class="flex justify-between text-xs font-mono"><span>{{ label }}</span><strong>{{ value }}</strong></div>
+        {% endfor %}
+      </div>
+    {% empty %}
+      <div class="card empty md:col-span-2 xl:col-span-3">No live readings yet.</div>
+    {% endfor %}
+  </div>
+
+  {# History chart #}
+  <div class="card p-6 space-y-4">
+    <form class="flex flex-wrap gap-3 justify-between items-center" method="get">
+      <h3 class="font-medium">Last 48 hours</h3>
+      <div class="flex flex-wrap gap-2">
+        <select name="location" aria-label="City" class="field w-auto" data-autosubmit>
+          {% for name in locations %}<option{% if name == location %} selected{% endif %}>{{ name }}</option>{% endfor %}
+        </select>
+        <select name="metric" aria-label="Measurement" class="field w-auto" data-autosubmit>
+          {% for key, label in metrics %}<option value="{{ key }}"{% if key == metric %} selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+        <noscript><button class="pill pill-dark" type="submit">Show</button></noscript>
+      </div>
+    </form>
+    {% include "dashboard/_chart.html" with chart_id="chart-live" data_id="chart-live-data" height="h-72" %}
+  </div>
+
+  {# OpenAQ sensors #}
+  <div class="card p-5"><h3 class="font-medium">OpenAQ sensors, 2023</h3><p class="text-xs text-slate-500">Historical readings from real sensors: each location's most recent month in the data. These don't update.</p></div>
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+    {% for sensor in sensors %}
+      <div class="card p-5 space-y-2">
+        <h4 class="font-medium text-sm">{{ sensor.name }}</h4>
+        <p class="text-xs text-slate-500 font-mono">Lat {{ sensor.lat }}, Lon {{ sensor.lon }}</p>
+        {% for row in sensor.pollutants %}
+          <div class="flex justify-between text-xs font-mono"><span>{{ row.name }} <span class="text-slate-400">({{ row.month }})</span></span><strong>{{ row.value }}</strong></div>
+        {% endfor %}
+      </div>
+    {% empty %}
+      <div class="empty">No sensor data yet. Run the pipeline first.</div>
+    {% endfor %}
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{% static 'vendor/chart.umd.js' %}"></script>
+  <script src="{% static 'dashboard/js/charts.js' %}"></script>
+{% endblock %}

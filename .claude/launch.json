@@ -3,21 +3,33 @@
   "configurations": [
     {
       "name": "earthscape",
-      "runtimeExecutable": "backend\\.venv\\Scripts\\python.exe",
-      "runtimeArgs": ["backend\\serve.py", "--port", "8000"],
+      "runtimeExecutable": "web\\.venv\\Scripts\\python.exe",
+      "runtimeArgs": [
+        "web\\serve.py",
+        "--port",
+        "8000"
+      ],
       "port": 8000
     },
     {
       "name": "earthscape-2",
-      "runtimeExecutable": "backend\\.venv\\Scripts\\python.exe",
-      "runtimeArgs": ["backend\\serve.py", "--port", "8001"],
+      "runtimeExecutable": "web\\.venv\\Scripts\\python.exe",
+      "runtimeArgs": [
+        "web\\serve.py",
+        "--port",
+        "8001"
+      ],
       "port": 8001
     },
     {
-      "name": "earthscape-preview",
-      "runtimeExecutable": "backend\\.venv\\Scripts\\python.exe",
-      "runtimeArgs": ["backend\\serve.py", "--port", "8002"],
-      "port": 8002,
+      "name": "django-preview",
+      "runtimeExecutable": "web\\.venv\\Scripts\\python.exe",
+      "runtimeArgs": [
+        "web\\serve.py",
+        "--port",
+        "8003"
+      ],
+      "port": 8003,
       "autoPort": false
     }
   ]

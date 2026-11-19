@@ -1,6 +1,6 @@
-"""Checks each backend instance and the public site, and records the results.
+"""Checks each Django instance and the public site, and records the results.
 
-Usage: backend\\.venv\\Scripts\\python.exe ops\\health_monitor.py [--loop SECONDS]
+Usage: web\\.venv\\Scripts\\python.exe ops\\health_monitor.py [--loop SECONDS]
 """
 import argparse
 import datetime
@@ -14,11 +14,10 @@ import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT / "backend"))
+sys.path.insert(0, str(ROOT / "web"))
 
-from app import config  # noqa: E402
-from app.db import db, ensure_indexes  # noqa: E402
-from app.notifications import notify  # noqa: E402
+from earthscape import config  # noqa: E402
+from earthscape.db import db, ensure_indexes, notify  # noqa: E402
 
 CERTIFICATE = ROOT / "deploy" / "apache" / "certs" / "earthscape.crt"
 LOG_FILE = ROOT / "logs" / "health.log"

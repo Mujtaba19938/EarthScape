@@ -10,10 +10,10 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT / "backend"))
+sys.path.insert(0, str(ROOT / "web"))
 
-from app import config  # noqa: E402
-from app.db import db  # noqa: E402
+from earthscape import config  # noqa: E402
+from earthscape.db import db  # noqa: E402
 
 ARCHIVE = ROOT / "test_data" / "demo_results.archive.gz"
 SOURCE_DB = "earthscape"

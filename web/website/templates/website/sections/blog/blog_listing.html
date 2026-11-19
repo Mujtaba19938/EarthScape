@@ -1,0 +1,72 @@
+{# blog listing #}
+<section class="section_blog_listing">
+  <div class="section-padding _0x180">
+    <div class="container">
+      <div class="section-inner blog_listing">
+        <div class="tabs ui-tabs">
+          <div class="tabs-menu ui-tab-menu">
+            <a class="category_link ui-inline-block ui-tab-link is-current" data-tab="Tab 3">
+              <div>All Categories</div>
+            </a>
+            <a class="category_link ui-inline-block ui-tab-link" data-tab="Tab 4">
+              <div>Analysis</div>
+            </a>
+            <a class="category_link ui-inline-block ui-tab-link" data-tab="Tab 5">
+              <div>Climate Trends</div>
+            </a>
+            <a class="category_link ui-inline-block ui-tab-link" data-tab="Tab 6">
+              <div>Air Quality</div>
+            </a>
+            <a class="category_link ui-inline-block ui-tab-link" data-tab="Tab 7">
+              <div>Platform</div>
+            </a>
+          </div>
+          <div class="tabs-content ui-tab-content">
+            <div class="tabs-pane ui-tab-pane is-active" data-tab="Tab 3">
+              <div class="collection-blogs ui-dyn-list">
+                <div role="list" class="collection-list-blogs ui-dyn-items">
+                  {% include 'website/cards/blog_card.html' with card_slug="nasa-temperature-records-since-1880" image="website/media/photo-5-1920x1500.jpg" category="Climate Trends" date="November 3, 2026" title="What NASA Temperature Records Show Since 1880" %}
+                  {% include 'website/cards/blog_card.html' with card_slug="live-air-quality-in-12-cities" image="website/media/photo-94-1920x1500.jpg" category="Air Quality" date="November 3, 2026" title="How Live Readings Track Air Quality in 12 Cities" %}
+                  {% include 'website/cards/blog_card.html' with card_slug="how-hadoop-processes-our-climate-data" image="website/media/photo-180-1920x1500.jpg" category="Platform" date="November 3, 2026" title="How Hadoop Processes Our Climate Data" %}
+                  {% include 'website/cards/blog_card.html' with card_slug="co2-and-temperature-correlation" image="website/media/photo-80-1920x1500.jpg" category="Analysis" date="November 4, 2026" title="CO₂ and Temperature: Why One Correlation Isn’t Enough" %}
+                  {% include 'website/cards/blog_card.html' with card_slug="finding-unusual-readings" image="website/media/photo-32-1920x1500.jpg" category="Analysis" date="November 4, 2026" title="Finding Unusual Readings in Climate Data" %}
+                  {% include 'website/cards/blog_card.html' with card_slug="keeping-climate-data-safe" image="website/media/photo-214-1920x1500.jpg" category="Platform" date="November 4, 2026" title="How We Keep Climate Data Safe and Available" %}
+                </div>
+              </div>
+            </div>
+            <div class="tabs-pane ui-tab-pane" data-tab="Tab 4">
+              <div class="collection-blogs ui-dyn-list">
+                <div role="list" class="collection-list-blogs ui-dyn-items">
+                  {% include 'website/cards/blog_card.html' with card_slug="finding-unusual-readings" image="website/media/photo-32-1920x1500.jpg" category="Analysis" date="November 4, 2026" title="Finding Unusual Readings in Climate Data" %}
+                </div>
+              </div>
+            </div>
+            <div class="tabs-pane ui-tab-pane" data-tab="Tab 5">
+              <div class="collection-blogs ui-dyn-list">
+                <div role="list" class="collection-list-blogs ui-dyn-items">
+                  {% include 'website/cards/blog_card.html' with card_slug="nasa-temperature-records-since-1880" image="website/media/photo-5-1920x1500.jpg" category="Climate Trends" date="November 3, 2026" title="What NASA Temperature Records Show Since 1880" %}
+                  {% include 'website/cards/blog_card.html' with card_slug="how-hadoop-processes-our-climate-data" image="website/media/photo-180-1920x1500.jpg" category="Platform" date="November 3, 2026" title="How Hadoop Processes Our Climate Data" %}
+                </div>
+              </div>
+            </div>
+            <div class="tabs-pane ui-tab-pane" data-tab="Tab 6">
+              <div class="collection-blogs ui-dyn-list">
+                <div role="list" class="collection-list-blogs ui-dyn-items">
+                  {% include 'website/cards/blog_card.html' with card_slug="live-air-quality-in-12-cities" image="website/media/photo-94-1920x1500.jpg" category="Air Quality" date="November 3, 2026" title="How Live Readings Track Air Quality in 12 Cities" %}
+                  {% include 'website/cards/blog_card.html' with card_slug="keeping-climate-data-safe" image="website/media/photo-214-1920x1500.jpg" category="Platform" date="November 4, 2026" title="How We Keep Climate Data Safe and Available" %}
+                </div>
+              </div>
+            </div>
+            <div class="tabs-pane ui-tab-pane" data-tab="Tab 7">
+              <div class="collection-blogs ui-dyn-list">
+                <div role="list" class="collection-list-blogs ui-dyn-items">
+                  {% include 'website/cards/blog_card.html' with card_slug="co2-and-temperature-correlation" image="website/media/photo-80-1920x1500.jpg" category="Analysis" date="November 4, 2026" title="CO₂ and Temperature: Why One Correlation Isn’t Enough" %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

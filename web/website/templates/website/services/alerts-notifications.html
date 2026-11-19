@@ -1,0 +1,121 @@
+{% extends 'website/base.html' %}
+{% load static %}
+{% block title %}Alerts &amp; Notifications - EarthScape{% endblock %}
+{% block description %}Get notified when a reading crosses a limit.{% endblock %}
+
+{% block content %}
+{# Alerts & Notifications #}
+<section class="section_collection-details-hero">
+  <img src="{% static 'website/media/photo-41-1920x1500.jpg' %}" loading="lazy" alt="" class="image-default">
+  <div class="hero_overlay service-details-hero">
+    <div class="ui-layout-blockcontainer container ui-container">
+      <div class="section-padding">
+        <div class="details-hero_info">
+          <div class="page-navigator-wrap">
+            <a href="#" class="link-white breadcrumbs">Home</a>
+            <div>/</div>
+            <a href="#" class="link-white breadcrumbs">Service</a>
+            <div>/</div>
+            <a href="{% url 'website:service' 'alerts-notifications' %}" aria-current="page" class="link-white breadcrumbs is-current">Service Details</a>
+          </div>
+          <h2>Alerts &amp; Notifications</h2>
+          <div>Set limits for live readings and get a notification when a value crosses one.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<main class="main-wrapper">
+  {# About the alerts and notifications service #}
+  <section class="section-service_details">
+    <div class="section-padding _180x0">
+      <div class="ui-layout-blockcontainer container ui-container">
+        <div class="section_title-wrap variant-center-title-without-discription">
+          <div class="margin-bottom margin-16">
+            <div class="title-tag">
+              <div class="body-text-14">About Service</div>
+            </div>
+          </div>
+          <h2 class="heading-custom-h3">About the alerts and notifications service</h2>
+          <div class="global_title-bottom-info">
+            <p class="title-discription">Alerts &amp; Notifications watches the live readings for you. Administrators set the rules, and everyone signed in can see what has been triggered.</p>
+          </div>
+        </div>
+        <div class="section-inner service_details">
+          <div class="left-service-images">
+            <img src="{% static 'website/media/photo-192-800x530.jpg' %}" loading="lazy" alt="" class="service-image-about is_first">
+            <img src="{% static 'website/media/photo-191-800x530.jpg' %}" loading="lazy" alt="" class="service-image-about is_secnd">
+            <img src="{% static 'website/media/photo-200-800x530.jpg' %}" loading="lazy" alt="" class="service-image-about is_third">
+          </div>
+          <div class="about_service-details-right">
+            <div class="program-item">
+              <h3 class="heading-custom-h5">01</h3>
+              <div class="program-rich ui-richtext">
+                <h4>Set a Rule</h4>
+                <p>An administrator chooses a measurement, a limit and a severity on the Alert Management page.</p>
+              </div>
+            </div>
+            <div class="program-item">
+              <h3 class="heading-custom-h5">02</h3>
+              <div class="program-rich ui-richtext">
+                <h4>Check Every Reading</h4>
+                <p>Each collection of live data is checked against the rules, so an alert appears within about 15 minutes.</p>
+              </div>
+            </div>
+            <div class="program-item last-item">
+              <h3 class="heading-custom-h5">03</h3>
+              <div class="program-rich ui-richtext">
+                <h4>Follow It Through</h4>
+                <p>An alert opens when a rule is broken and closes itself when the readings recover.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  {# Honest numbers you can check #}
+  <section class="section_about-our_mission">
+    <div class="section-padding _180x180">
+      <div class="ui-layout-blockcontainer container ui-container">
+        <div class="section-inner mission">
+          <div class="mission-right">
+            <div class="margin-bottom margin-16">
+              <div class="section_title-wrap">
+                <div class="margin-bottom margin-16">
+                  <div class="title-tag">
+                    <div class="body-text-14">How We Work</div>
+                  </div>
+                </div>
+                <h2 class="heading-custom-h3">Honest numbers you can check</h2>
+                <div class="global_title-bottom-info">
+                  <p class="title-discription">Alerts appear as notifications inside the dashboard, so there’s one place to see what needs attention. </p>
+                </div>
+              </div>
+            </div>
+            <p>Email sending is built as well, but so far it has only been tested against a simulated mail server.</p>
+          </div>
+          <div class="mission-left">
+            <img src="{% static 'website/media/photo-197-562x718.jpg' %}" loading="lazy" alt="our" class="image-default">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  {# 15 min #}
+  <section class="section-service-details">
+    <div class="section-padding">
+      <div class="ui-layout-blockcontainer container ui-container">
+        <div class="section-inner service_cost">
+          <h2 class="heading-custom-h1">15 min</h2>
+          <div class="max-width _400">
+            <div class="heading-custom-h4">Between checks of live readings</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <img src="{% static 'website/media/photo-35-1920x1500.jpg' %}" loading="eager" alt="background" class="background_image">
+  </section>
+  {% include 'website/sections/shared/service_related.html' %}
+</main>
+{% endblock %}

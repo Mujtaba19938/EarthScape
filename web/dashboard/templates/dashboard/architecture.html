@@ -1,0 +1,18 @@
+{% extends "dashboard/base.html" %}
+{% block title %}System architecture{% endblock %}
+
+{% block content %}
+  {# How the parts connect #}
+  <div class="panel-dark p-8 space-y-4">
+    <h2>Architecture</h2>
+    <p class="max-w-2xl" style="font-size:14px;line-height:22px">Public datasets are downloaded and stored in HDFS. Python jobs run on YARN through Hadoop Streaming, and their results are loaded into MongoDB. A Django web application applies sign-in and roles, and renders both the website and this dashboard from MongoDB. Models train in Python on the results in MongoDB, and every run's scores are saved.</p>
+    <div class="flow">
+      <p>Browser &rarr; Apache (HTTPS, load balancing) &rarr; Two Django instances &rarr; MongoDB</p>
+      <p>NOAA, NASA, OpenAQ &rarr; HDFS &rarr; MapReduce on YARN &rarr; MongoDB &rarr; Django &rarr; Dashboard</p>
+      <p>MongoDB &rarr; scikit-learn, statsmodels &rarr; MongoDB (scores and forecasts)</p>
+      <p>Open-Meteo &rarr; Collector command &rarr; MongoDB &rarr; Alert rules &rarr; Email and notifications</p>
+      <p>Collector command &rarr; Hourly CSV batches &rarr; HDFS</p>
+    </div>
+    <p style="font-size:13px">Live data is collected on a timer, not through a streaming system such as Kafka. Each new value is available within one collection cycle.</p>
+  </div>
+{% endblock %}

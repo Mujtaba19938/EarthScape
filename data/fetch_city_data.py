@@ -15,7 +15,7 @@ import urllib.parse
 import urllib.request
 
 RAW = os.path.join(os.path.dirname(os.path.abspath(__file__)), "raw")
-# The same cities as LIVE_LOCATIONS in backend/app/config.py.
+# The same cities as LIVE_LOCATIONS in web/earthscape/config.py.
 CITIES = [
     ("Karachi", 24.86, 67.01), ("Lahore", 31.55, 74.34), ("Islamabad", 33.68, 73.05), ("Peshawar", 34.02, 71.52),
     ("Quetta", 30.18, 66.98), ("Faisalabad", 31.45, 73.14), ("Multan", 30.16, 71.52), ("Hyderabad", 25.40, 68.36),

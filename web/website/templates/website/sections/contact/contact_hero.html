@@ -1,0 +1,68 @@
+{% load static %}
+{# Contact us #}
+<section class="section-contact-hero">
+  <div class="section-padding contact-padding">
+    <div class="ui-layout-blockcontainer container ui-container">
+      <div class="section-inner contact-hero">
+        <div class="contact_main-content">
+          <div id="cell-_980bb8b5-4e7c-8eb5-feda-c0efe26faab1-b2e67b8d" class="contact_form-block ui-form">
+            <form class="contact_form" method="post" action="{% url 'website:contact' %}">
+              {% csrf_token %}
+              <div class="contact_form-container">
+                <h1 class="heading-custom-h2">Contact us</h1>
+                <div class="margin-y _16x24">
+                  <div>We’re here to help! Send the EarthScape team a message. If you have an account, you can also raise a ticket on the Feedback &amp; Support page.</div>
+                </div>
+                <div class="contact_form-fields">
+                  <div class="form_input-group">
+                    <label for="contact-name" class="form_label-wrfrm">Name</label>
+                    <input class="contact-form-field ui-input" maxlength="256" name="name" placeholder="First name" type="text" id="contact-name" required value="{{ form_data.name|default:'' }}">
+                  </div>
+                  <div class="form_input-group">
+                    <label for="contact-email" class="form_label-wrfrm">Email</label>
+                    <input class="contact-form-field ui-input" maxlength="256" name="email" placeholder="Enter your email" type="email" id="contact-email" required value="{{ form_data.email|default:'' }}">
+                  </div>
+                  <div class="form_input-group">
+                    <label for="contact-message" class="form_label-wrfrm">Message</label>
+                    <textarea id="contact-message" name="message" maxlength="5000" placeholder="Message" class="contact-form-field is_textarea ui-input" required>{{ form_data.message|default:'' }}</textarea>
+                  </div>
+                </div>
+              </div>
+              <button aria-label="link" type="submit" class="button-global is_form">
+                <div class="button-text-wrap">
+                  <div class="button-texts is_default">Contact us</div>
+                  <div class="button-texts is_absolute">Contact us</div>
+                </div>
+                <div class="button-arrow-wrap">
+                  <div class="button-arrow-clip">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="100%" viewbox="0 0 21 20" fill="none" class="button-arrow is_default"><path d="M6.4364 14.1663L14.7697 5.83301" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"></path><path d="M6.4364 5.83301H14.7697V14.1663" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="100%" viewbox="0 0 21 20" fill="none" class="button-arrow is_absolute"><path d="M6.4364 14.1663L14.7697 5.83301" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"></path><path d="M6.4364 5.83301H14.7697V14.1663" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                  </div>
+                </div>
+              </button>
+            </form>
+          </div>
+          <div class="contact_image-wrapper">
+            <img alt="contact" src="{% static 'website/media/photo-272-984x1244.jpg' %}" loading="lazy" class="image-default">
+          </div>
+        </div>
+      </div>
+      <div class="contact-hero_bottom">
+        <div class="contact-info-wrap">
+          <div class="contact-info-item">
+            <div class="body-text-24px font-width-500">Support</div>
+            <a href="{% url 'dashboard:home' %}">Feedback &amp; Support page</a>
+          </div>
+          <div class="contact-info-item">
+            <div class="body-text-24px font-width-500">Sign In</div>
+            <a href="{% url 'accounts:login' %}">Administrator and analyst accounts</a>
+          </div>
+          <div class="contact-info-item">
+            <div class="body-text-24px font-width-500">Agency</div>
+            <a href="{% url 'website:home' %}" target="_blank">EarthScape Climate Agency</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

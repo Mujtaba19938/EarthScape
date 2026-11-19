@@ -1,0 +1,48 @@
+{% extends "dashboard/base.html" %}
+{% load dash %}
+{% block title %}Feedback and support{% endblock %}
+
+{% block content %}
+  {# New ticket #}
+  <div class="card p-8 space-y-4 max-w-xl">
+    <h2 class="text-xl font-medium">Feedback and support</h2>
+    <form method="post" class="space-y-3">
+      {% csrf_token %}
+      <div><label class="label" for="ticket-category">Category</label><select id="ticket-category" name="category" class="field">{% for category in categories %}<option>{{ category }}</option>{% endfor %}</select></div>
+      <div><label class="label" for="ticket-description">Description</label><textarea id="ticket-description" name="description" rows="4" required maxlength="4000" class="field" placeholder="Describe the issue or your feedback..."></textarea></div>
+      <button type="submit" class="pill pill-dark w-full">Submit ticket</button>
+    </form>
+  </div>
+
+  {# Tickets #}
+  <div class="card p-6 space-y-3">
+    <h3 class="font-medium">Tickets</h3>
+    <div class="overflow-x-auto">
+      {% if tickets %}
+        <table class="data-table">
+          <thead><tr><th>Category</th><th>Description</th><th>From</th><th>Raised</th><th>Status</th></tr></thead>
+          <tbody>
+            {% for ticket in tickets %}
+              <tr>
+                <td>{{ ticket.category }}</td><td>{{ ticket.description }}</td><td>{{ ticket.created_by_name }}</td><td>{{ ticket.created_at|when }}</td>
+                <td>
+                  {% if user.is_admin %}
+                    <form method="post" action="{% url 'dashboard:update_ticket' ticket.id %}">
+                      {% csrf_token %}
+                      <select name="status" class="field w-auto" aria-label="Ticket status" data-autosubmit>
+                        {% for status in statuses %}<option{% if status == ticket.status %} selected{% endif %}>{{ status }}</option>{% endfor %}
+                      </select>
+                      <noscript><button type="submit" class="pill pill-light">Save</button></noscript>
+                    </form>
+                  {% else %}
+                    <span class="tag tag-grey">{{ ticket.status }}</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}<div class="empty">No tickets yet.</div>{% endif %}
+    </div>
+  </div>
+{% endblock %}

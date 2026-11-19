@@ -1,0 +1,19 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Search{% endblock %}
+
+{% block content %}
+  {# Search results #}
+  <div class="card p-6 space-y-4 max-w-2xl">
+    <form method="get" class="flex gap-3" role="search">
+      <input name="q" type="search" class="field flex-1" aria-label="Search" placeholder="Datasets, sensors, cities or alert rules" value="{{ query }}" minlength="2" autofocus />
+      <button type="submit" class="pill pill-dark">Search</button>
+    </form>
+    {% if query %}
+      {% for item in results %}
+        <a href="{% url item.page %}" class="list-item flex justify-between gap-2"><span class="truncate">{{ item.text }}</span><span class="text-xs text-slate-500 shrink-0">{{ item.group }}</span></a>
+      {% empty %}
+        <p class="empty">No matches</p>
+      {% endfor %}
+    {% endif %}
+  </div>
+{% endblock %}

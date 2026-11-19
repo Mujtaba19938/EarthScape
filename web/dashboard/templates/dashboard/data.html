@@ -1,0 +1,65 @@
+{% extends "dashboard/base.html" %}
+{% load static dash %}
+{% block title %}Data explorer{% endblock %}
+
+{% block content %}
+  {# Upload, Admins only #}
+  {% if user.is_admin %}
+    <form class="upload-zone space-y-3" method="post" action="{% url 'dashboard:upload' %}" enctype="multipart/form-data" data-upload>
+      {% csrf_token %}
+      <h3 class="font-medium">Upload a dataset to HDFS</h3>
+      <p class="text-xs text-slate-500">NetCDF, GeoTIFF, HDF5, Parquet, CSV or GRIB2, up to 1 GB. Contents are checked against the file type.</p>
+      <input id="upload-input" name="file" type="file" accept="{{ accept }}" class="block mx-auto text-xs" required />
+      <div class="hidden max-w-xs mx-auto" data-upload-progress>
+        <div class="meter" style="background:var(--raised)"><div data-upload-bar style="width:0;background:var(--accent)"></div></div>
+        <span class="block mt-2 text-xs font-mono" style="color:var(--accent)" data-upload-label></span>
+      </div>
+      <button type="submit" class="pill pill-green">Upload</button>
+    </form>
+  {% endif %}
+
+  {# Datasets #}
+  <div class="card p-6 space-y-3">
+    <div class="flex justify-between items-center"><h3 class="font-medium">Datasets in HDFS</h3><span class="text-xs text-slate-500">{{ datasets|length }} datasets</span></div>
+    <div class="overflow-x-auto">
+      {% if datasets %}
+        <table class="data-table">
+          <thead><tr><th>Name</th><th>Format</th><th>Size</th><th>Source</th><th>HDFS path</th></tr></thead>
+          <tbody>
+            {% for row in datasets %}
+              <tr>
+                <td><strong class="text-ink">{{ row.name }}</strong>{% if row.uploaded %} <span class="tag tag-gold">Uploaded</span>{% endif %}</td>
+                <td><span class="tag tag-grey">{{ row.format }}</span></td>
+                <td>{{ row.size_text }}</td>
+                <td>{{ row.source }}</td>
+                <td><span class="font-mono text-xs">{{ row.path }}</span></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}<div class="empty">No datasets yet.</div>{% endif %}
+    </div>
+  </div>
+
+  {# Quality #}
+  <div class="card p-6 space-y-3">
+    <h3 class="font-medium">Weather station data quality</h3>
+    <p class="text-xs text-slate-500">Readings that failed NOAA's quality checks are left out of every result. These files appear to omit absent readings rather than mark them, so the missing count can't reveal gaps.</p>
+    <div class="overflow-x-auto">
+      {% if quality %}
+        <table class="data-table">
+          <thead><tr><th>Year</th><th>Measurement</th><th>Valid</th><th>Failed checks</th><th>Missing</th><th>Pass rate</th></tr></thead>
+          <tbody>
+            {% for row in quality %}
+              <tr><td>{{ row.year }}</td><td>{{ row.element }}</td><td>{{ row.valid|number }}</td><td>{{ row.failed_qc|number }}</td><td>{{ row.missing|number }}</td><td>{{ row.pass_rate }}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}<div class="empty">No quality results yet. Run the pipeline first.</div>{% endif %}
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{% static 'dashboard/js/upload.js' %}"></script>
+{% endblock %}

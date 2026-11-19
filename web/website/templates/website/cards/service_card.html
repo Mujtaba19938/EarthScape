@@ -1,0 +1,30 @@
+{% load static %}
+{# Card: service card. Values come from the include tag. #}
+<div class="collection_item-service ui-dyn-item" role="listitem">
+  <a class="service_card ui-inline-block" href="{% url 'website:service' card_slug %}">
+    <img alt="{{ title }}" class="image-default" loading="lazy" src="{% static image %}">
+    <div class="service_card-info">
+      <h2 class="heading-custom-h5">{{ title }}</h2>
+      <div>{{ summary }}</div>
+      <div class="line service">
+      </div>
+      <div class="service_card-bottom">
+        <div>{{ tag }}</div>
+        <div class="button-global is_transparent">
+          <div class="button-text-wrap">
+            <div class="button-texts is_default">Learn more</div>
+            <div class="button-texts is_absolute">Learn more</div>
+          </div>
+          <div class="button-arrow-wrap is_transparent">
+            <div class="button-arrow-clip">
+              <svg class="button-arrow is_default" fill="none" viewbox="0 0 21 20" width="100%" xmlns="http://www.w3.org/2000/svg"><path d="M6.4364 14.1663L14.7697 5.83301" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.66667"></path><path d="M6.4364 5.83301H14.7697V14.1663" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.66667"></path></svg>
+              <svg class="button-arrow is_absolute" fill="none" viewbox="0 0 21 20" width="100%" xmlns="http://www.w3.org/2000/svg"><path d="M6.4364 14.1663L14.7697 5.83301" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.66667"></path><path d="M6.4364 5.83301H14.7697V14.1663" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.66667"></path></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="moving-color" style="opacity: 0">
+      </div>
+    </div>
+  </a>
+</div>

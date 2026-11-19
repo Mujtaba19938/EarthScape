@@ -1,5 +1,5 @@
 # Stops what start_all.ps1 started. Doesn't touch MongoDB, HDFS or YARN.
-$patterns = 'serve.py --port', 'backend\collector.py', 'ops\health_monitor.py --loop', 'deploy/apache/httpd.conf'
+$patterns = 'serve.py --port', 'manage.py collect_live', 'ops\health_monitor.py --loop', 'deploy/apache/httpd.conf'
 Get-CimInstance Win32_Process | Where-Object {
     $commandLine = $_.CommandLine
     $_.ProcessId -ne $PID -and $commandLine -and ($patterns | Where-Object { $commandLine -like "*$_*" })

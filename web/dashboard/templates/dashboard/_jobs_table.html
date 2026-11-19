@@ -1,0 +1,22 @@
+{# YARN jobs table #}
+{% if not yarn_online %}
+  <div class="empty">YARN isn't reachable. Start it from an administrator Command Prompt.</div>
+{% elif not jobs %}
+  <div class="empty">YARN has no EarthScape jobs since it last restarted.</div>
+{% else %}
+  <table class="data-table">
+    <thead><tr><th>Job</th><th>Application</th><th>State</th><th>Result</th><th>Duration</th>{% if with_details %}<th></th>{% endif %}</tr></thead>
+    <tbody>
+      {% for job in jobs %}
+        <tr>
+          <td><strong class="text-ink">{{ job.name }}</strong></td>
+          <td><span class="font-mono text-xs">{{ job.id }}</span></td>
+          <td><span class="tag {% if job.final_status == 'FAILED' or job.final_status == 'KILLED' %}tag-red{% elif job.group == 'running' %}tag-blue{% else %}tag-green{% endif %}">{{ job.state }}</span></td>
+          <td>{% if job.group == "running" %}{{ job.progress }}%{% else %}{{ job.final_status }}{% endif %}</td>
+          <td>{{ job.elapsed_seconds }} s</td>
+          {% if with_details %}<td><a class="pill pill-light" href="{% url 'dashboard:job_detail' job.id %}">Details</a></td>{% endif %}
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endif %}

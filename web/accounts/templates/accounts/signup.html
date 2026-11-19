@@ -1,0 +1,49 @@
+{% extends "accounts/base_auth.html" %}
+{% block title %}Create an account{% endblock %}
+
+{% block panel %}
+  <h1>Create an account</h1>
+  <p class="lead">Already have one? <a href="{% url 'accounts:login' %}">Sign in</a></p>
+
+  {% if maintenance.active and maintenance.message %}<div id="maintenance" role="status">{{ maintenance.message }}</div>{% endif %}
+
+  {% if done %}
+    {# Request sent #}
+    <div id="done" role="status">{{ msg }}<br /><a href="{% url 'accounts:login' %}">Back to sign in</a></div>
+  {% else %}
+    <form method="post" action="{% url 'accounts:signup' %}">
+      {% csrf_token %}
+      <div class="row">
+        <div class="field">
+          <label for="name">Full name</label>
+          <input id="name" name="name" type="text" autocomplete="name" maxlength="100" value="{{ form_data.name|default:'' }}" required autofocus />
+        </div>
+        <div class="field">
+          <label for="title">Job title <span class="optional">(optional)</span></label>
+          <input id="title" name="title" type="text" autocomplete="organization-title" maxlength="100" value="{{ form_data.title|default:'' }}" />
+        </div>
+      </div>
+      <div class="field">
+        <label for="email">Work email</label>
+        <input id="email" name="email" type="email" autocomplete="email" maxlength="254" value="{{ form_data.email|default:'' }}" required />
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <div class="password">
+          <input id="password" name="password" type="password" autocomplete="new-password" minlength="10" maxlength="128" required aria-describedby="password-hint" />
+          <button class="toggle" type="button" data-toggle-password="password" aria-label="Show password" aria-pressed="false">
+            {% include "accounts/_eye.html" %}
+          </button>
+        </div>
+        <p id="password-hint" class="hint">At least 10 characters.</p>
+      </div>
+      <div class="field">
+        <label for="confirm">Confirm password</label>
+        <input id="confirm" name="confirm" type="password" autocomplete="new-password" maxlength="128" required />
+      </div>
+      <button id="submit" type="submit">Create account</button>
+      <p class="hint">New accounts are Analyst accounts. An Admin approves each one before it can sign in.</p>
+      {% if form_errors %}<div id="error" role="alert">{% for error in form_errors %}{{ error }}{% if not forloop.last %}<br />{% endif %}{% endfor %}</div>{% endif %}
+    </form>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,21 @@
+{# Left navigation #}
+<aside id="sidebar" class="app-sidebar w-64 flex flex-col shrink-0 z-30">
+  <nav class="flex-1 overflow-y-auto" id="sidebar-nav" aria-label="Main">
+    {% for item in nav %}
+      {% if item.heading %}
+        <div class="sidebar-heading">{{ item.heading }}</div>
+      {% else %}
+        <a href="{{ item.url }}" title="{{ item.label }}" class="sidebar-nav-item{% if item.key == page %} active{% endif %}"{% if item.key == page %} aria-current="page"{% endif %}>
+          <span class="flex items-center gap-3 truncate"><i data-lucide="{{ item.icon }}" class="w-4 h-4 flex-shrink-0"></i><span class="sidebar-label truncate">{{ item.label }}</span></span>
+          {% if item.badge %}<span class="sidebar-label count">{{ item.badge }}</span>{% endif %}
+        </a>
+      {% endif %}
+    {% endfor %}
+  </nav>
+  <div id="sidebar-footer" class="sidebar-footer">
+    <div class="flex justify-between items-center"><span style="color:var(--dt1)">HDFS</span><span class="live" style="color:var(--dt2)">{{ sidebar.nodes }}</span></div>
+    <div class="meter mt-3"><div style="width:{{ sidebar.bar }}%"></div></div>
+    <p class="mt-2 font-mono">{{ sidebar.capacity }}</p>
+    <a href="{% url 'website:home' %}" class="block mt-4">Back to the website</a>
+  </div>
+</aside>

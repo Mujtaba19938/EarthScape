@@ -1,0 +1,79 @@
+{% load static %}
+{# Climate data, turned into decisions #}
+<section class="section_home-hero">
+  <div class="section-padding hero-animation">
+    <div class="ui-layout-blockcontainer container hero-container ui-container">
+      <div class="section-inner home-hero">
+        <div class="home-hero-top">
+          <h1>Climate data, turned into decisions</h1>
+          <div class="margin-y _16x40">
+            <div class="max-width _490">
+              <p>EarthScape brings satellite, weather station and air quality records together, so the agency can see what is changing and act on it.</p>
+            </div>
+          </div>
+        </div>
+        <div class="home-hero-bottom_navigator">
+          <div class="videos-list">
+            <div class="video-item is_first">
+              <img src="{% static 'website/media/video-earth-sunrise-thumb.jpg' %}" loading="lazy" alt="hero video trigger" class="image-default">
+            </div>
+            <div class="video-item is_second">
+              <img src="{% static 'website/media/video-storm-clouds-thumb.jpg' %}" loading="lazy" alt="hero video trigger" class="image-default">
+            </div>
+            <div class="video-item is_third">
+              <img src="{% static 'website/media/video-rotating-earth-thumb.jpg' %}" loading="lazy" alt="hero video trigger" height="Auto" class="image-default">
+            </div>
+          </div>
+          <div class="line-wrap">
+            <div class="line-progress">
+              <div style="width: 0%; height: 100%" class="fill_progress is_first">
+              </div>
+            </div>
+            <div class="line-progress">
+              <div style="width: 0%; height: 100%" class="fill_progress is_second">
+              </div>
+            </div>
+            <div class="line-progress">
+              <div style="width: 0%; height: 100%" class="fill_progress is_third">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="home-header-videos">
+    <div class="video_clip">
+      <div style="opacity: 0" class="background-video-hero is-second ui-background-video ui-background-video-atom">
+        <video id="a35af0cc-ade7-9a35-b5f1-3e849de1fc8d-video" autoplay loop style="background-image: url('{% static 'website/media/video-storm-clouds-poster.jpg' %}')" muted playsinline>
+          <source src="{% static 'website/media/video-storm-clouds.mp4' %}">
+        </video>
+        <div aria-live="polite">
+          <button type="button" aria-controls="a35af0cc-ade7-9a35-b5f1-3e849de1fc8d-video" class="ui-backgroundvideo-backgroundvideoplaypausebutton play-pause is_second ui-background-video--control"><span><img src="{% static 'website/icons/play.svg' %}" loading="lazy" alt="Pause video"></span><span hidden><img loading="lazy" alt="Play video" src="{% static 'website/icons/pause.svg' %}"></span></button>
+        </div>
+      </div>
+    </div>
+    <div class="video-clip">
+      <div style="opacity: 1" class="background-video-hero is_first ui-background-video ui-background-video-atom">
+        <video id="be6b5acb-b566-7436-8cb6-fc6fb061630a-video" autoplay loop style="background-image: url('{% static 'website/media/video-earth-sunrise-poster.jpg' %}')" muted playsinline>
+          <source src="{% static 'website/media/video-earth-sunrise.mp4' %}">
+        </video>
+        <div aria-live="polite">
+          <button type="button" aria-controls="be6b5acb-b566-7436-8cb6-fc6fb061630a-video" class="ui-backgroundvideo-backgroundvideoplaypausebutton play-pause ui-background-video--control"><span><img src="{% static 'website/icons/play.svg' %}" loading="lazy" alt="Pause video"></span><span hidden><img loading="lazy" alt="Play video" src="{% static 'website/icons/pause.svg' %}"></span></button>
+        </div>
+      </div>
+    </div>
+    <div class="video_clip">
+      <div style="opacity: 0" class="background-video-hero is_third ui-background-video ui-background-video-atom">
+        <video id="46bd5793-0b7c-28bd-bf1c-4689f752e29e-video" autoplay loop style="background-image: url('{% static 'website/media/video-rotating-earth-poster.jpg' %}')" muted playsinline>
+          <source src="{% static 'website/media/video-rotating-earth.mp4' %}">
+        </video>
+        <div aria-live="polite">
+          <button type="button" aria-controls="46bd5793-0b7c-28bd-bf1c-4689f752e29e-video" class="ui-backgroundvideo-backgroundvideoplaypausebutton play-pause is_third ui-background-video--control"><span><img src="{% static 'website/icons/play.svg' %}" loading="lazy" alt="Pause video"></span><span hidden><img loading="lazy" alt="Play video" src="{% static 'website/icons/pause.svg' %}"></span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="hero_overlay home">
+  </div>
+</section>

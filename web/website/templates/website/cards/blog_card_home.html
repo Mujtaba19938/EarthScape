@@ -1,0 +1,28 @@
+{% load static %}
+{# Card: blog card home. Values come from the include tag. #}
+<div class="collection-item-blogs ui-dyn-item" role="listitem">
+  <a aria-label="blog details" class="content-card home_blog ui-inline-block" href="{% url 'website:post' card_slug %}">
+    <div class="margin-bottom margin-24">
+      <div class="card_image-wrapper home_blog">
+        <img alt="{{ title }}" class="image-default" loading="lazy" src="{% static image %}">
+        <div class="blog_card-overlay-home">
+        </div>
+      </div>
+    </div>
+    <div class="card_body hero_blog">
+      <div class="category_tag blog_hero">
+        <div>{{ category }}</div>
+      </div>
+      <div class="margin-y _24x40">
+        <div class="content-card-link">
+          <h3 class="heading-custom-h4">{{ title }}</h3>
+        </div>
+      </div>
+      <div class="blog_writer">
+        <div class="line">
+        </div>
+        <div class="blog-writer">EarthScape Team</div>
+      </div>
+    </div>
+  </a>
+</div>

@@ -1,0 +1,34 @@
+{# Card: access level, "Limits" tab. Uses plan from PLAN_CARDS in pages.py. #}
+<div class="collection-item pricing-item ui-dyn-item" role="listitem">
+  <div class="margin-bottom margin-12">
+    <div class="heading-custom-h5">{{ plan.title }}</div>
+  </div>
+  <div class="margin-bottom _32px">
+    <div>{{ plan.summary }}</div>
+  </div>
+  <div class="margin-bottom margin-4px">
+    <div class="pricing-item_price heading-custom-h3">
+      <div>
+      </div>
+      <div>{{ plan.price }}</div>
+      <div class="plan-categroy">{{ plan.price_note }}</div>
+    </div>
+  </div>
+  <div class="margin-y _24x32">
+    <a class="pricing_button is_pricing ui-inline-block" href="{% url 'website:plan' plan.slug %}" style="background-color: {{ plan.button }}">
+      <div class="button-texts" style="color: {{ plan.button_text }}">View Details</div>
+      <div class="button-tertiary-background" style="background-color: {{ plan.button }}">
+      </div>
+    </a>
+  </div>
+  <div class="pricing-item_body">
+    <div class="body-text-24px">Limits</div>
+    <ul class="product_feature_list" role="list">
+      {% for feature in plan.limits %}
+        {% include 'website/cards/_feature.html' %}
+      {% endfor %}
+    </ul>
+  </div>
+  <div class="pricing-card_backgorund-alt" style="background-color: {{ plan.background }}">
+  </div>
+</div>

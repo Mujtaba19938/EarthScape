@@ -1,0 +1,37 @@
+{% load static %}
+{# Card: service card home. Values come from the include tag. #}
+<div class="service-card-home ui-dyn-item{% if extra %} {{ extra }}{% endif %}" role="listitem">
+  <div class="prectice_image-wrap">
+    <img alt="{{ title }}" class="image-default" loading="lazy" src="{% static image %}">
+  </div>
+  <div class="dropdown-wrap-service">
+    <div class="dropdown-faq is_service ui-dropdown" data-delay="0">
+      <div class="faq-title ui-dropdown-toggle">
+        <div class="faq-title-wrapper">
+          <h3 class="heading-custom-h6 color-white">{{ title }}</h3>
+          <svg class="faq-arrow home_service" fill="none" viewbox="0 0 25 24" width="100%" xmlns="http://www.w3.org/2000/svg"> <g clip-path="url(#clip0_2060_892)"> <path clip-rule="evenodd" d="M13.6898 15.3846C13.5022 15.5721 13.2479 15.6774 12.9828 15.6774C12.7176 15.6774 12.4633 15.5721 12.2758 15.3846L6.61876 9.72759C6.52325 9.63534 6.44707 9.525 6.39466 9.40299C6.34225 9.28099 6.31467 9.14977 6.31351 9.01699C6.31236 8.88421 6.33766 8.75253 6.38794 8.62964C6.43822 8.50674 6.51248 8.39509 6.60637 8.30119C6.70026 8.2073 6.81191 8.13305 6.93481 8.08277C7.05771 8.03249 7.18939 8.00718 7.32217 8.00834C7.45495 8.00949 7.58617 8.03708 7.70817 8.08949C7.83017 8.1419 7.94052 8.21808 8.03277 8.31359L12.9828 13.2636L17.9328 8.31359C18.1214 8.13143 18.374 8.03064 18.6362 8.03291C18.8984 8.03519 19.1492 8.14036 19.3346 8.32577C19.52 8.51118 19.6252 8.76199 19.6274 9.02419C19.6297 9.28638 19.5289 9.53899 19.3468 9.72759L13.6898 15.3846Z" fill="currentColor" fill-rule="evenodd"></path> </g> </svg>
+        </div>
+      </div>
+      <nav class="faq-answer ui-dropdown-list">
+        <div class="faq-body-cont">
+          <p class="dropdown_short-info">{{ summary }}</p>
+          <p class="dropdown_short-info">{{ details }}</p>
+        </div>
+      </nav>
+    </div>
+    <div class="service-button-wrap">
+      <a aria-label="link" class="button-global variant-is-transparent ui-inline-block" href="{% url 'website:service' card_slug %}">
+        <div class="button-text-wrap">
+          <div class="button-texts is_default">Learn more</div>
+          <div class="button-texts is_absolute">Learn more</div>
+        </div>
+        <div class="button-arrow-wrap variant-is-transparent">
+          <div class="button-arrow-clip">
+            <svg class="button-arrow is_default variant-is-transparent" fill="none" viewbox="0 0 21 20" width="100%" xmlns="http://www.w3.org/2000/svg"> <path d="M6.4364 14.1663L14.7697 5.83301" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.66667"></path> <path d="M6.4364 5.83301H14.7697V14.1663" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.66667"></path> </svg>
+            <svg class="button-arrow is_absolute variant-is-transparent" fill="none" viewbox="0 0 21 20" width="100%" xmlns="http://www.w3.org/2000/svg"> <path d="M6.4364 14.1663L14.7697 5.83301" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.66667"></path> <path d="M6.4364 5.83301H14.7697V14.1663" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.66667"></path> </svg>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,39 @@
+{% extends 'website/base.html' %}
+{% block title %}Not Found - EarthScape{% endblock %}
+{% block description %}EarthScape Climate Agency turns public climate data into clear insight, with Hadoop processing, live monitoring, machine learning forecasts and alerts.{% endblock %}
+
+{% block content %}
+{# 404 #}
+<section class="section_error-page_main">
+  <div class="section-padding">
+    <div class="container">
+      <div class="section-inner error-page">
+        <div class="content-align-center">
+          <div class="margin-bottom margin-20">
+            <h1 class="error-page_title">404</h1>
+          </div>
+          <div class="margin-bottom margin-40">
+            <div class="error-page_main-text">
+              <div class="body-text-24px">Sorry, the page you are looking for doesn’t exist or has been moved.</div>
+            </div>
+          </div>
+          <div class="button-container">
+            <a aria-label="link" href="{% url 'website:home' %}" class="button-global ui-inline-block">
+              <div class="button-text-wrap">
+                <div class="button-texts is_default">Go Back Home</div>
+                <div class="button-texts is_absolute">Go Back Home</div>
+              </div>
+              <div class="button-arrow-wrap">
+                <div class="button-arrow-clip">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="100%" viewbox="0 0 21 20" fill="none" class="button-arrow is_default"><path d="M6.4364 14.1663L14.7697 5.83301" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"></path><path d="M6.4364 5.83301H14.7697V14.1663" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="100%" viewbox="0 0 21 20" fill="none" class="button-arrow is_absolute"><path d="M6.4364 14.1663L14.7697 5.83301" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"></path><path d="M6.4364 5.83301H14.7697V14.1663" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                </div>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

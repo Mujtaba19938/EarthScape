@@ -1,6 +1,6 @@
 """Rebuilds this folder's samples and demo archive from the full data. Only needed if the data changes.
 
-Usage: python test_data/make_test_data.py   (with the backend's Python)
+Usage: python test_data/make_test_data.py   (with web\.venv's Python)
 """
 import csv
 import os
@@ -11,9 +11,9 @@ from itertools import islice
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT / "backend"))
+sys.path.insert(0, str(ROOT / "web"))
 
-from app import config  # noqa: E402
+from earthscape import config  # noqa: E402
 
 HERE = ROOT / "test_data"
 RAW = ROOT / "data" / "raw"

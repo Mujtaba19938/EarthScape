@@ -1,0 +1,153 @@
+{% extends "dashboard/base.html" %}
+{% load static dash %}
+{% block title %}ML models and forecasts{% endblock %}
+
+{% block content %}
+  {# Run info #}
+  <div class="card p-5 flex flex-wrap gap-3 justify-between items-center">
+    <div>
+      <h2 class="text-xl font-medium">ML models &amp; forecasts</h2>
+      <p class="text-xs text-slate-500">
+        {% if summary.latest %}Version {{ summary.latest.version }}, trained {{ summary.latest.trained_at|when }} by {{ summary.latest.triggered_by }}. Every figure here comes from this run.
+        {% else %}No models have been trained yet. Run ml/train_models.py or use the Retrain button.{% endif %}
+      </p>
+    </div>
+    {% if user.is_admin %}
+      <form method="post" action="{% url 'dashboard:retrain' %}">
+        {% csrf_token %}
+        <button type="submit" class="pill pill-dark disabled:opacity-50"{% if summary.retraining %} disabled{% endif %}>{% if summary.retraining %}Training...{% else %}Retrain models{% endif %}</button>
+      </form>
+    {% endif %}
+  </div>
+
+  {# Ask panel #}
+  <div class="card p-6 space-y-4">
+    <div><h3 class="font-medium">Ask about the weather</h3><p class="text-xs text-slate-500">Ask about a Pakistani city, a future year, or storms. Answers come from saved data and models, and say how far to trust them.</p></div>
+    <form class="flex flex-wrap gap-3 items-center" method="post" action="{% url 'dashboard:ml' %}?series={{ series }}&amp;horizon={{ horizon }}">
+      {% csrf_token %}
+      <input name="question" class="field flex-1" style="min-width:220px" minlength="2" maxlength="300" aria-label="Your question" placeholder="What will the weather be in Karachi in 2027?" value="{{ question }}" required />
+      <button type="submit" class="pill pill-dark disabled:opacity-50" data-busy="Checking...">Ask</button>
+    </form>
+    <form id="ask-examples" class="flex flex-wrap gap-2" method="post" action="{% url 'dashboard:ml' %}?series={{ series }}&amp;horizon={{ horizon }}">
+      {% csrf_token %}
+      {% for text in examples %}<button type="submit" name="question" value="{{ text }}" class="pill text-xs">{{ text }}</button>{% endfor %}
+    </form>
+    {% if answer %}
+      <div class="space-y-3">
+        <p class="font-medium ask-answer">{{ answer.answer }}</p>
+        {% if answer.chart %}{% include "dashboard/_chart.html" with chart=answer.chart chart_id="chart-ask" data_id="chart-ask-data" %}{% endif %}
+        {% if answer.rows %}
+          <div class="overflow-x-auto">
+            <table class="data-table">
+              <thead><tr>{% for column in answer.columns %}<th>{{ column }}</th>{% endfor %}</tr></thead>
+              <tbody>{% for row in answer.rows %}<tr>{% for cell in row %}<td>{{ cell }}</td>{% endfor %}</tr>{% endfor %}</tbody>
+            </table>
+          </div>
+        {% endif %}
+        <div class="space-y-1">{% for note in answer.notes %}<p class="text-xs text-slate-500">{{ note }}</p>{% endfor %}</div>
+      </div>
+    {% endif %}
+  </div>
+
+  {% if summary.latest %}
+    {% include "dashboard/_stats.html" with stats=summary.stats strip_id="ml-stats" strip_cols="grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4" %}
+
+    {# Forecast #}
+    <div class="card p-6 space-y-4">
+      <form class="flex flex-wrap gap-3 justify-between items-center" method="get">
+        <div><h3 class="font-medium">Temperature anomaly forecast</h3><p class="text-xs text-slate-500">°C compared with the 1951-1980 average. NASA GISTEMP history. Each place option is a band of latitude around the world.</p></div>
+        <div class="flex flex-wrap gap-2 items-center">
+          <select name="series" aria-label="Region" class="field w-auto" data-autosubmit>
+            {% for key, label in zones %}<option value="{{ key }}"{% if key == series %} selected{% endif %}>{{ label }}</option>{% endfor %}
+          </select>
+          <div class="flex gap-2">
+            {% for year in horizons %}
+              <button type="submit" name="horizon" value="{{ year }}" class="pill {% if year == horizon %}pill-dark{% else %}pill-light{% endif %}" aria-pressed="{% if year == horizon %}true{% else %}false{% endif %}">{{ year }}</button>
+            {% endfor %}
+          </div>
+        </div>
+      </form>
+      {% if forecast %}
+        {% include "dashboard/_chart.html" with chart=forecast.chart chart_id="chart-ml-forecast" data_id="chart-ml-forecast-data" %}
+        <p class="text-xs text-slate-500">This extends past temperatures forward using statistics. It isn't a climate model and knows nothing about future emissions, so treat later years with caution.</p>
+        <div class="overflow-x-auto">
+          <table class="data-table">
+            <thead><tr><th>Year</th><th>Forecast</th><th>95% range</th></tr></thead>
+            <tbody>{% for row in forecast.table %}<tr><td>{{ row.year }}</td><td>{{ row.forecast }}</td><td>{{ row.range }}</td></tr>{% endfor %}</tbody>
+          </table>
+        </div>
+      {% else %}<div class="empty">No forecast for that series.</div>{% endif %}
+    </div>
+
+    {# Method comparison #}
+    {% if forecast %}
+      <div class="card p-6 space-y-3">
+        <h3 class="font-medium">How the methods compared</h3>
+        <p class="text-xs text-slate-500">{{ forecast.verdict }}</p>
+        <div class="overflow-x-auto">
+          <table class="data-table">
+            <thead><tr><th>Method</th><th>Error on past data</th><th>Error on {{ forecast.test_period }}</th><th>Average miss</th></tr></thead>
+            <tbody>
+              {% for row in forecast.comparison %}
+                <tr><td><strong class="text-ink">{{ row.label }}</strong>{% if row.chosen %} <span class="tag tag-green">Chosen</span>{% endif %}</td><td>{{ row.backtest }}</td><td>{{ row.test }}</td><td>{{ row.bias }}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    {% endif %}
+
+    {# Air quality anomalies #}
+    <div class="card p-6 space-y-3">
+      <h3 class="font-medium">Unusual air quality days</h3>
+      <p class="text-xs text-slate-500">Isolation Forest on daily OpenAQ readings from 2023, comparing each day with the same sensor's previous 30 days. No one has labelled which days were truly abnormal, so a flag means unusual, not confirmed.</p>
+      <div class="overflow-x-auto">
+        {% if anomalies %}
+          <table class="data-table">
+            <thead><tr><th>Date</th><th>Sensor</th><th>Pollutant</th><th>Daily mean</th><th>Daily peak</th><th>Spreads above recent normal</th></tr></thead>
+            <tbody>{% for row in anomalies %}<tr><td>{{ row.date }}</td><td>{{ row.location }}</td><td>{{ row.parameter|upper }}</td><td>{{ row.mean }} {{ row.units }}</td><td>{{ row.max }} {{ row.units }}</td><td>{{ row.z_mean }}</td></tr>{% endfor %}</tbody>
+          </table>
+        {% else %}<div class="empty">No unusual days flagged.</div>{% endif %}
+      </div>
+    </div>
+
+    {# Correlations #}
+    <div class="card p-6 space-y-3">
+      <h3 class="font-medium">Correlations</h3>
+      <p class="text-xs text-slate-500">Correlation shows that two things move together. It doesn't show that one causes the other.</p>
+      <div class="overflow-x-auto">
+        {% if correlations %}
+          <table class="data-table">
+            <thead><tr><th>Compared</th><th>Data</th><th>Pairs</th><th>Pearson</th><th>Spearman</th><th>p-value</th><th>How to read it</th></tr></thead>
+            <tbody>
+              {% for row in correlations %}
+                <tr><td><strong class="text-ink">{{ row.left }}</strong><br />{{ row.right }}</td><td>{{ row.kind }}</td><td>{{ row.n }}</td><td>{{ row.pearson }}</td><td>{{ row.spearman }}</td>
+                  <td>{{ row.pearson_p }}{% if not row.significant %} <span class="tag tag-grey">Not significant</span>{% endif %}</td><td>{{ row.note }}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}<div class="empty">No correlations yet.</div>{% endif %}
+      </div>
+    </div>
+
+    {# Training history #}
+    <div class="card p-6 space-y-3">
+      <h3 class="font-medium">Training history</h3>
+      <div class="overflow-x-auto">
+        <table class="data-table">
+          <thead><tr><th>Version</th><th>Trained</th><th>By</th><th>Global error</th><th>Baseline error</th><th>Regions beating baseline</th><th>False alarms</th><th>Spikes found (10 spreads)</th></tr></thead>
+          <tbody>
+            {% for run in summary.history %}
+              <tr><td><span class="font-mono text-xs">{{ run.version }}</span></td><td>{{ run.trained_at|when }}</td><td>{{ run.triggered_by }}</td><td>{{ run.global_test_rmse }} °C</td><td>{{ run.global_baseline_rmse }} °C</td><td>{{ run.beating }}</td><td>{{ run.false_alarms }}</td><td>{{ run.spikes }}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block scripts %}
+  <script src="{% static 'vendor/chart.umd.js' %}"></script>
+  <script src="{% static 'dashboard/js/charts.js' %}"></script>
+{% endblock %}

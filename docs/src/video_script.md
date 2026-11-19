@@ -7,7 +7,7 @@
 2. Run `ops\start_all.ps1`, and open `https://localhost`.
 3. Accept the certificate warning once, so it isn't in the recording.
 4. Open two tabs: one signed in as Admin, and one private window signed in as Analyst.
-5. Close anything showing personal details. Never show `backend\.env` or passwords on screen.
+5. Close anything showing personal details. Never show `web\.env` or passwords on screen.
 6. Record with the **Xbox Game Bar** (press Windows + G) or OBS Studio, at 1080p.
 
 # Script

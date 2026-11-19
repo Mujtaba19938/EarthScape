@@ -1,0 +1,11 @@
+{% extends 'website/base.html' %}
+{% block title %}Service - EarthScape{% endblock %}
+{% block description %}EarthScape Climate Agency turns public climate data into clear insight, with Hadoop processing, live monitoring, machine learning forecasts and alerts.{% endblock %}
+
+{% block content %}
+{% include 'website/sections/services/global_hero.html' %}
+<div class="main-wrapper">
+  {% include 'website/sections/services/service_cards.html' %}
+  {% include 'website/sections/shared/global_faq.html' %}
+</div>
+{% endblock %}

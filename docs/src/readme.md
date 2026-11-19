@@ -10,7 +10,7 @@
 | `docs\EarthScape_Developer_Guide.docx` | Architecture, workflows, models and maintenance |
 | `docs\EarthScape_Video_Script.docx` | Script for the demonstration video |
 | `video` | The demonstration video |
-| `backend`, `frontend`, `hadoop`, `ml`, `ops`, `deploy` | Source code and configuration |
+| `web`, `hadoop`, `ml`, `ops`, `deploy` | Source code and configuration |
 | `data` | Download scripts and the small source files |
 | `test_data` | Sample input, upload test cases and demo results |
 | `tableau` | CSV files and export script for Tableau |
@@ -22,11 +22,11 @@ The source is also at https://github.com/Mujtaba19938/EarthScape
 You need Windows 10 or newer, Python 3.13, and MongoDB with its Database Tools. Unzip to a folder with no spaces in its path, then run these in PowerShell from that folder.
 
 ```
-py -3.13 -m venv backend\.venv
-backend\.venv\Scripts\python.exe -m pip install -r backend\requirements.txt
-backend\.venv\Scripts\python.exe backend\seed.py
-backend\.venv\Scripts\python.exe ops\load_demo_data.py
-backend\.venv\Scripts\python.exe backend\serve.py --port 8000
+py -3.13 -m venv web\.venv
+web\.venv\Scripts\python.exe -m pip install -r web\requirements.txt
+web\.venv\Scripts\python.exe web\manage.py seed
+web\.venv\Scripts\python.exe ops\load_demo_data.py
+web\.venv\Scripts\python.exe web\serve.py --port 8000
 ```
 
 Open http://localhost:8000 and choose **Dashboard**, which opens the sign-in page. The first step of setup creates the Admin and Analyst accounts and prints their passwords once, so copy them then; they aren't saved anywhere. Anyone else can choose **Create an account** on the sign-in page and wait for an Admin to approve it.
@@ -57,4 +57,4 @@ This shows real results from the pipeline without needing Hadoop. Section 7 of t
 
 # Security note
 
-`backend\.env`, certificates and backups aren't in this zip. Setup creates new passwords and keys on each machine. Change the generated passwords before sharing a running copy with anyone.
+`web\.env`, certificates and backups aren't in this zip. Setup creates new passwords and keys on each machine. Change the generated passwords before sharing a running copy with anyone.

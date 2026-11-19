@@ -1,0 +1,5 @@
+{# Chart canvas plus its data #}
+<div class="{{ height|default:'h-80' }} relative">
+  <canvas id="{{ chart_id }}" data-chart="{{ data_id }}"></canvas>
+</div>
+{{ chart|json_script:data_id }}

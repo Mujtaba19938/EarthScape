@@ -1,0 +1,61 @@
+{% extends 'website/base.html' %}
+{% block title %}Privacy - EarthScape{% endblock %}
+{% block description %}EarthScape Climate Agency turns public climate data into clear insight, with Hadoop processing, live monitoring, machine learning forecasts and alerts.{% endblock %}
+
+{% block content %}
+{# Privacy policy #}
+<section class="section-global_hero">
+  <div class="section-padding padding-hero_158x60 variant-padding-bottom-none">
+    <div class="container">
+      <div class="section_blog-inner">
+        <div class="margin-bottom margin-16">
+          <div class="title-tag">
+            <div class="body-text-14">Privacy policy</div>
+          </div>
+        </div>
+        <h1 class="heading-custom-h2 stagger-after-load">Privacy policy</h1>
+      </div>
+    </div>
+  </div>
+</section>
+<div class="main-wrapper">
+  {# This Policy Explains What EarthScape Stores And How It Is Pr #}
+  <section class="section_privacy-policy_main">
+    <div class="section-padding _0x180">
+      <div class="container">
+        <div class="rich-text_privacy-policy ui-richtext">
+          <h2>This Policy Explains What EarthScape Stores And How It Is Protected.</h2>
+          <p>This website and its dashboard are part of the EarthScape Climate Agency project. Most of what they show is public climate data, which contains no personal information.</p>
+          <p>‍</p>
+          <p>You can read the public website without an account. Signing in is only needed for the dashboard, which is for administrators and analysts.</p>
+          <p>‍</p>
+          <p>‍</p>
+          <h2>What we store</h2>
+          <p>To run the dashboard, EarthScape keeps a small amount of information about each person who has an account.</p>
+          <p>‍</p>
+          <ul role="list">
+            <li>Your name, role and email address</li>
+            <li>A secure hash of your password, never the password itself</li>
+            <li>The text of any support tickets you raise</li>
+          </ul>
+          <p>‍</p>
+          <p>‍</p>
+          <h2>How it is protected</h2>
+          <p>Passwords are hashed with bcrypt. Email addresses and ticket text are encrypted in the database, and all traffic uses HTTPS. A sign-in lasts 8 hours and ends when you sign out.</p>
+          <p>‍</p>
+          <p>Only administrators can manage accounts, and the server checks each person’s role on every request. Backups are kept for recovery, and the latest seven are retained.</p>
+          <p>‍</p>
+          <p>‍</p>
+          <h2>Climate data</h2>
+          <p>Climate data comes from public sources such as NOAA, NASA, OpenAQ and Open-Meteo. It isn’t personal, so it isn’t encrypted.</p>
+          <p>‍</p>
+          <p>‍</p>
+          <h2>Questions</h2>
+          <p>This project follows common security practice, but it hasn’t been independently audited or certified. If you have a question about your data, please raise a ticket on the Feedback &amp; Support page.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  {% include 'website/sections/shared/global_cta.html' %}
+</div>
+{% endblock %}

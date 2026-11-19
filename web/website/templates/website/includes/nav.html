@@ -1,0 +1,130 @@
+{% load static %}
+{# Site navigation #}
+<div class="navbar-black-global">
+  <div id="main-nav" data-animation="default" data-collapse="medium" data-duration="400" role="banner" class="nav ui-nav">
+    <div class="padding-global is_navbar">
+      <div class="nav-wrapper">
+        <a href="{% url 'website:home' %}" class="brand ui-nav-brand{% if page == 'home' %} is-current{% endif %}" {% if page == 'home' %}aria-current="page"{% endif %}><img src="{% static 'website/brand/earthscape-logo-dark.svg' %}" loading="lazy" alt="" class="nav_logo"></a>
+        <nav role="navigation" class="nav_menu ui-nav-menu">
+          <div class="nav-open_topbar">
+            <a href="{% url 'website:home' %}" class="brand ui-nav-brand{% if page == 'home' %} is-current{% endif %}" {% if page == 'home' %}aria-current="page"{% endif %}><img src="{% static 'website/brand/earthscape-logo-white.svg' %}" loading="lazy" alt="logo" class="nav_logo white-logo"><img src="{% static 'website/brand/earthscape-logo-dark.svg' %}" loading="lazy" alt="" class="nav_logo black-logo"></a>
+            <div class="menu-button ui-nav-button">
+              <div class="menu-button_icon-wrapper">
+                <div class="menu-button_horizontal-bar first-bar">
+                </div>
+                <div class="menu-button_horizontal-bar is-middle">
+                </div>
+                <div class="menu-button_horizontal-bar last-bar">
+                </div>
+              </div>
+              <div class="icon-2 ui-icon-nav-menu">
+              </div>
+            </div>
+          </div>
+          <div class="nav-menu_wrapper">
+            <a href="{% url 'website:home' %}" class="button-global is_light is_new ui-inline-block{% if page == 'home' %} is-current{% endif %}" {% if page == 'home' %}aria-current="page"{% endif %}>
+              <div class="button-text-wrap">
+                <div class="button-texts is_default">Home</div>
+                <div class="button-texts is_absolute">Home</div>
+              </div>
+            </a>
+            <svg xmlns="http://www.w3.org/2000/svg" width="100%" viewbox="0 0 5 4" fill="none" class="dot"><circle cx="2.39563" cy="2" r="2" fill="currentColor"></circle></svg>
+            <a href="{% url 'website:about' %}" class="button-global is_light is_new ui-inline-block{% if page == 'about' %} is-current{% endif %}" {% if page == 'about' %}aria-current="page"{% endif %}>
+              <div class="button-text-wrap">
+                <div class="button-texts is_default">About</div>
+                <div class="button-texts is_absolute">About</div>
+              </div>
+            </a>
+            <svg xmlns="http://www.w3.org/2000/svg" width="100%" viewbox="0 0 5 4" fill="none" class="dot"><circle cx="2.39563" cy="2" r="2" fill="currentColor"></circle></svg>
+            <a href="{% url 'website:services' %}" class="button-global is_light is_new ui-inline-block{% if page == 'services' %} is-current{% endif %}" {% if page == 'services' %}aria-current="page"{% endif %}>
+              <div class="button-text-wrap">
+                <div class="button-texts is_default">Service</div>
+                <div class="button-texts is_absolute">Service</div>
+              </div>
+            </a>
+            <div class="show-mobile" style="margin-bottom: 12px">
+              <a aria-label="Dashboard link" href="{% url 'dashboard:home' %}" class="button-global variant-is-white ui-inline-block">
+                <div class="button-text-wrap">
+                  <div class="button-texts is_default">Dashboard</div>
+                  <div class="button-texts is_absolute">Dashboard</div>
+                </div>
+                <div class="button-arrow-wrap variant-is-white">
+                  <div class="button-arrow-clip">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="100%" viewbox="0 0 21 20" fill="none" class="button-arrow is_default"> <path d="M6.4364 14.1663L14.7697 5.83301" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M6.4364 5.83301H14.7697V14.1663" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"></path> </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="100%" viewbox="0 0 21 20" fill="none" class="button-arrow is_absolute"> <path d="M6.4364 14.1663L14.7697 5.83301" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M6.4364 5.83301H14.7697V14.1663" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"></path> </svg>
+                  </div>
+                </div>
+              </a>
+            </div>
+            <div class="show-mobile">
+              <a aria-label="link" href="{% url 'website:contact' %}" class="button-global variant-is-white ui-inline-block{% if page == 'contact' %} is-current{% endif %}" {% if page == 'contact' %}aria-current="page"{% endif %}>
+                <div class="button-text-wrap">
+                  <div class="button-texts is_default">Contact us</div>
+                  <div class="button-texts is_absolute">Contact us</div>
+                </div>
+                <div class="button-arrow-wrap variant-is-white">
+                  <div class="button-arrow-clip">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="100%" viewbox="0 0 21 20" fill="none" class="button-arrow is_default"><path d="M6.4364 14.1663L14.7697 5.83301" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"></path><path d="M6.4364 5.83301H14.7697V14.1663" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="100%" viewbox="0 0 21 20" fill="none" class="button-arrow is_absolute"><path d="M6.4364 14.1663L14.7697 5.83301" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"></path><path d="M6.4364 5.83301H14.7697V14.1663" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                  </div>
+                </div>
+              </a>
+            </div>
+            <div class="show-mobile">
+              <div class="nav-dropdown_bottom">
+                <p class="nav-dropdown_bottom-text">© 2026 <a href="{% url 'website:home' %}" target="_blank" class="link-white{% if page == 'home' %} is-current{% endif %}" {% if page == 'home' %}aria-current="page"{% endif %}>EarthScape </a>- Powered By <a href="https://hadoop.apache.org" target="_blank" class="link-white">Apache Hadoop</a></p>
+                <div class="nav-dropdown_social">
+                  <a href="https://facebook.com" target="_blank" class="nav-dropdown_social-item ui-inline-block"><svg xmlns="http://www.w3.org/2000/svg" width="100%" viewbox="0 0 24 24" fill="none"><path d="M22 12C22 6.48 17.52 2 12 2C6.48 2 2 6.48 2 12C2 16.84 5.44 20.87 10 21.8V15H8V12H10V9.5C10 7.57 11.57 6 13.5 6H16V9H14C13.45 9 13 9.45 13 10V12H16V15H13V21.95C18.05 21.45 22 17.19 22 12Z" fill="currentColor"></path></svg></a>
+                  <a href="https://x.com" target="_blank" class="nav-dropdown_social-item ui-inline-block"><svg xmlns="http://www.w3.org/2000/svg" width="100%" viewbox="0 0 24 24" fill="none"><path d="M23.2498 5.13299H23.2493C22.4051 5.49955 21.5121 5.74096 20.5986 5.84971V5.84924C21.5586 5.28674 22.2809 4.3933 22.6296 3.33674V3.33627C21.7217 3.8669 20.7298 4.23955 19.6971 4.43737C18.8178 3.5158 17.5995 2.99549 16.3259 2.9983C13.775 2.9983 11.7106 5.03268 11.7106 7.54049H11.7101C11.7082 7.88924 11.7481 8.23705 11.8292 8.57596L11.8287 8.57549C8.12981 8.40205 4.67512 6.67799 2.31309 3.82705H2.31262C1.90246 4.51799 1.6859 5.30643 1.68449 6.1094C1.68449 7.6844 2.50621 9.07658 3.74699 9.89221L3.74652 9.89174C3.01105 9.87393 2.29105 9.6794 1.64746 9.32455V9.3808C1.64746 11.5839 3.24121 13.4167 5.35059 13.8339V13.8335C4.95355 13.9389 4.5448 13.9924 4.13465 13.9928H4.13418C3.84262 13.9933 3.55199 13.9647 3.26652 13.9085C3.85293 15.7131 5.55965 17.0256 7.58137 17.0631V17.0627C5.9384 18.3283 3.92137 19.0127 1.84715 19.0075C1.47871 19.0066 1.11074 18.985 0.745586 18.9419L0.745117 18.9414C2.85496 20.2886 5.30746 21.0011 7.81059 20.9941C16.3118 20.9941 20.9562 14.0706 20.9562 8.06596C20.9562 7.86908 20.9511 7.67221 20.9417 7.48002V7.47955C21.8431 6.8383 22.6226 6.04143 23.2446 5.12643L23.2498 5.13299Z" fill="currentColor"></path></svg></a>
+                  <a href="https://instagram.com" target="_blank" class="nav-dropdown_social-item ui-inline-block"><svg xmlns="http://www.w3.org/2000/svg" width="100%" viewbox="0 0 24 24" fill="none"><path d="M16.3748 3.2498C18.7879 3.25684 20.7426 5.21152 20.7501 7.62512V16.3748H20.7496C20.7421 18.7879 18.7874 20.7426 16.3738 20.7496H7.62416C5.21057 20.7421 3.25588 18.7875 3.24885 16.3743V7.62465V7.62418C3.25588 5.21059 5.21057 3.2559 7.62416 3.24887H16.3738L16.3748 3.2498ZM16.3738 1.49902H7.62369C4.25479 1.49902 1.49854 4.25527 1.49854 7.62418V16.3739C1.49854 19.7428 4.25479 22.499 7.62369 22.499H16.3734C19.7423 22.499 22.4985 19.7428 22.4985 16.3739V7.62418C22.4985 4.25527 19.7423 1.49902 16.3734 1.49902H16.3738Z" fill="currentColor"></path><path d="M17.6872 7.62527L17.6868 7.62523C16.9616 7.62476 16.3743 7.03741 16.3743 6.31226C16.3743 5.5871 16.9616 4.99976 17.6868 4.99976C18.4115 4.99976 18.9993 5.5871 18.9988 6.31226L18.9983 6.31179C18.9997 7.03507 18.4147 7.62241 17.6915 7.62429C17.6891 7.62429 17.6872 7.62429 17.6854 7.62429L17.6872 7.62527ZM11.9999 8.49996H11.9994C13.9321 8.49949 15.4996 10.067 15.4996 11.9996C15.4996 13.9323 13.9321 15.4998 11.9994 15.4998C10.0663 15.4998 8.49928 13.9323 8.49881 11.9996H8.49834C8.50022 10.067 10.0658 8.50137 11.998 8.49902L11.9999 8.49996ZM11.998 6.74918H11.9976C9.09787 6.74918 6.74756 9.09949 6.74756 11.9992C6.74756 14.8984 9.09787 17.2492 11.9976 17.2487C14.8968 17.2482 17.2476 14.8979 17.2471 11.9982C17.2471 9.09855 14.8963 6.74824 11.9971 6.74824L11.998 6.74918Z" fill="currentColor"></path></svg></a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </nav>
+        <div class="nav_right">
+          <div class="hide-mobile">
+            <a aria-label="Dashboard link" href="{% url 'dashboard:home' %}" class="button-global ui-inline-block">
+              <div class="button-text-wrap">
+                <div class="button-texts is_default">Dashboard</div>
+                <div class="button-texts is_absolute">Dashboard</div>
+              </div>
+              <div class="button-arrow-wrap">
+                <div class="button-arrow-clip">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="100%" viewbox="0 0 21 20" fill="none" class="button-arrow is_default"> <path d="M6.4364 14.1663L14.7697 5.83301" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M6.4364 5.83301H14.7697V14.1663" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"></path> </svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="100%" viewbox="0 0 21 20" fill="none" class="button-arrow is_absolute"> <path d="M6.4364 14.1663L14.7697 5.83301" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M6.4364 5.83301H14.7697V14.1663" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"></path> </svg>
+                </div>
+              </div>
+            </a>
+          </div>
+          <div class="hide-mobile">
+            <a aria-label="link" href="{% url 'website:contact' %}" class="button-global ui-inline-block{% if page == 'contact' %} is-current{% endif %}" {% if page == 'contact' %}aria-current="page"{% endif %}>
+              <div class="button-text-wrap">
+                <div class="button-texts is_default">Contact us</div>
+                <div class="button-texts is_absolute">Contact us</div>
+              </div>
+              <div class="button-arrow-wrap">
+                <div class="button-arrow-clip">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="100%" viewbox="0 0 21 20" fill="none" class="button-arrow is_default"><path d="M6.4364 14.1663L14.7697 5.83301" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"></path><path d="M6.4364 5.83301H14.7697V14.1663" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="100%" viewbox="0 0 21 20" fill="none" class="button-arrow is_absolute"><path d="M6.4364 14.1663L14.7697 5.83301" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"></path><path d="M6.4364 5.83301H14.7697V14.1663" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                </div>
+              </div>
+            </a>
+          </div>
+          <div class="menu-button ui-nav-button">
+            <div class="menu-button_icon-wrapper">
+              <div class="menu-button_horizontal-bar first-bar">
+              </div>
+              <div class="menu-button_horizontal-bar is-middle">
+              </div>
+              <div class="menu-button_horizontal-bar last-bar">
+              </div>
+            </div>
+            <div class="icon-2 ui-icon-nav-menu">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

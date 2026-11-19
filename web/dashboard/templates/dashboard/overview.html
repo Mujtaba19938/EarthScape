@@ -1,0 +1,45 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+{% block title %}Executive dashboard{% endblock %}
+
+{% block content %}
+  {% include "dashboard/_stats.html" with strip_id="dashboard-stats" strip_cols="grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4" %}
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    {# Global chart #}
+    <div class="lg:col-span-2 card p-6 space-y-4">
+      <div>
+        <h3 class="font-medium text-lg">Global temperature anomaly</h3>
+        <p class="text-slate-500 text-xs">Source: NASA GISTEMP v4, relative to the 1951-1980 average. Years still in progress are left out.</p>
+      </div>
+      {% include "dashboard/_chart.html" with chart=global_chart chart_id="chart-global" data_id="chart-global-data" height="h-64" %}
+    </div>
+
+    {# Station anomalies #}
+    <div class="card p-6 space-y-3">
+      <h3 class="font-medium text-sm">Most unusual station readings</h3>
+      <p class="text-xs text-slate-500">Compared with the same station and month across 2020 and 2023. This is a short baseline.</p>
+      <div class="space-y-2 max-h-56 overflow-y-auto">
+        {% for row in anomalies %}
+          <div class="list-item">
+            <div class="flex justify-between font-medium"><span>{{ row.station }} {{ row.element }}</span><span class="text-rose-600 font-mono">{{ row.value_c }} °C</span></div>
+            <p class="text-xs text-slate-500">{{ row.date_text }}, usually {{ row.mean_c }} °C (z = {{ row.z_score }})</p>
+          </div>
+        {% empty %}
+          <div class="empty">No data yet.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  {# Latest jobs #}
+  <div class="card p-6 space-y-3">
+    <div class="flex justify-between items-center"><h3 class="font-medium">Latest MapReduce jobs</h3><a href="{% url 'dashboard:hadoop' %}" class="row-link">View cluster</a></div>
+    <div class="overflow-x-auto">{% include "dashboard/_jobs_table.html" with with_details=False %}</div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{% static 'vendor/chart.umd.js' %}"></script>
+  <script src="{% static 'dashboard/js/charts.js' %}"></script>
+{% endblock %}

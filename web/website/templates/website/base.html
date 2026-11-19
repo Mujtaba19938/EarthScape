@@ -1,0 +1,36 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}EarthScape{% endblock %}</title>
+  <meta name="description" content="{% block description %}EarthScape Climate Agency turns public climate data into clear insight.{% endblock %}">
+  <link rel="icon" href="{% static 'favicon.svg' %}" type="image/svg+xml">
+  {# Fonts #}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@300..700&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+  <link href="{% static 'website/website.css' %}" rel="stylesheet">
+</head>
+<body>
+  {# Form messages #}
+  {% if messages or form_errors %}
+    <div class="site-messages" aria-live="polite">
+      {% for message in messages %}
+        <div class="site-message{% if message.level_tag == 'error' %} is-error{% endif %}" data-message>{{ message }}</div>
+      {% endfor %}
+      {% for error in form_errors %}
+        <div class="site-message is-error" data-message>{{ error }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="page-wrapper">
+    {% include 'website/includes/nav.html' %}
+    {% block content %}{% endblock %}
+    {% include 'website/includes/footer.html' %}
+  </div>
+
+  <script src="{% static 'website/site.js' %}" defer></script>
+</body>
+</html>

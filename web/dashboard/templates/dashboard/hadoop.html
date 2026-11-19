@@ -1,0 +1,46 @@
+{% extends "dashboard/base.html" %}
+{% load dash %}
+{% block title %}Hadoop cluster{% endblock %}
+
+{% block content %}
+  {% include "dashboard/_stats.html" with strip_id="cluster-stats" strip_cols="grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4" %}
+
+  {# Pipeline steps #}
+  <div class="panel-dark p-6 space-y-6">
+    <h3 class="text-base font-medium">MapReduce pipeline</h3>
+    <ol class="pipeline">
+      <li><p class="step">01</p><p class="name">Input</p><p class="what">Raw CSV in HDFS</p></li>
+      <li><p class="step">02</p><p class="name">Split</p><p class="what">128 MB HDFS blocks</p></li>
+      <li><p class="step">03</p><p class="name">Map</p><p class="what">Clean and key each record</p></li>
+      <li><p class="step">04</p><p class="name">Shuffle</p><p class="what">Group by key</p></li>
+      <li><p class="step">05</p><p class="name">Reduce</p><p class="what">Results to MongoDB</p></li>
+    </ol>
+  </div>
+
+  {# YARN jobs #}
+  <div class="card p-6 space-y-3">
+    <div class="flex flex-wrap gap-2 justify-between items-center">
+      <h3 class="font-medium">YARN jobs</h3>
+      {% if user.is_admin %}
+        <div class="flex flex-wrap gap-2">
+          {% for name in jobs.runnable %}
+            <form method="post" action="{% url 'dashboard:run_job' name %}" class="inline-form">
+              {% csrf_token %}
+              <button type="submit" class="pill pill-light"{% if job_running %} disabled title="A job is already running"{% endif %}>Run {{ name }}</button>
+            </form>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+    <div class="overflow-x-auto">{% include "dashboard/_jobs_table.html" with jobs=jobs.jobs yarn_online=jobs.yarn_online with_details=True %}</div>
+    <p class="text-xs text-slate-500">YARN forgets its job list when it restarts. Job run times are kept in the database below.</p>
+    <div class="overflow-x-auto">
+      {% if jobs.recent_runs %}
+        <table class="data-table">
+          <thead><tr><th>Job</th><th>Run time</th><th>Finished</th></tr></thead>
+          <tbody>{% for run in jobs.recent_runs %}<tr><td>{{ run.job }}</td><td>{{ run.seconds }} s</td><td>{{ run.finished_at|when }}</td></tr>{% endfor %}</tbody>
+        </table>
+      {% else %}<div class="empty">No recorded runs yet.</div>{% endif %}
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{# Latest Insights From Our Climate Data #}
+<section class="section-blog_home">
+  <div class="section-padding _0x180">
+    <div class="ui-layout-blockcontainer container ui-container">
+      <div class="section_title-wrap variant-center-title-without-discription">
+        <div class="margin-bottom margin-16">
+          <div class="title-tag">
+            <div class="body-text-14">Our Blog</div>
+          </div>
+        </div>
+        <h2 class="heading-custom-h3">Latest Insights From Our Climate Data </h2>
+        <div class="global_title-bottom-info">
+        </div>
+      </div>
+      <div class="section-inner home_blog">
+        <div class="collection-blogs ui-dyn-list">
+          <div role="list" class="collection-list-blogs home_blog ui-dyn-items">
+            {% include 'website/cards/blog_card_home.html' with card_slug="nasa-temperature-records-since-1880" image="website/media/photo-5-1920x1500.jpg" category="Climate Trends" title="What NASA Temperature Records Show Since 1880" %}
+            {% include 'website/cards/blog_card_home.html' with card_slug="live-air-quality-in-12-cities" image="website/media/photo-94-1920x1500.jpg" category="Air Quality" title="How Live Readings Track Air Quality in 12 Cities" %}
+          </div>
+        </div>
+      </div>
+      <div class="ui-layout-hflex content-align-center">
+        <a aria-label="link" href="{% url 'website:blog' %}" class="button-global ui-inline-block">
+          <div class="button-text-wrap">
+            <div class="button-texts is_default">View all blogs</div>
+            <div class="button-texts is_absolute">View all blogs</div>
+          </div>
+          <div class="button-arrow-wrap">
+            <div class="button-arrow-clip">
+              <svg xmlns="http://www.w3.org/2000/svg" width="100%" viewbox="0 0 21 20" fill="none" class="button-arrow is_default"> <path d="M6.4364 14.1663L14.7697 5.83301" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M6.4364 5.83301H14.7697V14.1663" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"></path> </svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="100%" viewbox="0 0 21 20" fill="none" class="button-arrow is_absolute"> <path d="M6.4364 14.1663L14.7697 5.83301" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M6.4364 5.83301H14.7697V14.1663" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"></path> </svg>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>

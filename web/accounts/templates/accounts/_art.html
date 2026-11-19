@@ -1,0 +1,41 @@
+{# Picture panel #}
+<aside class="art">
+  <svg class="scene" viewBox="0 0 600 800" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+    <defs>
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#06190f" />
+        <stop offset=".38" stop-color="#14663b" />
+        <stop offset=".6" stop-color="#7fae6a" />
+        <stop offset=".72" stop-color="#f6d987" />
+      </linearGradient>
+      <linearGradient id="shade" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#06190f" stop-opacity="0" />
+        <stop offset="1" stop-color="#06190f" stop-opacity=".85" />
+      </linearGradient>
+    </defs>
+    <rect width="600" height="800" fill="url(#sky)" />
+    <circle cx="405" cy="470" r="46" fill="#fff4cf" />
+    <path d="M0 505 C90 470 170 455 260 490 S450 530 600 470 V800 H0 Z" fill="#3f8a58" />
+    <path d="M0 565 C110 520 200 520 300 560 S500 610 600 545 V800 H0 Z" fill="#1a814a" />
+    <path d="M0 610 C70 600 150 545 255 510 C330 560 470 640 600 655 V800 H0 Z" fill="#14663b" />
+    <path d="M255 510 C235 580 170 650 60 720 L0 750 V610 C70 600 150 545 255 510 Z" fill="#0c3f25" />
+    <path d="M0 720 C120 680 260 660 380 690 S540 740 600 725 V800 H0 Z" fill="#06190f" />
+    <rect y="540" width="600" height="260" fill="url(#shade)" />
+  </svg>
+  <div class="art-top">
+    <span class="brand">EarthScape</span>
+    <a class="back" href="{% url 'website:home' %}">Back to website &rarr;</a>
+  </div>
+  <div class="art-bottom">
+    <div class="captions">
+      <p class="caption on">Live readings<br />from twelve cities</p>
+      <p class="caption">Spotting anomalies,<br />forecasting trends</p>
+      <p class="caption">Alerts when a reading<br />crosses the line</p>
+    </div>
+    <div class="dots">
+      <button class="dot" type="button" aria-label="Show message 1" aria-current="true"></button>
+      <button class="dot" type="button" aria-label="Show message 2" aria-current="false"></button>
+      <button class="dot" type="button" aria-label="Show message 3" aria-current="false"></button>
+    </div>
+  </div>
+</aside>

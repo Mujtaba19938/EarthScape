@@ -1,0 +1,27 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Reports and export{% endblock %}
+
+{% block content %}
+  {# Download form #}
+  <form class="card p-8 space-y-4" method="get" action="{% url 'dashboard:download_report' %}">
+    <h2 class="text-xl font-medium">Reports and export</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div>
+        <label class="label" for="report-select">Data</label>
+        <select id="report-select" name="report" class="field">
+          {% for report in reports %}<option value="{{ report.id }}" data-geo="{% if report.geo %}true{% else %}false{% endif %}">{{ report.title }}</option>{% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="label" for="report-format">Format</label>
+        <select id="report-format" name="format" class="field">
+          <option value="csv">CSV</option>
+          <option value="json">JSON</option>
+          <option value="geojson">GeoJSON (map data only)</option>
+        </select>
+      </div>
+      <div class="flex items-end"><button type="submit" class="pill pill-green w-full">Download</button></div>
+    </div>
+    <p class="text-xs text-slate-500">GeoJSON is available for: {% for report in reports %}{% if report.geo %}{{ report.title }}{% if not forloop.last %}, {% endif %}{% endif %}{% endfor %}.</p>
+  </form>
+{% endblock %}

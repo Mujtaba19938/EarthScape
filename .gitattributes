@@ -1,3 +1,0 @@
-# The website pages check these files against fixed checksums, so line endings must never change.
-frontend/css/harvestra.webflow.shared.css -text
-frontend/js/** -text

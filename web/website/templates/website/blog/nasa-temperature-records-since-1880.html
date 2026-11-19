@@ -1,0 +1,113 @@
+{% extends 'website/base.html' %}
+{% load static %}
+{% block title %}What NASA Temperature Records Show Since 1880 - EarthScape{% endblock %}
+{% block description %}Articles on the data, methods and checks behind the EarthScape climate platform.{% endblock %}
+
+{% block content %}
+<main class="main-wrapper">
+  {# What NASA Temperature Records Show Since 1880 #}
+  <section class="section-blog-details-hero">
+    <div class="section-padding full">
+      <div class="ui-layout-blockcontainer container ui-container">
+        <div class="section-inner blog-hero-info">
+          <div class="blog_details-left">
+            <div class="page-navigator-wrap">
+              <a href="{% url 'website:home' %}" class="link-white breadcrumbs">Home</a>
+              <div>/</div>
+              <a href="{% url 'website:blog' %}" class="link-white breadcrumbs">Blog</a>
+              <div>/</div>
+              <a href="{% url 'website:post' 'nasa-temperature-records-since-1880' %}" aria-current="page" class="link-white is-current">Blog Details</a>
+            </div>
+            <h1 class="heading-custom-h3">What NASA Temperature Records Show Since 1880</h1>
+          </div>
+          <div class="blog-details-right">
+            <div class="profie_main">
+              <img src="{% static 'favicon.svg' %}" loading="lazy" alt="" class="blog-post_author-image">
+              <h2 class="body-text-18px">EarthScape Team</h2>
+            </div>
+            <div class="right-more-info">
+              <div class="blog-info-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="100%" viewbox="0 0 20 20" fill="none" class="time-icon"><path d="M10 0C15.52 0 20 4.48 20 10C20 15.52 15.52 20 10 20C4.48 20 0 15.52 0 10C0 4.48 4.48 0 10 0ZM10 18C14.42 18 18 14.42 18 10C18 5.58 14.42 2 10 2C5.58 2 2 5.58 2 10C2 14.42 5.58 18 10 18ZM13.5355 5.05025L14.9497 6.46447L10 11.4142L8.5858 10L13.5355 5.05025Z" fill="currentColor"></path></svg>
+                <div>3 min read</div>
+              </div>
+              <div class="blog-info-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="100%" viewbox="0 0 24 24" fill="none" class="time-icon"><path d="M9 1V3H15V1H17V3H21C21.5523 3 22 3.44772 22 4V20C22 20.5523 21.5523 21 21 21H3C2.44772 21 2 20.5523 2 20V4C2 3.44772 2.44772 3 3 3H7V1H9ZM20 11H4V19H20V11ZM8 13V15H6V13H8ZM13 13V15H11V13H13ZM18 13V15H16V13H18ZM7 5H4V9H20V5H17V7H15V5H9V7H7V5Z" fill="currentColor"></path></svg>
+                <div>November 3, 2026</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <img src="{% static 'website/media/photo-5-1920x1500.jpg' %}" loading="lazy" alt="" class="background_image">
+  </section>
+  {# NASA’s temperature record is one of the longest we use #}
+  <section class="section_blog_post">
+    <div class="section-padding _180x0">
+      <div class="container">
+        <div class="section-inner blog_post">
+          <div class="blog_details-navigator">
+            <a href="#adaptation" class="navigator_litem-scroll">The Record</a>
+            <a href="#what-is-climate" class="navigator_litem-scroll">How We Use It</a>
+            <a href="#what-is-matter" class="navigator_litem-scroll">Why It Matters</a>
+            <a href="#building-for-future" class="navigator_litem-scroll">What the Test Showed</a>
+            <a href="#farming-lasts" class="navigator_litem-scroll">Where to See It</a>
+          </div>
+          <div class="rich-wrap">
+            <div id="adaptation" class="text-rich-texts is_blog ui-richtext">
+              <h3>NASA’s temperature record is one of the longest we use</h3>
+              <p>EarthScape uses NASA GISTEMP v4, which tracks global and regional temperature back to 1880. It reports anomalies: how far each period sits from a long-term average, rather than the temperature itself.</p>
+              <p>Anomalies make different regions comparable, because each is measured against its own normal.</p>
+            </div>
+            <div id="what-is-climate" class="text-rich-texts is_blog ui-richtext">
+              <h3>How We Use It</h3>
+              <p>The record is loaded into MongoDB and charted on the dashboard. It’s also the training data for our temperature forecasts, which cover nine series.</p>
+              <p>Each forecast goes through the same steps:</p>
+              <ul role="list">
+                <li>Compare a baseline with linear trends and Holt smoothing</li>
+                <li>Backtest the methods from 1950</li>
+                <li>Choose the method without using the last decade</li>
+                <li>Score it once on 2016 to 2025</li>
+                <li>Show the result beside the baseline</li>
+              </ul>
+            </div>
+            <div id="what-is-matter" class="text-rich-texts is_blog ui-richtext">
+              <h3>Why It Matters</h3>
+              <p>Repeating the last value is a surprisingly hard forecast to beat over short periods. Testing against it shows whether a model adds anything.</p>
+              <figure style="max-width: 1734px" class="ui-richtext-align-fullwidth ui-richtext-figure-type-image">
+                <div>
+                  <img loading="lazy" alt="" src="{% static 'website/media/photo-15-1290x744.jpg' %}">
+                </div>
+              </figure>
+            </div>
+            <div id="building-for-future" class="text-rich-texts is_blog ui-richtext">
+              <h3>What the Test Showed</h3>
+              <p>The chosen forecasts beat the baseline on 5 of the 9 series. That means four did not, and the dashboard shows this rather than hiding it.</p>
+              <p>One decade is a small test, so these scores are a guide and not a guarantee.</p>
+            </div>
+            <div id="farming-lasts" class="text-rich-texts is_blog ui-richtext">
+              <h3>Where to See It</h3>
+              <p>The temperature record appears on the Executive Dashboard and Climate Analytics pages, and the forecasts on ML Models &amp; Forecasts.</p>
+              <ul role="list">
+                <li>Executive Dashboard: the latest global anomaly</li>
+                <li>Climate Analytics: regions and variables</li>
+                <li>ML Models &amp; Forecasts: scores for each series</li>
+                <li>Reports &amp; Export: the data as a file</li>
+              </ul>
+            </div>
+            <div class="social-wrap-details top-margin">
+              <div class="body-text-18px font-width-500">Share the article</div>
+              <div class="nav-dropdown_social">
+                <a aria-label="social-icon" href="https://facebook.com" target="_blank" class="nav-dropdown_social-item is_black ui-inline-block"><svg xmlns="http://www.w3.org/2000/svg" width="100%" viewbox="0 0 24 24" fill="none"><path d="M22 12C22 6.48 17.52 2 12 2C6.48 2 2 6.48 2 12C2 16.84 5.44 20.87 10 21.8V15H8V12H10V9.5C10 7.57 11.57 6 13.5 6H16V9H14C13.45 9 13 9.45 13 10V12H16V15H13V21.95C18.05 21.45 22 17.19 22 12Z" fill="currentColor"></path></svg></a>
+                <a aria-label="social-icon" href="https://x.com/" target="_blank" class="nav-dropdown_social-item is_black ui-inline-block"><svg xmlns="http://www.w3.org/2000/svg" width="100%" viewbox="0 0 24 24" fill="none"><path d="M23.2498 5.13299H23.2493C22.4051 5.49955 21.5121 5.74096 20.5986 5.84971V5.84924C21.5586 5.28674 22.2809 4.3933 22.6296 3.33674V3.33627C21.7217 3.8669 20.7298 4.23955 19.6971 4.43737C18.8178 3.5158 17.5995 2.99549 16.3259 2.9983C13.775 2.9983 11.7106 5.03268 11.7106 7.54049H11.7101C11.7082 7.88924 11.7481 8.23705 11.8292 8.57596L11.8287 8.57549C8.12981 8.40205 4.67512 6.67799 2.31309 3.82705H2.31262C1.90246 4.51799 1.6859 5.30643 1.68449 6.1094C1.68449 7.6844 2.50621 9.07658 3.74699 9.89221L3.74652 9.89174C3.01105 9.87393 2.29105 9.6794 1.64746 9.32455V9.3808C1.64746 11.5839 3.24121 13.4167 5.35059 13.8339V13.8335C4.95355 13.9389 4.5448 13.9924 4.13465 13.9928H4.13418C3.84262 13.9933 3.55199 13.9647 3.26652 13.9085C3.85293 15.7131 5.55965 17.0256 7.58137 17.0631V17.0627C5.9384 18.3283 3.92137 19.0127 1.84715 19.0075C1.47871 19.0066 1.11074 18.985 0.745586 18.9419L0.745117 18.9414C2.85496 20.2886 5.30746 21.0011 7.81059 20.9941C16.3118 20.9941 20.9562 14.0706 20.9562 8.06596C20.9562 7.86908 20.9511 7.67221 20.9417 7.48002V7.47955C21.8431 6.8383 22.6226 6.04143 23.2446 5.12643L23.2498 5.13299Z" fill="currentColor"></path></svg></a>
+                <a aria-label="social-icon" href="https://www.instagram.com/" target="_blank" class="nav-dropdown_social-item is_black ui-inline-block"><svg xmlns="http://www.w3.org/2000/svg" width="100%" viewbox="0 0 24 24" fill="none"><path d="M16.3748 3.2498C18.7879 3.25684 20.7426 5.21152 20.7501 7.62512V16.3748H20.7496C20.7421 18.7879 18.7874 20.7426 16.3738 20.7496H7.62416C5.21057 20.7421 3.25588 18.7875 3.24885 16.3743V7.62465V7.62418C3.25588 5.21059 5.21057 3.2559 7.62416 3.24887H16.3738L16.3748 3.2498ZM16.3738 1.49902H7.62369C4.25479 1.49902 1.49854 4.25527 1.49854 7.62418V16.3739C1.49854 19.7428 4.25479 22.499 7.62369 22.499H16.3734C19.7423 22.499 22.4985 19.7428 22.4985 16.3739V7.62418C22.4985 4.25527 19.7423 1.49902 16.3734 1.49902H16.3738Z" fill="currentColor"></path><path d="M17.6872 7.62527L17.6868 7.62523C16.9616 7.62476 16.3743 7.03741 16.3743 6.31226C16.3743 5.5871 16.9616 4.99976 17.6868 4.99976C18.4115 4.99976 18.9993 5.5871 18.9988 6.31226L18.9983 6.31179C18.9997 7.03507 18.4147 7.62241 17.6915 7.62429C17.6891 7.62429 17.6872 7.62429 17.6854 7.62429L17.6872 7.62527ZM11.9999 8.49996H11.9994C13.9321 8.49949 15.4996 10.067 15.4996 11.9996C15.4996 13.9323 13.9321 15.4998 11.9994 15.4998C10.0663 15.4998 8.49928 13.9323 8.49881 11.9996H8.49834C8.50022 10.067 10.0658 8.50137 11.998 8.49902L11.9999 8.49996ZM11.998 6.74918H11.9976C9.09787 6.74918 6.74756 9.09949 6.74756 11.9992C6.74756 14.8984 9.09787 17.2492 11.9976 17.2487C14.8968 17.2482 17.2476 14.8979 17.2471 11.9982C17.2471 9.09855 14.8963 6.74824 11.9971 6.74824L11.998 6.74918Z" fill="currentColor"></path></svg></a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  {% include 'website/sections/shared/blog_home.html' %}
+</main>
+{% endblock %}

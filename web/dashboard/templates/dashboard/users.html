@@ -1,0 +1,80 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Users and roles{% endblock %}
+
+{% block content %}
+  <div class="card p-5 flex flex-wrap gap-3 justify-between items-center">
+    <div><h2 class="text-xl font-medium">Users and roles</h2><p class="text-xs text-slate-500">The server enforces these roles on every request.</p></div>
+    {% if user.is_admin %}<button type="button" class="pill pill-dark" data-open="modal-user">Add user</button>{% endif %}
+  </div>
+
+  {# Users table #}
+  <div class="card p-6">
+    <div class="overflow-x-auto">
+      <table class="data-table">
+        <thead><tr><th>User</th><th>Email</th><th>Role</th><th>Status</th>{% if user.is_admin %}<th></th>{% endif %}</tr></thead>
+        <tbody>
+          {% for row in users %}
+            <tr>
+              <td><strong class="text-ink">{{ row.name }}</strong><br /><span class="text-xs">{{ row.title }}</span></td>
+              <td>{{ row.email }}</td>
+              <td><span class="tag {% if row.role == 'Admin' %}tag-green{% else %}tag-blue{% endif %}">{{ row.role }}</span></td>
+              <td>
+                {% if row.pending %}<span class="tag tag-gold">Waiting for approval</span>
+                {% elif row.active %}<span class="tag tag-green">Active</span>
+                {% else %}<span class="tag tag-red">Disabled</span>{% endif %}
+              </td>
+              {% if user.is_admin %}
+                <td>
+                  {% if row.id == user.id %}
+                    <span class="text-xs text-slate-400">You</span>
+                  {% else %}
+                    <form method="post" action="{% url 'accounts:update_user' row.id %}" class="inline-form">
+                      {% csrf_token %}
+                      {% if row.pending %}
+                        <button type="submit" name="action" value="enable" class="pill pill-green">Approve</button>
+                        <button type="submit" name="action" value="disable" class="pill pill-light">Decline</button>
+                      {% else %}
+                        {% if row.role == "Admin" %}<button type="submit" name="action" value="Analyst" class="pill pill-light">Make Analyst</button>
+                        {% else %}<button type="submit" name="action" value="Admin" class="pill pill-light">Make Admin</button>{% endif %}
+                        {% if row.active %}<button type="submit" name="action" value="disable" class="pill pill-light">Disable</button>
+                        {% else %}<button type="submit" name="action" value="enable" class="pill pill-light">Enable</button>{% endif %}
+                      {% endif %}
+                    </form>
+                  {% endif %}
+                </td>
+              {% endif %}
+            </tr>
+          {% empty %}
+            <tr><td colspan="5"><div class="empty">No users.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {# Role summary #}
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+    <div class="card p-5"><h3 class="font-medium mb-2">Admin</h3><p class="text-slate-600">Everything an Analyst can do, plus: upload datasets, run jobs, manage alert rules, manage users, and handle all support tickets.</p></div>
+    <div class="card p-5"><h3 class="font-medium mb-2">Analyst</h3><p class="text-slate-600">View all data, download reports, acknowledge and resolve alerts, and raise support tickets.</p></div>
+  </div>
+{% endblock %}
+
+{% block modals %}
+  {% if user.is_admin %}
+    {# New user #}
+    <dialog id="modal-user" class="modal">
+      <div class="card w-full p-6 space-y-4" style="border-radius:16px">
+        <div class="flex justify-between items-center pb-4" style="border-bottom:1px solid var(--line)"><h3 class="font-medium">Add user</h3><button type="button" data-close aria-label="Close"><i data-lucide="x" class="w-5 h-5"></i></button></div>
+        <form method="post" action="{% url 'accounts:create_user' %}" class="space-y-3">
+          {% csrf_token %}
+          <div><label class="label" for="new-user-name">Name</label><input id="new-user-name" name="name" required maxlength="100" class="field" /></div>
+          <div><label class="label" for="new-user-title">Title</label><input id="new-user-title" name="title" maxlength="100" class="field" /></div>
+          <div><label class="label" for="new-user-email">Email</label><input id="new-user-email" name="email" type="email" required maxlength="254" class="field" /></div>
+          <div><label class="label" for="new-user-role">Role</label><select id="new-user-role" name="role" class="field">{% for role in roles %}<option{% if role == "Analyst" %} selected{% endif %}>{{ role }}</option>{% endfor %}</select></div>
+          <div><label class="label" for="new-user-password">Temporary password (at least 10 characters)</label><input id="new-user-password" name="password" type="password" autocomplete="new-password" required minlength="10" maxlength="128" class="field" /></div>
+          <button type="submit" class="pill pill-green w-full">Create user</button>
+        </form>
+      </div>
+    </dialog>
+  {% endif %}
+{% endblock %}

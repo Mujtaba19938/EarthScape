@@ -1,0 +1,18 @@
+{% extends 'website/base.html' %}
+{% block title %}EarthScape{% endblock %}
+{% block description %}EarthScape Climate Agency turns public climate data into clear insight, with Hadoop processing, live monitoring, machine learning forecasts and alerts.{% endblock %}
+
+{% block content %}
+{% include 'website/sections/home/home_hero.html' %}
+<main class="main-wrapper">
+  {% include 'website/sections/home/home_about_us.html' %}
+  {% include 'website/sections/home/home_services.html' %}
+  {% include 'website/sections/home/home_about_value.html' %}
+  {% include 'website/sections/shared/global_logos.html' %}
+  {% include 'website/sections/home/home_image_slider.html' %}
+  {% include 'website/sections/home/global_testimonial.html' %}
+  {% include 'website/sections/home/about_our_plant.html' %}
+  {% include 'website/sections/home/blog_home.html' %}
+  {% include 'website/sections/shared/global_cta.html' %}
+</main>
+{% endblock %}

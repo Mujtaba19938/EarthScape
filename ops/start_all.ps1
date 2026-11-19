@@ -1,9 +1,9 @@
-# Starts both backend instances, the live data collector, the health monitor and Apache, each in the background.
+# Starts both Django instances (web\serve.py), the live data collector, the health monitor and Apache, each in the background.
 # HDFS and YARN are started separately: see the installation steps.
 param([string]$ApacheDir = 'C:\Apache24')
 
 $root = Split-Path -Parent $PSScriptRoot
-$python = Join-Path $root 'backend\.venv\Scripts\python.exe'
+$python = Join-Path $root 'web\.venv\Scripts\python.exe'
 $logs = Join-Path $root 'logs'
 New-Item -ItemType Directory -Force (Join-Path $logs 'apache') | Out-Null
 
@@ -18,9 +18,9 @@ function Start-Background($name, $pattern, $file, $arguments) {
     Write-Output "Started $name"
 }
 
-Start-Background 'backend-8000' 'serve.py --port 8000' $python 'backend\serve.py --port 8000'
-Start-Background 'backend-8001' 'serve.py --port 8001' $python 'backend\serve.py --port 8001'
-Start-Background 'collector' 'backend\collector.py' $python 'backend\collector.py'
+Start-Background 'backend-8000' 'serve.py --port 8000' $python 'web\serve.py --port 8000'
+Start-Background 'backend-8001' 'serve.py --port 8001' $python 'web\serve.py --port 8001'
+Start-Background 'collector' 'manage.py collect_live' $python 'web\manage.py collect_live'
 Start-Background 'monitor' 'ops\health_monitor.py --loop' $python 'ops\health_monitor.py --loop 60'
 
 $httpd = Join-Path $ApacheDir 'bin\httpd.exe'

@@ -5,35 +5,35 @@
 
 # 1. System overview
 
-EarthScape stores public climate data in HDFS, processes it with Hadoop MapReduce, keeps the results in MongoDB, trains models on them, and serves everything through a FastAPI backend and a browser dashboard. Apache sits in front, handling HTTPS and balancing requests across two backend instances.
+EarthScape stores public climate data in HDFS, processes it with Hadoop MapReduce, keeps the results in MongoDB, trains models on them, and serves everything through a Django web application: the public website, the sign-in pages and the dashboard. Apache sits in front, handling HTTPS and balancing requests across two Django instances.
 
 ![System architecture](docs/diagrams/architecture.png)
 
 | Part | Technology | Where |
 | --- | --- | --- |
 | Web server and load balancer | Apache httpd 2.4 | `deploy/apache/httpd.conf` |
-| Backend API | Python 3.13, FastAPI, uvicorn | `backend/app/` |
+| Web application | Python 3.13, Django 5.1, waitress | `web/` |
 | Database | MongoDB, database `earthscape` | Windows service |
 | Distributed storage and processing | Hadoop 2.9.2 (HDFS, YARN), Hadoop Streaming | `hadoop/`, `deploy/hadoop/` |
 | Machine learning | Python 3.7 (Anaconda), scikit-learn, statsmodels | `ml/` |
-| Live data | Open-Meteo API, Python service | `backend/collector.py`, `backend/app/live.py` |
-| Frontend | HTML, JavaScript, Tailwind CSS, Chart.js | `frontend/` |
+| Live data | Open-Meteo API, Django command | `web/dashboard/management/commands/collect_live.py`, `web/dashboard/live.py` |
+| Pages | Django templates, JavaScript, Tailwind CSS, Chart.js | `web/*/templates/`, `web/*/static/` |
 | Operations | Python and PowerShell | `ops/` |
 
 # 2. Repository layout
 
 | Path | Contents |
 | --- | --- |
-| `backend/app/` | API routes, login and roles, database setup, encryption, alerts, live data |
-| `backend/tests/` | Automated API tests |
-| `backend/seed.py` | First-time setup: writes `backend/.env` and creates the first users |
-| `backend/serve.py`, `backend/collector.py` | Runs one backend instance; runs the live data collector |
+| `web/earthscape/` | Django settings and top-level URLs, `config.py` (reads `web/.env`), MongoDB setup and locks, encryption, test helpers |
+| `web/accounts/` | Sign-in, sign-up, sign-in limits, roles, settings, users |
+| `web/dashboard/` | Dashboard pages, Hadoop and model views, live data and alerts, the Ask panel, and the `seed` and `collect_live` commands |
+| `web/website/` | The public website |
+| `web/manage.py`, `web/serve.py` | Django commands; runs one instance with waitress |
 | `data/` | Download scripts. Downloaded files go in `data/raw/`, which git ignores |
 | `hadoop/run_pipeline.py`, `hadoop/jobs/` | Batch pipeline and the five MapReduce jobs |
 | `ml/` | Training script, its tests, notebook, R correlation script |
-| `frontend/` | Website, sign-in page and dashboard. `vendor/` holds local copies of libraries |
 | `deploy/apache/`, `deploy/hadoop/` | Apache configuration, and a copy of the Hadoop settings used |
-| `deploy/tailwind/` | Source for rebuilding `frontend/css/dashboard.css` |
+| `deploy/tailwind/` | Source for rebuilding `web/dashboard/static/dashboard/tailwind.css` |
 | `ops/` | Backup, health monitor, start and stop scripts, scheduled tasks, demo data loader |
 | `tableau/` | Export script and CSV files for Tableau |
 | `test_data/` | Sample input files, upload test cases, demo results |
@@ -82,7 +82,7 @@ This is scheduled collection, not a streaming system such as Kafka. A new value 
 
 ## 3.3 Sharing work across instances
 
-Both backend instances, the collector and the monitor use the same MongoDB, so no state lives inside one process. Sign-in tokens are signed and work on either instance. Failed sign-in counts are in `login_failures`. The `locks` collection (`backend/app/locks.py`) makes sure only one job, retraining run or poll runs at a time. Each lock expires, so a crashed process can't hold it forever.
+Both Django instances, the collector and the monitor use the same MongoDB, so no state lives inside one process. Sessions are stored in a shared SQLite file (`web/django.sqlite3`), so a user signed in on one instance is signed in on the other. Failed sign-in counts are in `login_failures`. The `locks` collection (`acquire_lock` in `web/earthscape/db.py`) makes sure only one job, retraining run or poll runs at a time. Each lock expires, so a crashed process can't hold it forever.
 
 # 4. Machine learning models
 
@@ -107,55 +107,56 @@ Pearson and Spearman correlations between variables. Two rising series always co
 
 ![Flowchart of model training](docs/diagrams/flow_training.png)
 
-# 5. Backend
+# 5. Web application
 
-## 5.1 API
+## 5.1 Pages and URLs
 
-Interactive reference: `/docs` on a running backend. All routes need a valid token unless marked as public, and those marked Admin need the Admin role.
+Each app has its own `urls.py`, `views.py`, templates and static files. Pages are rendered on the server, and forms post back and reload the page. Every dashboard page needs a signed-in user, and those marked Admin need the Admin role (`login_required` and `admin_required` in `web/accounts/auth.py`).
 
-| Area | Routes |
+| Area | URLs |
 | --- | --- |
-| Sign-in | `POST /api/auth/login` (public), `logout`, `GET` and `PATCH /api/auth/me`, `POST /api/auth/password` |
-| Users | `GET /api/users`, `POST /api/users` (Admin), `PATCH /api/users/{id}` (Admin) |
-| Climate data | `GET /api/overview`, `/api/climate/global`, `zonal`, `monthly`, `zones`, `/api/anomalies`, `/api/air-quality`, `/api/quality` |
-| Reports | `GET /api/reports`, `/api/reports/{id}?format=csv, json or geojson` |
-| Cluster | `GET /api/cluster`, `/api/jobs`, `/api/jobs/{id}`, `POST /api/jobs/{name}/run` (Admin) |
-| Datasets | `GET /api/datasets`, `POST /api/datasets` (Admin) |
-| Live | `GET /api/live/latest`, `/api/live/history`, `POST /api/live/poll` (Admin) |
-| Models | `GET /api/ml/summary`, `forecast`, `anomalies`, `correlations`, `POST /api/ml/retrain` (Admin) |
-| Alerts | `GET /api/alerts`, `PATCH /api/alerts/{id}`, `GET /api/alert-metrics`, `/api/alert-rules`, `POST` and `DELETE` rules (Admin) |
-| Support | `GET` and `POST /api/tickets`, `PATCH /api/tickets/{id}` (Admin), `GET /api/notifications`, `POST /api/notifications/read` |
-| System | `GET /api/health` (public), `/api/status`, `GET /api/maintenance` (public), `PUT /api/maintenance` (Admin) |
+| Website | `/`, `/about/`, `/services/`, `/pricing/`, `/blog/`, `/contact/`, `/newsletter/`, `/privacy-policy/`, `/changelog/`, `/licenses/` |
+| Sign-in | `/login/`, `/signup/`, `/logout/` |
+| Account | `/dashboard/settings/`, `/dashboard/users/` (Admin) |
+| Climate data | `/dashboard/`, `overview/`, `analytics/`, `search/` |
+| Live and alerts | `/dashboard/monitor/`, `monitor/poll/` (Admin), `alerts/`, alert rules (Admin) |
+| Hadoop and data | `/dashboard/hadoop/`, `hadoop/jobs/<id>/`, `hadoop/run/<name>/` (Admin), `data/`, `data/upload/` (Admin) |
+| Models | `/dashboard/ml/`, `ml/retrain/` (Admin) |
+| Reports | `/dashboard/reports/`, `reports/download/` (CSV, JSON or GeoJSON) |
+| Support | `/dashboard/support/`, `notifications/read/` |
+| System | `/api/health` (public), `/dashboard/status/`, `status/maintenance/` (Admin), `architecture/` |
 
 ## 5.2 Data model
 
 ![Main MongoDB collections](docs/diagrams/data_model.png)
 
-Indexes are created at startup by `ensure_indexes()` in `backend/app/db.py`, which also encrypts any older plain email or ticket fields. `health_checks` expire after 90 days, and `login_failures` and `revoked_tokens` expire when no longer needed.
+Indexes are created at startup by `ensure_indexes()` in `web/earthscape/db.py`, which also encrypts any older plain email or ticket fields. `health_checks` expire after 90 days, and `login_failures` expire when no longer needed. SQLite holds only Django's sessions.
 
 ## 5.3 Security
 
 | Concern | How it's handled | File |
 | --- | --- | --- |
-| Passwords | bcrypt hashes | `security.py` |
-| Sessions | Signed JWT, 8 hours, revoked on sign-out | `security.py` |
-| Roles | `require_admin` checked on the server for each route | `security.py` |
-| Sensitive fields | Emails and ticket text encrypted with Fernet (AES) | `field_crypto.py` |
-| Finding a user by encrypted email | HMAC-SHA256 blind index | `field_crypto.py` |
-| Password guessing | 5 failures per account, 30 per address, in 15 minutes | `login_limit.py` |
+| Passwords | bcrypt hashes | `accounts/auth.py` |
+| Sessions | Django sessions, 8 hours, HTTP-only cookie, cleared on sign-out | `earthscape/settings.py` |
+| Forms | Django CSRF protection on every form | `earthscape/settings.py` |
+| Roles | `admin_required` checked on the server for each view | `accounts/auth.py` |
+| Sensitive fields | Emails and ticket text encrypted with Fernet (AES) | `earthscape/crypto.py` |
+| Finding a user by encrypted email | HMAC-SHA256 blind index | `earthscape/crypto.py` |
+| Password guessing | 5 failures per account, 30 per address, in 15 minutes | `accounts/auth.py` |
 | Transport | TLS 1.2 or newer, HTTP redirected to HTTPS | `httpd.conf` |
-| Browser headers | `nosniff`, `DENY` framing, `same-origin` referrer | `main.py` |
+| Browser headers | `nosniff`, `DENY` framing, `same-origin` referrer | `earthscape/settings.py` |
 
 Climate data, names and roles aren't encrypted. HSTS is left off because the certificate is self-signed for localhost.
 
 ## 5.4 Settings
 
-Set in `backend/.env` or as environment variables. `seed.py` generates the keys and the first users, and prints each new password once.
+Set in `web/.env` or as environment variables. `manage.py seed` generates the keys and the first users, and prints each new password once. `manage.py seed --reset-password admin` (or `analyst`) gives a seed account a new password and prints it once.
 
 | Setting | Purpose |
 | --- | --- |
-| `JWT_SECRET`, `ENCRYPTION_KEY` | Signing and encryption keys. Keep a safe copy: backups can't be read without `ENCRYPTION_KEY` |
-| `SEED_ADMIN_EMAIL`, `SEED_ANALYST_EMAIL` | First users' email addresses. Their passwords are printed once by `seed.py` and never saved |
+| `SECRET_KEY`, `ENCRYPTION_KEY` | Django's signing key and the field encryption key. Keep a safe copy: backups can't be read without `ENCRYPTION_KEY` |
+| `SESSION_HOURS` | How long a sign-in lasts (default 8) |
+| `SEED_ADMIN_EMAIL`, `SEED_ANALYST_EMAIL` | First users' email addresses. Their passwords are printed once by `manage.py seed` and never saved |
 | `MONGO_URI`, `MONGO_DB` | Database connection |
 | `YARN_URL`, `NAMENODE_URL` | Hadoop web addresses |
 | `ML_PYTHON` | Python used for training |
@@ -164,14 +165,14 @@ Set in `backend/.env` or as environment variables. `seed.py` generates the keys 
 | `BACKUP_DIR`, `BACKUP_KEEP`, `MONGO_TOOLS_DIR` | Backups |
 | `MONITOR_TARGETS` | What the health monitor checks |
 
-# 6. Frontend
+# 6. Templates and static files
 
-`frontend/dashboard.html` holds every page as a `section`, and `frontend/js/earthscape.js` shows one at a time, fetches its data and draws its charts. To add a page, add a `section id="view-name"`, add it to `NAV` and give it a render function.
+Each page has its own template, which extends its app's base template: `website/base.html` for the public site, `accounts/base_auth.html` for sign-in, and `dashboard/base.html` for the dashboard, which adds the sidebar and header. To add a dashboard page, write a view in `dashboard/views.py`, add it to `dashboard/urls.py`, add a template that extends `dashboard/base.html`, and add a link to `_sidebar.html`.
 
-The sign-in page and dashboard store their libraries locally, so they work without internet. The public website is the starting template, and loads some images and fonts from the internet. Its pages check `frontend/css/harvestra.webflow.shared.css` and `frontend/js/` against fixed checksums, so `.gitattributes` stops Git changing their line endings. Tailwind is built ahead of time, so after adding a new class, rebuild:
+JavaScript and CSS live in each app's `static/` folder, with shared libraries in `web/static/vendor/`, so the sign-in pages and dashboard work without internet. Waitress has no static file server, so Django serves them itself. Tailwind is built ahead of time, so after adding a new class, rebuild:
 
 ```
-npx tailwindcss@3.4.16 -c deploy/tailwind/tailwind.config.js -i deploy/tailwind/input.css -o frontend/css/dashboard.css --minify
+npx tailwindcss@3.4.16 -c deploy/tailwind/tailwind.config.js -i deploy/tailwind/input.css -o web/dashboard/static/dashboard/tailwind.css --minify
 ```
 
 # 7. Operations
@@ -182,7 +183,7 @@ After a restart:
 
 1. In a normal Command Prompt, run `C:\hadoop\hadoop-2.9.2\sbin\start-dfs.cmd`.
 2. In a Command Prompt run as administrator, run `C:\hadoop\hadoop-2.9.2\sbin\start-yarn.cmd`. Without administrator rights, jobs fail with `CreateSymbolicLink error (1314)`.
-3. In PowerShell, run `ops\start_all.ps1`. It starts both backends, the collector, the monitor and Apache, and skips anything already running.
+3. In PowerShell, run `ops\start_all.ps1`. It starts both Django instances, the collector, the monitor and Apache, and skips anything already running.
 
 Stop them with `ops\stop_all.ps1`. Service output goes to `logs/`, and Apache's to `logs/apache/`.
 
@@ -204,13 +205,13 @@ To restore a backup:
 
 ## 7.4 Load balancing and scaling
 
-Apache's `balancer://earthscape` sends requests in turn to ports 8000 and 8001, checks `/api/health` every 5 seconds, and retries a failed request on the other instance. To add an instance, start `backend\serve.py --port 8002` and add a `BalancerMember` line. The `X-EarthScape-Instance` response header shows which instance answered.
+Apache's `balancer://earthscape` sends requests in turn to ports 8000 and 8001, checks `/api/health` every 5 seconds, and retries a failed request on the other instance. To add an instance, start `web\serve.py --port 8002` and add a `BalancerMember` line. The `X-EarthScape-Instance` response header shows which instance answered.
 
 For more data, HDFS and YARN scale by adding DataNodes and NodeManagers. This is standard Hadoop behaviour, but this project has only run it on one node.
 
 # 8. Testing
 
-Run the backend tests with `pytest` in `backend`, using the backend's Python. Run `ml\test_train_models.py` with `pytest` using Anaconda's Python. Tests use a separate database, so they don't touch real data.
+Run the web tests with `web\.venv\Scripts\python.exe web\manage.py test`. Run `ml\test_train_models.py` with `pytest` using Anaconda's Python. Tests use a separate database (`earthscape_test`), so they don't touch real data.
 
 # 9. Known limitations and next steps
 

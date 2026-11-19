@@ -1,0 +1,10 @@
+{# Stat strip #}
+<div id="{{ strip_id }}" class="grid {{ strip_cols }}">
+  {% for item in stats %}
+    <div class="card p-5 space-y-1">
+      <span class="stat-label">{{ item.label }}</span>
+      <p class="stat-value">{{ item.value }}</p>
+      <p class="text-xs text-slate-500">{{ item.note }}</p>
+    </div>
+  {% endfor %}
+</div>

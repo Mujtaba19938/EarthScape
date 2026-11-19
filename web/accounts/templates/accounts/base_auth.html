@@ -1,0 +1,20 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}{% endblock %} - EarthScape</title>
+  <link rel="icon" href="{% static 'favicon.svg' %}" type="image/svg+xml" />
+  <link href="{% static 'css/fonts.css' %}" rel="stylesheet" />
+  <link href="{% static 'accounts/auth.css' %}" rel="stylesheet" />
+</head>
+<body>
+  <div class="shell">
+    {% include "accounts/_art.html" %}
+    <main class="panel">
+      {% block panel %}{% endblock %}
+    </main>
+  </div>
+  <script src="{% static 'accounts/auth.js' %}" defer></script>
+</body>
+</html>

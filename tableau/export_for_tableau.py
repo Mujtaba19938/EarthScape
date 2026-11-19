@@ -1,15 +1,15 @@
 """Writes the results in MongoDB as CSV files for Tableau, one row per measurement.
 
-Usage: python tableau/export_for_tableau.py   (with the backend's Python)
+Usage: python tableau/export_for_tableau.py   (with web\.venv's Python)
 """
 import csv
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT / "backend"))
+sys.path.insert(0, str(ROOT / "web"))
 
-from app.db import db  # noqa: E402
+from earthscape.db import db  # noqa: E402
 
 HERE = ROOT / "tableau"
 ZONES = ["64N-90N", "44N-64N", "24N-44N", "EQU-24N", "24S-EQU", "44S-24S", "64S-44S", "90S-64S"]

@@ -1,0 +1,93 @@
+{% extends "dashboard/base.html" %}
+{% load dash %}
+{% block title %}Alert management{% endblock %}
+
+{% block content %}
+  <div class="card p-5 flex flex-wrap gap-3 justify-between items-center">
+    <div>
+      <h2 class="text-xl font-medium">Alert management</h2>
+      <p class="text-xs text-slate-500">Rules are checked each time live data arrives. An alert closes by itself once the value drops back under its limit.</p>
+      <p class="text-xs font-medium mt-1 {% if stale %}text-rose-600{% else %}text-slate-700{% endif %}">{{ status_text }}</p>
+    </div>
+    {% if user.is_admin %}<button type="button" class="pill pill-dark" data-open="modal-rule">Create alert rule</button>{% endif %}
+  </div>
+
+  {# Alerts #}
+  <div class="card p-6 space-y-3">
+    <h3 class="font-medium">Alerts</h3>
+    <div class="overflow-x-auto">
+      {% if alerts %}
+        <table class="data-table">
+          <thead><tr><th>Severity</th><th>Title</th><th>Measured</th><th>Started</th><th>Status</th><th>Email</th><th></th></tr></thead>
+          <tbody>
+            {% for alert in alerts %}
+              <tr>
+                <td><span class="tag {{ alert.severity_cls }}">{{ alert.severity }}</span></td>
+                <td>{{ alert.title }}</td>
+                <td>{{ alert.value }}</td>
+                <td>{{ alert.created_at|when }}</td>
+                <td>{{ alert.status }}{% if alert.updated_by %} <span class="text-xs text-slate-400">({{ alert.updated_by }})</span>{% endif %}</td>
+                <td>{{ alert.email_status|default:"" }}</td>
+                <td>
+                  <form method="post" action="{% url 'dashboard:update_alert' alert.id %}" class="inline-form">
+                    {% csrf_token %}
+                    {% if alert.status == "Active" %}<button type="submit" name="status" value="Acknowledged" class="pill pill-gold">Acknowledge</button>{% endif %}
+                    {% if alert.status != "Resolved" %}<button type="submit" name="status" value="Resolved" class="pill pill-green">Resolve</button>{% endif %}
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}<div class="empty">No alerts have fired.</div>{% endif %}
+    </div>
+  </div>
+
+  {# Rules #}
+  <div class="card p-6 space-y-3">
+    <h3 class="font-medium">Alert rules</h3>
+    <div class="overflow-x-auto">
+      {% if rules %}
+        <table class="data-table">
+          <thead><tr><th>Name</th><th>Metric</th><th>Fire above</th><th>Severity</th><th>Created by</th>{% if user.is_admin %}<th></th>{% endif %}</tr></thead>
+          <tbody>
+            {% for rule in rules %}
+              <tr>
+                <td>{{ rule.name }}</td><td>{{ rule.metric_label }}</td><td>{{ rule.threshold }}</td>
+                <td><span class="tag {{ rule.severity_cls }}">{{ rule.severity }}</span></td><td>{{ rule.created_by }}</td>
+                {% if user.is_admin %}
+                  <td>
+                    <form method="post" action="{% url 'dashboard:delete_rule' rule.id %}" class="inline-form" data-confirm="Delete the rule {{ rule.name }}?">
+                      {% csrf_token %}<button type="submit" class="pill pill-light">Delete</button>
+                    </form>
+                  </td>
+                {% endif %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}<div class="empty">No rules yet.</div>{% endif %}
+    </div>
+  </div>
+{% endblock %}
+
+{% block modals %}
+  {% if user.is_admin %}
+    {# New rule #}
+    <dialog id="modal-rule" class="modal">
+      <div class="card w-full p-6 space-y-4" style="border-radius:16px">
+        <div class="flex justify-between items-center pb-4" style="border-bottom:1px solid var(--line)"><h3 class="font-medium">New alert rule</h3><button type="button" data-close aria-label="Close"><i data-lucide="x" class="w-5 h-5"></i></button></div>
+        <form method="post" action="{% url 'dashboard:create_rule' %}" class="space-y-3">
+          {% csrf_token %}
+          <div><label class="label" for="rule-name">Name</label><input id="rule-name" name="name" required maxlength="100" class="field" /></div>
+          <div><label class="label" for="rule-metric">Metric</label><select id="rule-metric" name="metric" class="field">{% for key, label in metrics.items %}<option value="{{ key }}">{{ label }}</option>{% endfor %}</select></div>
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="label" for="rule-threshold">Fire above</label><input id="rule-threshold" name="threshold" type="number" step="any" required class="field" /></div>
+            <div><label class="label" for="rule-severity">Severity</label><select id="rule-severity" name="severity" class="field">{% for value in severities %}<option>{{ value }}</option>{% endfor %}</select></div>
+          </div>
+          <button type="submit" class="pill pill-green w-full">Save rule</button>
+        </form>
+      </div>
+    </dialog>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,25 @@
+{# Our Related Blog #}
+<section class="section-blog_home">
+  <div class="section-padding _180x180">
+    <div class="ui-layout-blockcontainer container ui-container">
+      <div class="section_title-wrap">
+        <div class="margin-bottom margin-16">
+          <div class="title-tag">
+            <div class="body-text-14">Our Blog</div>
+          </div>
+        </div>
+        <h2 class="heading-custom-h3">Our Related Blog</h2>
+        <div class="global_title-bottom-info">
+        </div>
+      </div>
+      <div class="section-inner home_blog">
+        <div class="collection-blogs ui-dyn-list">
+          <div role="list" class="collection-list-blogs home_blog ui-dyn-items">
+            {% include 'website/cards/blog_card_related.html' with card_slug="nasa-temperature-records-since-1880" image="website/media/photo-5-1920x1500.jpg" category="Climate Trends" title="What NASA Temperature Records Show Since 1880" %}
+            {% include 'website/cards/blog_card_related.html' with card_slug="live-air-quality-in-12-cities" image="website/media/photo-94-1920x1500.jpg" category="Air Quality" title="How Live Readings Track Air Quality in 12 Cities" %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

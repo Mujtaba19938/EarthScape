@@ -1,0 +1,17 @@
+{# service cards #}
+<section class="section_service-cards">
+  <div class="section-padding">
+    <div class="ui-layout-blockcontainer container ui-container">
+      <div class="collection_lilst_wrap-service ui-dyn-list">
+        <div role="list" class="collection_lilst-service ui-dyn-items">
+          {% include 'website/cards/service_card.html' with card_slug="climate-analytics" image="website/media/photo-17-1920x1343.jpg" title="Climate Analytics" summary="Explore climate trends by region and variable." tag="Analysis" %}
+          {% include 'website/cards/service_card.html' with card_slug="climate-forecasts" image="website/media/photo-30-1920x1500.jpg" title="Climate Forecasts" summary="Machine learning trained on real climate data." tag="Climate Data" %}
+          {% include 'website/cards/service_card.html' with card_slug="live-monitoring" image="website/media/photo-54-1920x1500.jpg" title="Live Monitoring" summary="New readings from 12 cities every 15 minutes." tag="Climate Data" %}
+          {% include 'website/cards/service_card.html' with card_slug="big-data-processing" image="website/media/photo-179-1920x1500.jpg" title="Big Data Processing" summary="Hadoop stores and processes the climate records." tag="Platform" %}
+          {% include 'website/cards/service_card.html' with card_slug="alerts-notifications" image="website/media/photo-41-1920x1500.jpg" title="Alerts & Notifications" summary="Get notified when a reading crosses a limit." tag="Platform" %}
+          {% include 'website/cards/service_card.html' with card_slug="reports-export" image="website/media/photo-196-1920x1500.jpg" title="Reports & Export" summary="Export results as CSV, JSON or GeoJSON." tag="Platform" %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

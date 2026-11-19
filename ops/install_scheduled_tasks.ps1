@@ -1,7 +1,7 @@
 # Adds EarthScape's tasks to Windows Task Scheduler. Run once from an administrator PowerShell.
 # Remove them later with: Unregister-ScheduledTask -TaskName 'EarthScape*' -Confirm:$false
 $root = Split-Path -Parent $PSScriptRoot
-$pythonw = Join-Path $root 'backend\.venv\Scripts\pythonw.exe'
+$pythonw = Join-Path $root 'web\.venv\Scripts\pythonw.exe'
 $settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
 
 Register-ScheduledTask -TaskName 'EarthScape Backup' -Force -Settings $settings `
